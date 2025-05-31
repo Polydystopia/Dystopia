@@ -1,0 +1,50 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <OutputType>Exe</OutputType>
+        <TargetFramework>net6.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+        <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="HarmonyX" Version="2.14.0"/>
+        <PackageReference Include="K4os.Compression.LZ4" Version="1.3.8"/>
+        <PackageReference Include="Newtonsoft.Json" Version="13.0.3"/>
+
+        <PackageReference Include="Microsoft.AspNetCore.SignalR.Client" Version="6.0.0"/>
+        <PackageReference Include="Microsoft.AspNetCore.Http.Connections.Client" Version="6.0.0"/>
+        <PackageReference Include="Microsoft.AspNetCore.SignalR.Protocols.Json" Version="6.0.0"/>
+    </ItemGroup>
+
+    <ItemGroup>
+      <Reference Include="DebugLogger">
+        <HintPath>..\..\..\..\Downloads\DepotDownloader-windows-x64\depots\874393\18293084\Polytopia_Data\Managed\DebugLogger.dll</HintPath>
+      </Reference>
+      <Reference Include="GameLogicAssembly">
+        <HintPath>..\..\..\..\Downloads\DepotDownloader-windows-x64\depots\874393\18293084\Polytopia_Data\Managed\GameLogicAssembly.dll</HintPath>
+      </Reference>
+      <Reference Include="Newtonsoft.Json">
+        <HintPath>..\..\..\..\Downloads\DepotDownloader-windows-x64\depots\874393\18293084\Polytopia_Data\Managed\Newtonsoft.Json.dll</HintPath>
+      </Reference>
+      <Reference Include="PolytopiaAssembly">
+        <HintPath>..\..\..\..\Downloads\DepotDownloader-windows-x64\depots\874393\18293084\Polytopia_Data\Managed\PolytopiaAssembly.dll</HintPath>
+      </Reference>
+      <Reference Include="PolytopiaBackendBase">
+        <HintPath>..\..\..\..\Downloads\DepotDownloader-windows-x64\depots\874393\18293084\Polytopia_Data\Managed\PolytopiaBackendBase.dll</HintPath>
+      </Reference>
+      <Reference Include="SignalRNewtonsoftAotProtocol">
+        <HintPath>..\..\..\..\Downloads\DepotDownloader-windows-x64\depots\874393\18293084\Polytopia_Data\Managed\SignalRNewtonsoftAotProtocol.dll</HintPath>
+      </Reference>
+      <Reference Include="UnityEngine">
+        <HintPath>..\..\..\..\Downloads\DepotDownloader-windows-x64\depots\874393\18293084\Polytopia_Data\Managed\UnityEngine.dll</HintPath>
+      </Reference>
+      <Reference Include="UnityEngine.CoreModule">
+        <HintPath>..\..\..\..\Downloads\DepotDownloader-windows-x64\depots\874393\18293084\Polytopia_Data\Managed\UnityEngine.CoreModule.dll</HintPath>
+      </Reference>
+      <Reference Include="UnityEngine.UI">
+        <HintPath>..\..\..\..\Downloads\DepotDownloader-windows-x64\depots\874393\18293084\Polytopia_Data\Managed\UnityEngine.UI.dll</HintPath>
+      </Reference>
+    </ItemGroup>
+</Project>

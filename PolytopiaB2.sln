@@ -1,0 +1,28 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PolytopiaB2", "PolytopiaB2\PolytopiaB2.csproj", "{66A51E8C-2D13-4518-9ACF-38D2A994A5B2}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PolytopiaB2.Carrier", "PolytopiaB2.Carrier\PolytopiaB2.Carrier.csproj", "{8ACBC36D-D333-402F-A0C1-08D2593607BF}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PolytopiaB2.Spy", "PolytopiaB2.Spy\PolytopiaB2.Spy.csproj", "{572DD519-5A51-42BA-8B4F-01D2CE6B5E10}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{66A51E8C-2D13-4518-9ACF-38D2A994A5B2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{66A51E8C-2D13-4518-9ACF-38D2A994A5B2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{66A51E8C-2D13-4518-9ACF-38D2A994A5B2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{66A51E8C-2D13-4518-9ACF-38D2A994A5B2}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8ACBC36D-D333-402F-A0C1-08D2593607BF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8ACBC36D-D333-402F-A0C1-08D2593607BF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8ACBC36D-D333-402F-A0C1-08D2593607BF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8ACBC36D-D333-402F-A0C1-08D2593607BF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{572DD519-5A51-42BA-8B4F-01D2CE6B5E10}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{572DD519-5A51-42BA-8B4F-01D2CE6B5E10}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{572DD519-5A51-42BA-8B4F-01D2CE6B5E10}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{572DD519-5A51-42BA-8B4F-01D2CE6B5E10}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal

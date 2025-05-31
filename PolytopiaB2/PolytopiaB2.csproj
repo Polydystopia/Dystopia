@@ -1,0 +1,55 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net6.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+        <RestoreAdditionalProjectSources>
+            https://api.nuget.org/v3/index.json;
+            https://nuget.bepinex.dev/v3/index.json;
+            https://nuget.samboy.dev/v3/index.json
+        </RestoreAdditionalProjectSources>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="BepInEx.Unity.IL2CPP" Version="6.0.0-be.*" IncludeAssets="compile" />
+        <PackageReference Include="BepInEx.PluginInfoProps" Version="2.*" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Reference Include="DebugLogger">
+        <HintPath>..\..\..\..\..\..\Steam\steamapps\common\The Battle of Polytopia\BepInEx\interop\DebugLogger.dll</HintPath>
+      </Reference>
+      <Reference Include="GameLogicAssembly">
+        <HintPath>..\..\..\..\..\..\Steam\steamapps\common\The Battle of Polytopia\BepInEx\interop\GameLogicAssembly.dll</HintPath>
+      </Reference>
+      <Reference Include="Il2CppMicrosoft.Extensions.Logging">
+        <HintPath>..\..\..\..\..\..\Steam\steamapps\common\The Battle of Polytopia\BepInEx\interop\Il2CppMicrosoft.Extensions.Logging.dll</HintPath>
+      </Reference>
+      <Reference Include="Il2CppMicrosoft.Extensions.Logging.Abstractions">
+        <HintPath>..\..\..\..\..\..\Steam\steamapps\common\The Battle of Polytopia\BepInEx\interop\Il2CppMicrosoft.Extensions.Logging.Abstractions.dll</HintPath>
+      </Reference>
+      <Reference Include="Il2CppMicrosoft.Extensions.Logging.Configuration">
+        <HintPath>..\..\..\..\..\..\Steam\steamapps\common\The Battle of Polytopia\BepInEx\interop\Il2CppMicrosoft.Extensions.Logging.Configuration.dll</HintPath>
+      </Reference>
+      <Reference Include="Il2CppMicrosoft.Extensions.Logging.Console">
+        <HintPath>..\..\..\..\..\..\Steam\steamapps\common\The Battle of Polytopia\BepInEx\interop\Il2CppMicrosoft.Extensions.Logging.Console.dll</HintPath>
+      </Reference>
+      <Reference Include="Il2Cppmscorlib">
+        <HintPath>..\..\..\..\..\..\Steam\steamapps\common\The Battle of Polytopia\BepInEx\interop\Il2Cppmscorlib.dll</HintPath>
+      </Reference>
+      <Reference Include="Newtonsoft.Json">
+        <HintPath>..\..\..\..\..\..\Steam\steamapps\common\The Battle of Polytopia\BepInEx\interop\Newtonsoft.Json.dll</HintPath>
+      </Reference>
+      <Reference Include="PolytopiaAssembly">
+        <HintPath>..\..\..\..\..\..\Steam\steamapps\common\The Battle of Polytopia\BepInEx\interop\PolytopiaAssembly.dll</HintPath>
+      </Reference>
+      <Reference Include="PolytopiaBackendBase">
+        <HintPath>..\..\..\..\..\..\Steam\steamapps\common\The Battle of Polytopia\BepInEx\interop\PolytopiaBackendBase.dll</HintPath>
+      </Reference>
+    </ItemGroup>
+
+    <Target Name="PostBuild" AfterTargets="PostBuildEvent">
+        <Exec Command="copy &quot;$(ProjectDir)bin\Debug\net6.0\PolytopiaB2.dll&quot; &quot;C:\Steam\steamapps\common\The Battle of Polytopia\BepInEx\plugins&quot;" />
+    </Target>
+</Project>
