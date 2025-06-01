@@ -5,6 +5,7 @@ using PolytopiaBackendBase.Game;
 
 namespace PolytopiaB2.Carrier.Database.Friendship;
 
+//TODO: Friendships are kinda bugged rn since we can only project SentRequest or ReceivedRequest, we need to check who called this method and set the status accordingly. This does not work for the case where the user1Id is the one who sent the request.
 public class FriendshipRepository : IFriendshipRepository
 {
     private readonly PolydystopiaDbContext _dbContext;

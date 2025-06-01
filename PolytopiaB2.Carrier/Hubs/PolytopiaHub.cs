@@ -21,6 +21,8 @@ public class PolytopiaHub : Hub
     private string _username => Context.User?.FindFirst("unique_name")?.Value ?? string.Empty;
     private string _steamId => Context.User?.FindFirst("steam")?.Value ?? string.Empty;
 
+    private Guid _userGuid => Guid.Parse(_userId);
+
     public PolytopiaHub(IPolydystopiaUserRepository userRepository, IFriendshipRepository friendRepository)
     {
         _userRepository = userRepository;
@@ -57,7 +59,7 @@ public class PolytopiaHub : Hub
         var responseViewModel = new ResponseViewModel();
         return new ServerResponse<ResponseViewModel>(responseViewModel);
     }
-    
+
     public async Task<ServerResponseList<PolytopiaFriendViewModel>> SearchUsers(
         SearchUsersBindingModel model)
     {
@@ -80,7 +82,7 @@ public class PolytopiaHub : Hub
 
         return response;
     }
-    
+
     public ServerResponse<PlayersStatusesResponse> GetFriendsStatuses()
     {
         var response = new PlayersStatusesResponse() { Statuses = new Dictionary<string, PlayerStatus>() };
@@ -103,13 +105,14 @@ public class PolytopiaHub : Hub
         {
             await _friendRepository.SetFriendshipStatusAsync(Guid.Parse(_userId), model.FriendUserId,
                 FriendshipStatus.Accepted);
-            
-            Clients.Group($"user-{model.FriendUserId}").SendAsync("OnFriendRequestAccepted", Guid.Parse(_userId)); //TODO: Also when user is offline
+
+            Clients.Group($"user-{model.FriendUserId}")
+                .SendAsync("OnFriendRequestAccepted", Guid.Parse(_userId)); //TODO: Also when user is offline
         }
-        
+
         return new ServerResponse<ResponseViewModel>(new ResponseViewModel());
     }
-    
+
     public async Task<ServerResponse<ResponseViewModel>> SendFriendRequest(
         FriendRequestBindingModel model)
     {
@@ -119,8 +122,9 @@ public class PolytopiaHub : Hub
         {
             await _friendRepository.SetFriendshipStatusAsync(Guid.Parse(_userId), model.FriendUserId,
                 FriendshipStatus.SentRequest);
-            
-            await Clients.Group($"user-{model.FriendUserId}").SendAsync("OnFriendRequestReceived", Guid.Parse(_userId)); //TODO: Also when user is offline
+
+            await Clients.Group($"user-{model.FriendUserId}")
+                .SendAsync("OnFriendRequestReceived", Guid.Parse(_userId)); //TODO: Also when user is offline
         }
 
         return new ServerResponse<ResponseViewModel>(new ResponseViewModel());
@@ -135,15 +139,15 @@ public class PolytopiaHub : Hub
             await _friendRepository.SetFriendshipStatusAsync(Guid.Parse(_userId), model.FriendUserId,
                 FriendshipStatus.None);
         }
-        else if(currentStatus == FriendshipStatus.ReceivedRequest)
+        else if (currentStatus == FriendshipStatus.ReceivedRequest)
         {
             await _friendRepository.SetFriendshipStatusAsync(Guid.Parse(_userId), model.FriendUserId,
                 FriendshipStatus.None); //TODO: Set rejected
         }
-        
+
         return new ServerResponse<ResponseViewModel>(new ResponseViewModel());
     }
-    
+
     public ServerResponse<ResponseViewModel> UploadNumSingleplayerGames(UploadNumSingleplayerGamesBindingModel model)
     {
         var responseViewModel = new ResponseViewModel();
@@ -217,55 +221,66 @@ public class PolytopiaHub : Hub
         return new ServerResponse<GameListingViewModel>(response);
     }
 
-    public ServerResponse<LobbyGameViewModel> CreateLobby(CreateLobbyBindingModel model)
+    public async Task<ServerResponse<LobbyGameViewModel>> CreateLobby(CreateLobbyBindingModel model)
     {
         var response = new LobbyGameViewModel();
         response.Id = Guid.NewGuid();
         response.UpdatedReason = LobbyUpdatedReason.Created;
         response.DateCreated = DateTime.Now;
         response.DateModified = DateTime.Now;
-        response.Name = "Test Lobby";
-        response.MapPreset = MapPreset.WaterWorld;
-        response.MapSize = 30;
-        response.OpponentCount = 1;
-        response.GameMode = GameMode.Custom;
-        response.OwnerId = Guid.Parse("d078d324-62f1-4d86-b603-5449986ace5c");
-        response.DisabledTribes = new List<int>();
-        response.StartedGameId = Guid.Parse("597f332b-281c-464c-a8e7-6a79f4496360");
-        response.IsPersistent = true;
-        response.IsSharable = true;
-        response.TimeLimit = 0;
-        response.ScoreLimit = 0;
-        response.InviteLink = "https://play.polytopia.io/lobby/4114-281c-464c-a8e7-6a79f4496360";
-        response.MatchmakingGameId = 421241;
-        response.ChallengermodeGameId = Guid.Parse("597f332b-281c-464c-a8e7-6a79f4496360");
-        response.StartTime = DateTime.Now;
+        response.Name = "Love you " + model.GameName; //TODO: Cooler names
+        response.MapPreset = model.MapPreset;
+        response.MapSize = model.MapSize;
+        response.OpponentCount = model.OpponentCount;
+        response.GameMode = model.GameMode;
+        response.OwnerId = _userGuid;
+        response.DisabledTribes = model.DisabledTribes;
+        //response.StartedGameId = Guid.Parse("597f332b-281c-464c-a8e7-6a79f4496360");
+        response.IsPersistent = model.IsPersistent; //?
+        response.IsSharable = true; //?
+        response.TimeLimit = model.TimeLimit;
+        response.ScoreLimit = model.ScoreLimit;
+        response.InviteLink = "https://play.polytopia.io/lobby/4114-281c-464c-a8e7-6a79f4496360"; //TODO ?
+        //response.MatchmakingGameId = response.Id.GetHashCode(); //?
+        //response.ChallengermodeGameId = response.Id; //?
+        //response.StartTime = DateTime.Now; //?
         response.GameContext = new GameContext()
         {
-            ExternalMatchId = Guid.Parse("597f332b-281c-464c-a8e7-6a79f4496360"),
-            ExternalTournamentId = Guid.Parse("597f332b-281c-464c-a8e7-6a79f4496360")
+            ExternalMatchId = response.Id, //?
+            ExternalTournamentId = response.Id, //?
         };
         response.Participators = new List<ParticipatorViewModel>();
+
+        var ownUser = await _userRepository.GetByIdAsync(_userGuid);
+
+        if (ownUser == null) return new ServerResponse<LobbyGameViewModel>(response) { Success = false };
+
         response.Participators.Add(new ParticipatorViewModel()
         {
-            UserId = Guid.Parse("bbbbbbbb-281c-464c-a8e7-6a79f4496360"),
-            Name = "PlayerB",
-            NumberOfFriends = 0,
-            NumberOfMultiplayerGames = 0,
-            GameVersion = new List<ClientGameVersionViewModel>(),
-            MultiplayerRating = 0,
-            SelectedTribe = 1,
-            SelectedTribeSkin = 1,
-            AvatarStateData =
-                Convert.FromBase64String("YgAAACgAAAAMAAAAAAAAABEAAAAAAAAAHgAAAAAAAAAfAAAAAAAAADIAAAC4SusA"),
+            UserId = _userGuid,
+            Name = ownUser.SteamId, //TODO
+            NumberOfFriends = ownUser.NumFriends ?? 0,
+            NumberOfMultiplayerGames = ownUser.NumMultiplayergames ?? 0,
+            GameVersion = ownUser.GameVersions,
+            MultiplayerRating = ownUser.MultiplayerRating ?? 0,
+            SelectedTribe = model.OwnerTribe,
+            SelectedTribeSkin = model.OwnerTribeSkin,
+            AvatarStateData = ownUser.AvatarStateData,
             InvitationState = PlayerInvitationState.Accepted
         });
 
 
         response.Bots = new List<int>();
-        response.Bots.Add(3);
+        //response.Bots.Add(3);
 
         return new ServerResponse<LobbyGameViewModel>(response);
+    }
+
+    public async Task<ServerResponse<BoolResponseViewModel>> ModifyPlayersInLobby(
+        ModifyPlayersInLobbyBindingModel model)
+    {
+        // TODO
+        return null;
     }
 
     public ServerResponse<BoolResponseViewModel> SubscribeToLobby(SubscribeToLobbyBindingModel model)

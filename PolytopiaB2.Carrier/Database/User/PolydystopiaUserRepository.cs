@@ -6,6 +6,7 @@ using SteamKit2;
 
 namespace PolytopiaB2.Carrier.Database.User;
 
+//TODO: UserName can not be set. We use SteamId instead. But we need to call AddMissingData() to set the correct values. This is a hack.
 public class PolydystopiaUserRepository : IPolydystopiaUserRepository
 {
     private readonly PolydystopiaDbContext _dbContext;
