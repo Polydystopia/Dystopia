@@ -12,6 +12,7 @@ using Microsoft.IdentityModel.Tokens;
 using MonoMod.RuntimeDetour;
 using PolytopiaA10.Carrier.Hubs.ModifiedProtocol;
 using PolytopiaB2.Carrier.Database;
+using PolytopiaB2.Carrier.Database.Friendship;
 using PolytopiaB2.Carrier.Database.User;
 using PolytopiaB2.Carrier.Hubs;
 using PolytopiaB2.Carrier.Patches;
@@ -77,6 +78,7 @@ builder.Services.AddControllers();
 builder.Services.AddSignalR().AddNewtonsoftJsonAotProtocol();
 
 builder.Services.AddScoped<IPolydystopiaUserRepository, PolydystopiaUserRepository>();
+builder.Services.AddScoped<IFriendshipRepository, FriendshipRepository>();
 
 var app = builder.Build();
 
@@ -92,6 +94,13 @@ Log.AddLogger(new MyLogger());
 
 var harmony = new Harmony("carrier");
 harmony.PatchAll();
+
+using (var scope = app.Services.CreateScope())
+{
+    var dbContext = scope.ServiceProvider.GetRequiredService<PolydystopiaDbContext>();
+    
+    dbContext.Database.Migrate();
+}
 
 app.Run();
 

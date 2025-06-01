@@ -1,5 +1,6 @@
 ﻿using System.Reflection;
 using Microsoft.EntityFrameworkCore;
+using PolytopiaB2.Carrier.Database.Friendship;
 using PolytopiaBackendBase.Auth;
 using PolytopiaBackendBase.Challengermode.Data;
 
@@ -8,10 +9,10 @@ namespace PolytopiaB2.Carrier.Database;
 public class PolydystopiaDbContext : DbContext
 {
     public DbSet<PolytopiaUserViewModel> Users { get; set; }
+    public DbSet<FriendshipEntity> Friends { get; set; }
 
     public PolydystopiaDbContext(DbContextOptions<PolydystopiaDbContext> options) : base(options)
     {
-        Database.EnsureCreated();
     }
     
     protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -47,5 +48,21 @@ public class PolydystopiaDbContext : DbContext
         polytopiaUserViewModelEntity.Property(e => e.CmUserData).HasConversion(
             v => System.Text.Json.JsonSerializer.Serialize(v, serializerOptions),
             v => System.Text.Json.JsonSerializer.Deserialize<UserViewModel>(v, serializerOptions));
+        
+        
+        
+        var friendshipEntity = modelBuilder.Entity<FriendshipEntity>();
+    
+        friendshipEntity.HasKey(e => new { e.UserId1, e.UserId2 });
+    
+        friendshipEntity
+            .HasOne(f => f.User1)
+            .WithMany()
+            .HasForeignKey(f => f.UserId1);
+        
+        friendshipEntity
+            .HasOne(f => f.User2)
+            .WithMany()
+            .HasForeignKey(f => f.UserId2);
     }
 }

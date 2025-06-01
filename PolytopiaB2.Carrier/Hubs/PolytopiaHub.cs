@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.SignalR;
 using PolytopiaB2.Carrier.Controllers;
 using PolytopiaB2.Carrier.Database;
+using PolytopiaB2.Carrier.Database.Friendship;
 using PolytopiaB2.Carrier.Database.User;
 using PolytopiaBackendBase;
 using PolytopiaBackendBase.Auth;
@@ -14,16 +15,18 @@ namespace PolytopiaB2.Carrier.Hubs;
 public class PolytopiaHub : Hub
 {
     private readonly IPolydystopiaUserRepository _userRepository;
-    
+    private readonly IFriendshipRepository _friendRepository;
+
     private string _userId => Context.User?.FindFirst("nameid")?.Value ?? string.Empty;
     private string _username => Context.User?.FindFirst("unique_name")?.Value ?? string.Empty;
     private string _steamId => Context.User?.FindFirst("steam")?.Value ?? string.Empty;
 
-    public PolytopiaHub(IPolydystopiaUserRepository userRepository)
+    public PolytopiaHub(IPolydystopiaUserRepository userRepository, IFriendshipRepository friendRepository)
     {
         _userRepository = userRepository;
+        _friendRepository = friendRepository;
     }
-    
+
     public override async Task OnConnectedAsync()
     {
         if (string.IsNullOrEmpty(_userId))
@@ -33,9 +36,8 @@ public class PolytopiaHub : Hub
         }
 
         await Groups.AddToGroupAsync(Context.ConnectionId, $"user-{_userId}");
-        
-        await base.OnConnectedAsync();
 
+        await base.OnConnectedAsync();
     }
 
     public ServerResponse<ResponseViewModel> SubscribeToParticipatingGameSummaries()
@@ -71,21 +73,38 @@ public class PolytopiaHub : Hub
         SearchUsersBindingModel model)
     {
         var response = new ServerResponseList<PolytopiaFriendViewModel>(new List<PolytopiaFriendViewModel>());
-        
+
         var foundUsers = await _userRepository.GetAllByNameStartsWith(model.SearchString);
 
         foreach (var foundUser in foundUsers)
         {
-            if(foundUser.PolytopiaId.ToString() == _userId) continue;
-            
+            if (foundUser.PolytopiaId.ToString() == _userId) continue;
+
             var friendViewModel = new PolytopiaFriendViewModel();
             friendViewModel.User = foundUser;
-            friendViewModel.FriendshipStatus = FriendshipStatus.None; //TODO
-            
+
+            friendViewModel.FriendshipStatus = await _friendRepository
+                .GetFriendshipStatusAsync(Guid.Parse(_userId), foundUser.PolytopiaId);
+
             response.Data.Add(friendViewModel);
         }
-        
+
         return response;
+    }
+
+    public async Task<ServerResponse<ResponseViewModel>> SendFriendRequest(
+        FriendRequestBindingModel model)
+    {
+        var currentStatus = await _friendRepository.GetFriendshipStatusAsync(Guid.Parse(_userId), model.FriendUserId);
+
+        if (currentStatus == FriendshipStatus.None)
+        {
+            await _friendRepository.SetFriendshipStatusAsync(Guid.Parse(_userId), model.FriendUserId,
+                FriendshipStatus.SentRequest);
+        }
+        
+        var responseViewModel = new ResponseViewModel();
+        return new ServerResponse<ResponseViewModel>(responseViewModel);
     }
 
     public ServerResponse<ResponseViewModel> UploadNumSingleplayerGames(UploadNumSingleplayerGamesBindingModel model)
@@ -402,9 +421,9 @@ public class PolytopiaHub : Hub
     public ServerResponse<ResponseViewModel> SendCommand(SendCommandBindingModel model)
     {
         var client = PolytopiaController.client;
-        
+
         var succ1 = CommandBase.FromByteArray(model.Command.SerializedData, out var cmd, out var version);
-        
+
         client.SendCommand(cmd).Wait();
 
         var arr = new CommandArrayViewModel();
@@ -419,7 +438,7 @@ public class PolytopiaHub : Hub
         if (cmd is EndTurnCommand)
         {
             client.GameState.EndPlayerTurn();
-            
+
             CommandBase command = new CommandBase();
 
             while (command is not EndTurnCommand)
@@ -433,6 +452,7 @@ public class PolytopiaHub : Hub
                         command = AI.EndCommand(client.GameState, client.GameState.PlayerStates[1]);
                     }
                 }
+
                 if (command.IsValid(client.GameState))
                 {
                     var arr2 = new CommandArrayViewModel();
@@ -462,7 +482,7 @@ public class PolytopiaHub : Hub
         gameSummaryViewModel.TimeLimit = 360;
         gameSummaryViewModel.DateLastCommand = DateTime.Now;
         gameSummaryViewModel.DateLastEndTurn = DateTime.Now;
-        
+
         gameSummaryViewModel.Participators = new List<ParticipatorViewModel>();
 
         var participator = new ParticipatorViewModel()
@@ -479,13 +499,13 @@ public class PolytopiaHub : Hub
                 Convert.FromBase64String("YgAAACgAAAAMAAAAAAAAABEAAAAAAAAAHgAAAAAAAAAfAAAAAAAAADIAAAC4SusA"),
             InvitationState = PlayerInvitationState.Invited
         };
-        
+
         gameSummaryViewModel.Participators.Add(participator);
-        
+
         //gameSummaryViewModel.GameSummaryData
         //gameSummaryViewModel.GameSummaryData
         //gameSummaryViewModel.GameSummaryData
-        
+
         await SendGameSummaryUpdatedToAll(gameSummaryViewModel, StateUpdateReason.ValidCommand);
     }
 
@@ -493,7 +513,7 @@ public class PolytopiaHub : Hub
     {
         await Clients.All.SendAsync("OnCommand", commandArray);
     }
-    
+
     public async Task SendGameSummaryUpdatedToAll(
         GameSummaryViewModel model,
         StateUpdateReason pushReason)
