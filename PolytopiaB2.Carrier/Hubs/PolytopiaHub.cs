@@ -57,18 +57,7 @@ public class PolytopiaHub : Hub
         var responseViewModel = new ResponseViewModel();
         return new ServerResponse<ResponseViewModel>(responseViewModel);
     }
-
-    public ServerResponse<PlayersStatusesResponse> GetFriendsStatuses()
-    {
-        var response = new PlayersStatusesResponse() { Statuses = new Dictionary<string, PlayerStatus>() };
-        return new ServerResponse<PlayersStatusesResponse>(response);
-    }
-
-    public ServerResponseList<PolytopiaFriendViewModel> GetFriends()
-    {
-        return new ServerResponseList<PolytopiaFriendViewModel>(new List<PolytopiaFriendViewModel>());
-    }
-
+    
     public async Task<ServerResponseList<PolytopiaFriendViewModel>> SearchUsers(
         SearchUsersBindingModel model)
     {
@@ -91,7 +80,36 @@ public class PolytopiaHub : Hub
 
         return response;
     }
+    
+    public ServerResponse<PlayersStatusesResponse> GetFriendsStatuses()
+    {
+        var response = new PlayersStatusesResponse() { Statuses = new Dictionary<string, PlayerStatus>() };
+        return new ServerResponse<PlayersStatusesResponse>(response);
+    }
 
+    public async Task<ServerResponseList<PolytopiaFriendViewModel>> GetFriends()
+    {
+        var myFriends = await _friendRepository.GetFriendsForUserAsync(Guid.Parse(_userId));
+
+        return new ServerResponseList<PolytopiaFriendViewModel>(myFriends);
+    }
+
+    public async Task<ServerResponse<ResponseViewModel>> AcceptFriendRequest(
+        FriendRequestBindingModel model)
+    {
+        var currentStatus = await _friendRepository.GetFriendshipStatusAsync(Guid.Parse(_userId), model.FriendUserId);
+
+        if (currentStatus == FriendshipStatus.ReceivedRequest)
+        {
+            await _friendRepository.SetFriendshipStatusAsync(Guid.Parse(_userId), model.FriendUserId,
+                FriendshipStatus.Accepted);
+            
+            Clients.Group($"user-{model.FriendUserId}").SendAsync("OnFriendRequestAccepted", Guid.Parse(_userId)); //TODO: Also when user is offline
+        }
+        
+        return new ServerResponse<ResponseViewModel>(new ResponseViewModel());
+    }
+    
     public async Task<ServerResponse<ResponseViewModel>> SendFriendRequest(
         FriendRequestBindingModel model)
     {
@@ -101,12 +119,31 @@ public class PolytopiaHub : Hub
         {
             await _friendRepository.SetFriendshipStatusAsync(Guid.Parse(_userId), model.FriendUserId,
                 FriendshipStatus.SentRequest);
+            
+            await Clients.Group($"user-{model.FriendUserId}").SendAsync("OnFriendRequestReceived", Guid.Parse(_userId)); //TODO: Also when user is offline
         }
-        
-        var responseViewModel = new ResponseViewModel();
-        return new ServerResponse<ResponseViewModel>(responseViewModel);
+
+        return new ServerResponse<ResponseViewModel>(new ResponseViewModel());
     }
 
+    public async Task<ServerResponse<ResponseViewModel>> RemoveFriend(FriendRequestBindingModel model)
+    {
+        var currentStatus = await _friendRepository.GetFriendshipStatusAsync(Guid.Parse(_userId), model.FriendUserId);
+
+        if (currentStatus == FriendshipStatus.Accepted)
+        {
+            await _friendRepository.SetFriendshipStatusAsync(Guid.Parse(_userId), model.FriendUserId,
+                FriendshipStatus.None);
+        }
+        else if(currentStatus == FriendshipStatus.ReceivedRequest)
+        {
+            await _friendRepository.SetFriendshipStatusAsync(Guid.Parse(_userId), model.FriendUserId,
+                FriendshipStatus.None); //TODO: Set rejected
+        }
+        
+        return new ServerResponse<ResponseViewModel>(new ResponseViewModel());
+    }
+    
     public ServerResponse<ResponseViewModel> UploadNumSingleplayerGames(UploadNumSingleplayerGamesBindingModel model)
     {
         var responseViewModel = new ResponseViewModel();

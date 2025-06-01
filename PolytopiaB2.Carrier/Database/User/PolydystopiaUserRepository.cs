@@ -94,7 +94,7 @@ public class PolydystopiaUserRepository : IPolydystopiaUserRepository
         return AddMissingData(foundUsers);
     }
 
-    private PolytopiaUserViewModel AddMissingData(PolytopiaUserViewModel? user)
+    public static PolytopiaUserViewModel AddMissingData(PolytopiaUserViewModel? user)
     {
         if (user == null) return null;
 
@@ -104,7 +104,7 @@ public class PolydystopiaUserRepository : IPolydystopiaUserRepository
         return user;
     }
 
-    private List<PolytopiaUserViewModel> AddMissingData(List<PolytopiaUserViewModel> users)
+    public static  List<PolytopiaUserViewModel> AddMissingData(List<PolytopiaUserViewModel> users)
     {
         foreach (var user in users)
         {
