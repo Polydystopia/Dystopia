@@ -1,5 +1,7 @@
 ﻿using Microsoft.AspNetCore.SignalR;
 using PolytopiaB2.Carrier.Controllers;
+using PolytopiaB2.Carrier.Database;
+using PolytopiaB2.Carrier.Database.User;
 using PolytopiaBackendBase;
 using PolytopiaBackendBase.Auth;
 using PolytopiaBackendBase.Common;
@@ -11,10 +13,29 @@ namespace PolytopiaB2.Carrier.Hubs;
 
 public class PolytopiaHub : Hub
 {
-    public override Task OnConnectedAsync()
+    private readonly IPolydystopiaUserRepository _userRepository;
+    
+    private string _userId => Context.User?.FindFirst("nameid")?.Value ?? string.Empty;
+    private string _username => Context.User?.FindFirst("unique_name")?.Value ?? string.Empty;
+    private string _steamId => Context.User?.FindFirst("steam")?.Value ?? string.Empty;
+
+    public PolytopiaHub(IPolydystopiaUserRepository userRepository)
     {
-        Console.WriteLine("Connection");
-        return base.OnConnectedAsync();
+        _userRepository = userRepository;
+    }
+    
+    public override async Task OnConnectedAsync()
+    {
+        if (string.IsNullOrEmpty(_userId))
+        {
+            Context.Abort();
+            return;
+        }
+
+        await Groups.AddToGroupAsync(Context.ConnectionId, $"user-{_userId}");
+        
+        await base.OnConnectedAsync();
+
     }
 
     public ServerResponse<ResponseViewModel> SubscribeToParticipatingGameSummaries()
@@ -43,7 +64,28 @@ public class PolytopiaHub : Hub
 
     public ServerResponseList<PolytopiaFriendViewModel> GetFriends()
     {
-        return new ServerResponseList<PolytopiaFriendViewModel>() { Data = new List<PolytopiaFriendViewModel>() };
+        return new ServerResponseList<PolytopiaFriendViewModel>(new List<PolytopiaFriendViewModel>());
+    }
+
+    public async Task<ServerResponseList<PolytopiaFriendViewModel>> SearchUsers(
+        SearchUsersBindingModel model)
+    {
+        var response = new ServerResponseList<PolytopiaFriendViewModel>(new List<PolytopiaFriendViewModel>());
+        
+        var foundUsers = await _userRepository.GetAllByNameStartsWith(model.SearchString);
+
+        foreach (var foundUser in foundUsers)
+        {
+            if(foundUser.PolytopiaId.ToString() == _userId) continue;
+            
+            var friendViewModel = new PolytopiaFriendViewModel();
+            friendViewModel.User = foundUser;
+            friendViewModel.FriendshipStatus = FriendshipStatus.None; //TODO
+            
+            response.Data.Add(friendViewModel);
+        }
+        
+        return response;
     }
 
     public ServerResponse<ResponseViewModel> UploadNumSingleplayerGames(UploadNumSingleplayerGamesBindingModel model)
@@ -61,7 +103,7 @@ public class PolytopiaHub : Hub
     public ServerResponse<TribeRatingsViewModel> GetTribeRatings()
     {
         var response = new TribeRatingsViewModel();
-        response.PolytopiaUserId = Guid.Parse("597f332b-281c-464c-a8e7-6a79f4496360");
+        response.PolytopiaUserId = Guid.Parse(_userId);
         response.Ratings = new Dictionary<int, TribeRatingViewModel>();
         return new ServerResponse<TribeRatingsViewModel>(response);
     }

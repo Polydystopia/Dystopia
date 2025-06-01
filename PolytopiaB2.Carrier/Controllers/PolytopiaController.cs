@@ -1,7 +1,13 @@
-﻿using System.Reflection;
+﻿using System.IdentityModel.Tokens.Jwt;
+using System.Reflection;
+using System.Security.Claims;
+using System.Text;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.IdentityModel.Tokens;
 using Newtonsoft.Json;
 using Polytopia.Data;
+using PolytopiaB2.Carrier.Database;
+using PolytopiaB2.Carrier.Database.User;
 using PolytopiaB2.Carrier.Models;
 using PolytopiaB2.Carrier.Patches;
 using PolytopiaBackendBase;
@@ -17,6 +23,14 @@ namespace PolytopiaB2.Carrier.Controllers;
 [ApiController]
 public class PolytopiaController : ControllerBase
 {
+    private readonly IPolydystopiaUserRepository _userRepository;
+
+    public PolytopiaController(IPolydystopiaUserRepository userRepository)
+    {
+        _userRepository = userRepository;
+    }
+
+
     [Route("api/start/get_versioning")]
     public ServerResponse<VersioningViewModel> GetVersioning([FromBody] VersioningBindingModel bindingModel)
     {
@@ -36,55 +50,48 @@ public class PolytopiaController : ControllerBase
     }
 
     [Route("api/auth/login_steam")]
-    public IActionResult LoginSteam([FromBody] SteamLoginBindingModel? model)
+    public async Task<IActionResult> LoginSteam([FromBody] SteamLoginBindingModel? model)
     {
         if (model?.SteamAuthTicket?.Data == null)
         {
             return BadRequest("Invalid auth ticket data");
         }
-        
+
         var parsedSteamTicket = AppTicketParser.ParseAppTicket(model.SteamAuthTicket.Data);
+
+        var userFromDb = await _userRepository.GetBySteamIdAsync(parsedSteamTicket.SteamID);
         
         var token = new PolytopiaToken();
-        
-        //TODO
-        token.JwtToken =
-            "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1laWQiOiI1OTdmMzMyYi0yODFjLTQ2NGMtYThlNy02YTc5ZjQ0OTYzNjAiLCJ1bmlxdWVfbmFtZSI6IlBhcmFub2lhIHM2OSMwNDUxIiwiQXNwTmV0LklkZW50aXR5LlNlY3VyaXR5U3RhbXAiOiJQQ1NENkhRM1JUR0pESVdBVDRCQkpZM0lGVzVBUlkzSiIsInN0ZWFtIjoiNzY1NjExOTgxOTczODMyMDIiLCJuYmYiOjE3MDg4NTY3MjYsImV4cCI6MTkwODg5MjcyNiwiaWF0IjoxNzA4ODU2NzI2LCJpc3MiOiJJc3N1ZXIiLCJhdWQiOiJBdWRpZW5jZSJ9.JPq-VUNUhlxLxgAB1igjp2wmhlwxW4DF5X5Jz4M-HyA";
-        token.ExpiresAt = DateTimeOffset.FromUnixTimeSeconds(1908892726).DateTime;
-        //TODO
-        
-        var user = new NewPolytopiaUserViewModel();
-        user.PolytopiaId = Guid.Parse("d078d324-62f1-4d86-b603-5449986ace5c");
-        user.UserName = "Paranoia123";
-        user.Alias = "Paranoia123";
-        user.FriendCode = "ppdesmgfxi";
-        user.AllowsFriendRequests = true;
-        user.SteamId = "76561198197383202";
-        user.NumFriends = 0;
-        user.Elo = 6969;
-        user.Victories = new Dictionary<string, int>();
-        user.Defeats = new Dictionary<string, int>();
-        user.NumGames = 0;
-        user.NumMultiplayergames = 0;
-        user.MultiplayerRating = 6666;
-        user.AvatarStateData =
-            Convert.FromBase64String("YgAAACgAAAAMAAAAAAAAABEAAAAAAAAAHgAAAAAAAAAfAAAAAAAAADIAAAC4SusA");
-        user.UserMigrated = true;
-        user.GameVersions = new List<ClientGameVersionViewModel>()
-        {
-            new ClientGameVersionViewModel()
-            {
-                Platform = Platform.Steam,
-                DeviceId = "4c24759ff9d1d0c6e8bb28c7afc178b4752eca0d",
-                GameVersion = 112
-            }
-        };
-        user.LastLoginDate = DateTime.Parse("0001-01-01T00:00:00");
-        user.UnlockedTribes = new List<int>();
-        user.UnlockedSkins = new List<int>();
-        user.CmUserData = null;
 
-        token.User = user;
+        var claims = new List<Claim>
+        {
+            new("nameid", userFromDb.PolytopiaId.ToString()),
+            new("unique_name", userFromDb.SteamId), //TODO
+            new("AspNet.Identity.SecurityStamp", "PCSD6HQ3RTGJDIWAT4BBJY3IFW5ARY3J"), //TODO: what is this?
+            new("steam", userFromDb.SteamId)
+        };
+        
+        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("higul0u9pgwojaingwagvupöjoahg8wag890zuahgvbuaagau9j")); //TODO: key
+        var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+        
+        var now = DateTime.UtcNow;
+        var expiryDate = now.AddDays(1);
+
+        var jwtToken = new JwtSecurityToken(
+            issuer: "Issuer",
+            audience: "Audience",
+            claims: claims,
+            notBefore: now,
+            expires: expiryDate,
+            signingCredentials: creds
+        );
+        
+        var tokenHandler = new JwtSecurityTokenHandler();
+        
+        token.JwtToken = tokenHandler.WriteToken(jwtToken);
+        token.ExpiresAt = expiryDate;
+        
+        token.User = userFromDb;
 
         var json = JsonConvert.SerializeObject(new ServerResponse<PolytopiaToken>(token));
 
@@ -145,17 +152,17 @@ public class PolytopiaController : ControllerBase
     //}
 
     public static HotseatClient client;
-    
+
     [Route("api/game/join_game")]
     public ServerResponse<GameViewModel> JoinGame([FromBody] JoinGameBindingModel model)
     {
         PolytopiaDataManager.provider = new MyProvider();
-        
+
         client = new HotseatClient();
 
         var settings = new GameSettings();
         settings.players = new Dictionary<Guid, PlayerData>();
-        
+
         var playerA = new PlayerData();
         playerA.type = PlayerData.Type.Local;
         playerA.state = PlayerData.State.Accepted;
@@ -168,7 +175,7 @@ public class PolytopiaController : ControllerBase
         playerA.profile.id = Guid.Parse("d078d324-62f1-4d86-b603-5449986ace5c");
         playerA.profile.SetName("Paranoia");
         settings.players.Add(Guid.Parse("d078d324-62f1-4d86-b603-5449986ace5c"), playerA);
-        
+
         var playerB = new PlayerData();
         playerB.type = PlayerData.Type.Bot;
         playerB.state = PlayerData.State.Accepted;
@@ -180,29 +187,29 @@ public class PolytopiaController : ControllerBase
         playerA.profile.SetName("PlayerB");
         playerB.profile.id = Guid.Parse("bbbbbbbb-281c-464c-a8e7-6a79f4496360");
         settings.players.Add(Guid.Parse("bbbbbbbb-281c-464c-a8e7-6a79f4496360"), playerB);
-        
+
         var players = new List<PlayerState>();
-        
+
         //var playerStateA = new PlayerState();
         //playerStateA.tribe = TribeData.Type.Aquarion;
         //playerStateA.tribeMix = TribeData.Type.None;
         //playerStateA.AccountId = Guid.Parse("d078d324-62f1-4d86-b603-5449986ace5c");
         //playerStateA.UserName = "Paranoia";
         //players.Add(playerStateA);
-        
+
         //var playerStateB = new PlayerState();
         //playerStateB.tribe = TribeData.Type.Aquarion;
         //playerStateB.tribeMix = TribeData.Type.None;
         //playerStateB.AccountId = Guid.Parse("bbbbbbbb-281c-464c-a8e7-6a79f4496360");
         //playerStateB.UserName = "PlayerB";
         //players.Add(playerStateB);
-        
+
         var result = client.CreateSession(settings, players);
 
 
         var x = result.Result;
-        
-        
+
+
         var gameViewModel = new GameViewModel();
         gameViewModel.Id = model.GameId;
         gameViewModel.OwnerId = Guid.Parse("d078d324-62f1-4d86-b603-5449986ace5c");
@@ -211,10 +218,12 @@ public class PolytopiaController : ControllerBase
         gameViewModel.State = GameSessionState.Started;
 
         gameViewModel.GameSettingsJson = JsonConvert.SerializeObject(settings);
-        
-        gameViewModel.InitialGameStateData = SerializationHelpers.ToByteArray<GameState>(client.GameState, client.GameState.Version);
-        gameViewModel.CurrentGameStateData = SerializationHelpers.ToByteArray<GameState>(client.GameState, client.GameState.Version);
-        
+
+        gameViewModel.InitialGameStateData =
+            SerializationHelpers.ToByteArray<GameState>(client.GameState, client.GameState.Version);
+        gameViewModel.CurrentGameStateData =
+            SerializationHelpers.ToByteArray<GameState>(client.GameState, client.GameState.Version);
+
         return new ServerResponse<GameViewModel>(gameViewModel);
     }
 }
