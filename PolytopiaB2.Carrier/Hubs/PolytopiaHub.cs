@@ -2,6 +2,7 @@
 using PolytopiaB2.Carrier.Controllers;
 using PolytopiaB2.Carrier.Database;
 using PolytopiaB2.Carrier.Database.Friendship;
+using PolytopiaB2.Carrier.Database.Lobby;
 using PolytopiaB2.Carrier.Database.User;
 using PolytopiaBackendBase;
 using PolytopiaBackendBase.Auth;
@@ -16,6 +17,7 @@ public class PolytopiaHub : Hub
 {
     private readonly IPolydystopiaUserRepository _userRepository;
     private readonly IFriendshipRepository _friendRepository;
+    private readonly IPolydystopiaLobbyRepository _lobbyRepository;
 
     private string _userId => Context.User?.FindFirst("nameid")?.Value ?? string.Empty;
     private string _username => Context.User?.FindFirst("unique_name")?.Value ?? string.Empty;
@@ -23,10 +25,12 @@ public class PolytopiaHub : Hub
 
     private Guid _userGuid => Guid.Parse(_userId);
 
-    public PolytopiaHub(IPolydystopiaUserRepository userRepository, IFriendshipRepository friendRepository)
+    public PolytopiaHub(IPolydystopiaUserRepository userRepository, IFriendshipRepository friendRepository,
+        IPolydystopiaLobbyRepository lobbyRepository)
     {
         _userRepository = userRepository;
         _friendRepository = friendRepository;
+        _lobbyRepository = lobbyRepository;
     }
 
     public override async Task OnConnectedAsync()
@@ -217,7 +221,6 @@ public class PolytopiaHub : Hub
 
         response.gameSummaries.Add(gameSummaryViewModel);
 
-
         return new ServerResponse<GameListingViewModel>(response);
     }
 
@@ -273,14 +276,64 @@ public class PolytopiaHub : Hub
         response.Bots = new List<int>();
         //response.Bots.Add(3);
 
+
+        await _lobbyRepository.CreateAsync(response);
+
         return new ServerResponse<LobbyGameViewModel>(response);
     }
 
     public async Task<ServerResponse<BoolResponseViewModel>> ModifyPlayersInLobby(
         ModifyPlayersInLobbyBindingModel model)
     {
-        // TODO
-        return null;
+        var lobby = await _lobbyRepository.GetByIdAsync(model.LobbyId);
+
+        if (lobby == null)
+            return new ServerResponse<BoolResponseViewModel>(new BoolResponseViewModel() { Result = false });
+
+        foreach (var participatorViewModel in lobby.Participators)
+        {
+            participatorViewModel.Name = participatorViewModel.UserId.ToString();
+        }
+        
+        lobby.Bots = model.Bots;
+
+        if (model.RemovePlayers != null)
+        {
+            lobby.Participators.RemoveAll(p => model.RemovePlayers.Contains(p.UserId));
+        }
+
+        if (model.InvitePlayers != null)
+        {
+            foreach (var invitedPlayerGuid in model.InvitePlayers)
+            {
+                var invitePlayer =
+                    await _userRepository.GetByIdAsync(invitedPlayerGuid); //TODO: Use normal id. Not steam
+
+                if (invitePlayer == null) continue;
+
+                var participator = new ParticipatorViewModel()
+                {
+                    UserId = invitedPlayerGuid,
+                    Name = invitePlayer.SteamId, //TODO
+                    NumberOfFriends = invitePlayer.NumFriends ?? 0,
+                    NumberOfMultiplayerGames = invitePlayer.NumMultiplayergames ?? 0,
+                    GameVersion = invitePlayer.GameVersions,
+                    MultiplayerRating = invitePlayer.MultiplayerRating ?? 0,
+                    SelectedTribe = 0, //?
+                    SelectedTribeSkin = 0, //?
+                    AvatarStateData = invitePlayer.AvatarStateData,
+                    InvitationState = PlayerInvitationState.Invited
+                };
+
+                lobby.Participators.Add(participator);
+            }
+        }
+
+        await _lobbyRepository.UpdateAsync(lobby, LobbyUpdatedReason.PlayersInvited);
+
+        await Clients.Caller.SendAsync("OnLobbyUpdated", lobby); //TODO: Maybe send to all?
+
+        return new ServerResponse<BoolResponseViewModel>(new BoolResponseViewModel() { Result = true });
     }
 
     public ServerResponse<BoolResponseViewModel> SubscribeToLobby(SubscribeToLobbyBindingModel model)
