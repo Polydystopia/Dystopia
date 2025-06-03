@@ -274,9 +274,7 @@ public class PolytopiaHub : Hub
 
 
         response.Bots = new List<int>();
-        //response.Bots.Add(3);
-
-
+        
         await _lobbyRepository.CreateAsync(response);
 
         return new ServerResponse<LobbyGameViewModel>(response);
@@ -294,9 +292,12 @@ public class PolytopiaHub : Hub
         {
             participatorViewModel.Name = participatorViewModel.UserId.ToString();
         }
-        
-        lobby.Bots = model.Bots;
 
+        if (model.Bots != null)
+        {
+            lobby.Bots = model.Bots;
+        }
+        
         if (model.RemovePlayers != null)
         {
             lobby.Participators.RemoveAll(p => model.RemovePlayers.Contains(p.UserId));
@@ -306,6 +307,8 @@ public class PolytopiaHub : Hub
         {
             foreach (var invitedPlayerGuid in model.InvitePlayers)
             {
+                if(lobby.Participators.Any(p => p.UserId == invitedPlayerGuid)) continue;
+                
                 var invitePlayer =
                     await _userRepository.GetByIdAsync(invitedPlayerGuid); //TODO: Use normal id. Not steam
 
