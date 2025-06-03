@@ -7,6 +7,7 @@ using Microsoft.IdentityModel.Tokens;
 using Newtonsoft.Json;
 using Polytopia.Data;
 using PolytopiaB2.Carrier.Database;
+using PolytopiaB2.Carrier.Database.Game;
 using PolytopiaB2.Carrier.Database.User;
 using PolytopiaB2.Carrier.Models;
 using PolytopiaB2.Carrier.Patches;
@@ -24,10 +25,12 @@ namespace PolytopiaB2.Carrier.Controllers;
 public class PolytopiaController : ControllerBase
 {
     private readonly IPolydystopiaUserRepository _userRepository;
+    private readonly IPolydystopiaGameRepository _gameRepository;
 
-    public PolytopiaController(IPolydystopiaUserRepository userRepository)
+    public PolytopiaController(IPolydystopiaUserRepository userRepository, IPolydystopiaGameRepository gameRepository)
     {
         _userRepository = userRepository;
+        _gameRepository = gameRepository;
     }
 
 
@@ -154,76 +157,15 @@ public class PolytopiaController : ControllerBase
     public static HotseatClient client;
 
     [Route("api/game/join_game")]
-    public ServerResponse<GameViewModel> JoinGame([FromBody] JoinGameBindingModel model)
+    public async Task<ServerResponse<GameViewModel>> JoinGame([FromBody] JoinGameBindingModel model)
     {
-        PolytopiaDataManager.provider = new MyProvider();
+        var gameViewModel = await _gameRepository.GetByIdAsync(model.GameId);
 
-        client = new HotseatClient();
-
-        var settings = new GameSettings();
-        settings.players = new Dictionary<Guid, PlayerData>();
-
-        var playerA = new PlayerData();
-        playerA.type = PlayerData.Type.Local;
-        playerA.state = PlayerData.State.Accepted;
-        playerA.knownTribe = true;
-        playerA.tribe = TribeData.Type.Aquarion;
-        playerA.tribeMix = TribeData.Type.None;
-        playerA.botDifficulty = GameSettings.Difficulties.Normal;
-        playerA.skinType = SkinType.Default;
-        playerA.defaultName = "Paranoia";
-        playerA.profile.id = Guid.Parse("d078d324-62f1-4d86-b603-5449986ace5c");
-        playerA.profile.SetName("Paranoia");
-        settings.players.Add(Guid.Parse("d078d324-62f1-4d86-b603-5449986ace5c"), playerA);
-
-        var playerB = new PlayerData();
-        playerB.type = PlayerData.Type.Bot;
-        playerB.state = PlayerData.State.Accepted;
-        playerB.knownTribe = true;
-        playerB.tribeMix = TribeData.Type.Aimo;
-        playerB.botDifficulty = GameSettings.Difficulties.Normal;
-        playerB.skinType = SkinType.Default;
-        playerB.defaultName = "PlayerB";
-        playerA.profile.SetName("PlayerB");
-        playerB.profile.id = Guid.Parse("bbbbbbbb-281c-464c-a8e7-6a79f4496360");
-        settings.players.Add(Guid.Parse("bbbbbbbb-281c-464c-a8e7-6a79f4496360"), playerB);
-
-        var players = new List<PlayerState>();
-
-        //var playerStateA = new PlayerState();
-        //playerStateA.tribe = TribeData.Type.Aquarion;
-        //playerStateA.tribeMix = TribeData.Type.None;
-        //playerStateA.AccountId = Guid.Parse("d078d324-62f1-4d86-b603-5449986ace5c");
-        //playerStateA.UserName = "Paranoia";
-        //players.Add(playerStateA);
-
-        //var playerStateB = new PlayerState();
-        //playerStateB.tribe = TribeData.Type.Aquarion;
-        //playerStateB.tribeMix = TribeData.Type.None;
-        //playerStateB.AccountId = Guid.Parse("bbbbbbbb-281c-464c-a8e7-6a79f4496360");
-        //playerStateB.UserName = "PlayerB";
-        //players.Add(playerStateB);
-
-        var result = client.CreateSession(settings, players);
-
-
-        var x = result.Result;
-
-
-        var gameViewModel = new GameViewModel();
-        gameViewModel.Id = model.GameId;
-        gameViewModel.OwnerId = Guid.Parse("d078d324-62f1-4d86-b603-5449986ace5c");
-        gameViewModel.DateCreated = DateTime.Now;
-        gameViewModel.DateLastCommand = DateTime.Now;
-        gameViewModel.State = GameSessionState.Started;
-
-        gameViewModel.GameSettingsJson = JsonConvert.SerializeObject(settings);
-
-        gameViewModel.InitialGameStateData =
-            SerializationHelpers.ToByteArray<GameState>(client.GameState, client.GameState.Version);
-        gameViewModel.CurrentGameStateData =
-            SerializationHelpers.ToByteArray<GameState>(client.GameState, client.GameState.Version);
-
+        if (gameViewModel == null)
+        {
+            return new ServerResponse<GameViewModel>() {Success = false};
+        }
+        
         return new ServerResponse<GameViewModel>(gameViewModel);
     }
 }

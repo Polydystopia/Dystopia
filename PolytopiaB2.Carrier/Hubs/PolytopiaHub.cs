@@ -4,6 +4,7 @@ using Polytopia.Data;
 using PolytopiaB2.Carrier.Controllers;
 using PolytopiaB2.Carrier.Database;
 using PolytopiaB2.Carrier.Database.Friendship;
+using PolytopiaB2.Carrier.Database.Game;
 using PolytopiaB2.Carrier.Database.Lobby;
 using PolytopiaB2.Carrier.Database.User;
 using PolytopiaB2.Carrier.Game;
@@ -22,6 +23,7 @@ public class PolytopiaHub : Hub
     private readonly IPolydystopiaUserRepository _userRepository;
     private readonly IFriendshipRepository _friendRepository;
     private readonly IPolydystopiaLobbyRepository _lobbyRepository;
+    private readonly IPolydystopiaGameRepository _gameRepository;
 
     private string _userId => Context.User?.FindFirst("nameid")?.Value ?? string.Empty;
     private string _username => Context.User?.FindFirst("unique_name")?.Value ?? string.Empty;
@@ -30,11 +32,12 @@ public class PolytopiaHub : Hub
     private Guid _userGuid => Guid.Parse(_userId);
 
     public PolytopiaHub(IPolydystopiaUserRepository userRepository, IFriendshipRepository friendRepository,
-        IPolydystopiaLobbyRepository lobbyRepository)
+        IPolydystopiaLobbyRepository lobbyRepository, IPolydystopiaGameRepository gameRepository)
     {
         _userRepository = userRepository;
         _friendRepository = friendRepository;
         _lobbyRepository = lobbyRepository;
+        _gameRepository = gameRepository;
     }
 
     public override async Task OnConnectedAsync()
@@ -423,7 +426,7 @@ public class PolytopiaHub : Hub
             return new ServerResponse<LobbyGameViewModel>() {Success = false};
         }
 
-        var result = PolydystopiaGameManager.CreateGame(lobby);
+        var result = await PolydystopiaGameManager.CreateGame(lobby, _gameRepository);
         
         return new ServerResponse<LobbyGameViewModel>(lobby) {Success = result};
     }

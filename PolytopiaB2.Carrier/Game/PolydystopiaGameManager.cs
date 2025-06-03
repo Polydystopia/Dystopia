@@ -1,6 +1,10 @@
-﻿using Polytopia.Data;
+﻿using Newtonsoft.Json;
+using Polytopia.Data;
+using PolytopiaB2.Carrier.Database.Game;
 using PolytopiaB2.Carrier.Patches;
 using PolytopiaBackendBase.Game;
+using PolytopiaBackendBase.Game.ViewModels;
+using PolytopiaBackendBase.Timers;
 
 namespace PolytopiaB2.Carrier.Game;
 
@@ -11,7 +15,7 @@ public static class PolydystopiaGameManager
         PolytopiaDataManager.provider = new MyProvider();
     }
 
-    public static bool CreateGame(LobbyGameViewModel lobby)
+    public static async Task<bool> CreateGame(LobbyGameViewModel lobby, IPolydystopiaGameRepository gameRepository)
     {
         var client = new HotseatClient();
 
@@ -51,8 +55,30 @@ public static class PolydystopiaGameManager
 
         var players = new List<PlayerState>(); //?? Seems unused
 
-        var result = client.CreateSession(settings, players);
+        var result = await client.CreateSession(settings, players);
+
+        if (result == CreateSessionResult.Success)
+        {
+            var gamestate = client.GameState;
+            
+            var gameViewModel = new GameViewModel();
+            gameViewModel.Id = lobby.Id;
+            gameViewModel.OwnerId = lobby.OwnerId;
+            gameViewModel.DateCreated = DateTime.Now; //?
+            gameViewModel.DateLastCommand = DateTime.Now; //?
+            gameViewModel.State = GameSessionState.Started;
+            gameViewModel.GameSettingsJson = JsonConvert.SerializeObject(gamestate.Settings); //TODO: Check all serialized?
+            gameViewModel.InitialGameStateData = SerializationHelpers.ToByteArray<GameState>(gamestate, gamestate.Version);
+            gameViewModel.CurrentGameStateData = SerializationHelpers.ToByteArray<GameState>(gamestate, gamestate.Version);
+            gameViewModel.TimerSettings = new TimerSettings(); //??? Used?
+            gameViewModel.DateCurrentTurnDeadline = DateTime.Now.AddDays(1); //TODO: Calc
+            gameViewModel.GameContext = new GameContext(); //TODO?
+            
+            await gameRepository.CreateAsync(gameViewModel);
+            
+            return true;
+        }
         
-        return true;
+        return false;
     }
 }
