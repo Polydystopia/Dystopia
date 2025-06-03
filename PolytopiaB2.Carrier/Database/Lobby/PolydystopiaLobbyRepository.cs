@@ -1,4 +1,5 @@
-﻿using PolytopiaBackendBase.Game;
+﻿using Microsoft.EntityFrameworkCore;
+using PolytopiaBackendBase.Game;
 
 namespace PolytopiaB2.Carrier.Database.Lobby;
 
@@ -48,5 +49,24 @@ public class PolydystopiaLobbyRepository : IPolydystopiaLobbyRepository
         await _dbContext.SaveChangesAsync();
     
         return true;
+    }
+
+    public async Task<List<LobbyGameViewModel>> GetAllLobbiesByPlayer(Guid playerId)
+    {
+        var playerLobbies = new List<LobbyGameViewModel>();
+        
+        foreach (var lobbyGameViewModel in _dbContext.Lobbies)
+        {
+            foreach (var participatorViewModel in lobbyGameViewModel.Participators)
+            {
+                if (participatorViewModel.UserId == playerId)
+                {
+                    playerLobbies.Add(lobbyGameViewModel);
+                    break;
+                }
+            }
+        }
+
+        return playerLobbies;
     }
 }

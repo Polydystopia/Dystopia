@@ -17,6 +17,9 @@ using PolytopiaB2.Carrier.Database.Lobby;
 using PolytopiaB2.Carrier.Database.User;
 using PolytopiaB2.Carrier.Hubs;
 using PolytopiaB2.Carrier.Patches;
+using PolytopiaBackendBase;
+using PolytopiaBackendBase.Game;
+using PolytopiaBackendBase.Game.ViewModels;
 using UnityEngine;
 
 TimeHook.Initialize();

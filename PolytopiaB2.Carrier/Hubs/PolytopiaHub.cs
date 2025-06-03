@@ -1,9 +1,12 @@
 ﻿using Microsoft.AspNetCore.SignalR;
+using Newtonsoft.Json;
+using Polytopia.Data;
 using PolytopiaB2.Carrier.Controllers;
 using PolytopiaB2.Carrier.Database;
 using PolytopiaB2.Carrier.Database.Friendship;
 using PolytopiaB2.Carrier.Database.Lobby;
 using PolytopiaB2.Carrier.Database.User;
+using PolytopiaB2.Carrier.Patches;
 using PolytopiaBackendBase;
 using PolytopiaBackendBase.Auth;
 using PolytopiaBackendBase.Common;
@@ -178,48 +181,91 @@ public class PolytopiaHub : Hub
         return new ServerResponse<PlayersStatusesResponse>(response);
     }
 
-    public ServerResponse<GetLobbyInvitationsViewModel> GetLobbiesInvitations()
+    public async Task<ServerResponse<GetLobbyInvitationsViewModel>> GetLobbiesInvitations()
     {
-        var response = new GetLobbyInvitationsViewModel() { Lobbies = new List<LobbyGameViewModel>() };
+        var myLobbies = await _lobbyRepository.GetAllLobbiesByPlayer(_userGuid);
+        
+        var response = new GetLobbyInvitationsViewModel() { Lobbies = myLobbies };
         return new ServerResponse<GetLobbyInvitationsViewModel>(response);
     }
 
-    public ServerResponse<GameListingViewModel> GetGameListingsV3()
+    public async Task<ServerResponse<GameListingViewModel>> GetGameListingsV3()
     {
         var response = new GameListingViewModel();
         response.gameSummaries = new List<GameSummaryViewModel>();
-        response.matchmakingGameSummaries = new List<MatchmakingGameSummaryViewModel>();
+        response.matchmakingGameSummaries = new List<MatchmakingGameSummaryViewModel>(); //TODO: Later
 
-
-        var gameSummaryViewModel = new GameSummaryViewModel();
-
-        gameSummaryViewModel.GameId = Guid.Parse("597f332b-281c-464c-a8e7-6a79f4496360");
-        gameSummaryViewModel.State = GameSessionState.Started;
-        gameSummaryViewModel.DateCreated = DateTime.Now;
-        gameSummaryViewModel.TimeLimit = 360;
-        gameSummaryViewModel.DateLastCommand = DateTime.Now;
-        gameSummaryViewModel.DateLastEndTurn = DateTime.Now;
-
-        gameSummaryViewModel.Participators = new List<ParticipatorViewModel>();
-
-        var participator = new ParticipatorViewModel()
+        var myLobbies = await _lobbyRepository.GetAllLobbiesByPlayer(_userGuid);
+        foreach (var lobby in myLobbies)
         {
-            UserId = Guid.Parse("d078d324-62f1-4d86-b603-5449986ace5c"),
-            Name = "Paranoia",
-            NumberOfFriends = 0,
-            NumberOfMultiplayerGames = 0,
-            GameVersion = new List<ClientGameVersionViewModel>(),
-            MultiplayerRating = 0,
-            SelectedTribe = 1,
-            SelectedTribeSkin = 1,
-            AvatarStateData =
-                Convert.FromBase64String("YgAAACgAAAAMAAAAAAAAABEAAAAAAAAAHgAAAAAAAAAfAAAAAAAAADIAAAC4SusA"),
-            InvitationState = PlayerInvitationState.Invited
-        };
+            break; //TODO
+            
+            var gameSummary = new GameSummaryViewModel();
+            gameSummary.GameId = lobby.Id;
+            gameSummary.MatchmakingGameId = lobby.MatchmakingGameId;
+            gameSummary.OwnerId = lobby.OwnerId;
+            gameSummary.DateCreated = lobby.DateCreated;
+            gameSummary.DateLastCommand = null; //?
+            gameSummary.DateLastEndTurn = null; //?
+            gameSummary.DateEnded = null; //?
+            gameSummary.TimeLimit = lobby.TimeLimit;
+            gameSummary.State = GameSessionState.Lobby;
+            gameSummary.Participators = lobby.Participators;
+            gameSummary.Result = null; //?
+            gameSummary.ReminderSent = null; //?
+            gameSummary.GameContext = lobby.GameContext; //?
 
-        gameSummaryViewModel.Participators.Add(participator);
+            
+            
+            PolytopiaDataManager.provider = new MyProvider();
 
-        response.gameSummaries.Add(gameSummaryViewModel);
+            var client = new HotseatClient();
+
+            var settings = new GameSettings();
+            settings.players = new Dictionary<Guid, PlayerData>();
+
+            foreach (var participatorViewModel in lobby.Participators)
+            {
+                var playerA = new PlayerData();
+                playerA.type = PlayerData.Type.Local;
+                playerA.state = PlayerData.State.Accepted;
+                playerA.knownTribe = true;
+                playerA.tribe = (TribeData.Type)participatorViewModel.SelectedTribe;
+                playerA.tribeMix = TribeData.Type.None;
+                playerA.skinType = SkinType.Default;
+                playerA.defaultName = participatorViewModel.GetNameInternal();
+                playerA.profile.id = participatorViewModel.UserId;
+                playerA.profile.SetName(participatorViewModel.GetNameInternal());
+                settings.players.Add(participatorViewModel.UserId, playerA);
+            }
+            
+            foreach (var bot in lobby.Bots)
+            {
+                var botGuid = Guid.NewGuid();
+                
+                var playerB = new PlayerData();
+                playerB.type = PlayerData.Type.Bot;
+                playerB.state = PlayerData.State.Accepted;
+                playerB.knownTribe = true;
+                playerB.tribeMix = TribeData.Type.Aimo;
+                playerB.botDifficulty = GameSettings.Difficulties.Normal;
+                playerB.skinType = SkinType.Default;
+                playerB.defaultName = "PlayerB";
+                playerB.profile.id = botGuid;
+                settings.players.Add(botGuid, playerB);
+            }
+            
+            var players = new List<PlayerState>(); //??
+
+            var result = client.CreateSession(settings, players);
+            
+            var gameStateBin = SerializationHelpers.ToByteArray<GameState>(client.GameState, client.GameState.Version);
+            gameSummary.GameSummaryData = GameStateSummary.FromGameStateByteArray(gameStateBin);
+                
+            response.gameSummaries.Add(gameSummary);
+        }
+
+        //TODO: Other types than lobby
 
         return new ServerResponse<GameListingViewModel>(response);
     }
@@ -348,20 +394,20 @@ public class PolytopiaHub : Hub
         if (lobby != null && lobby.OwnerId == _userGuid)
         {
             await _lobbyRepository.DeleteAsync(lobbyId);
-            
+
             return new ServerResponse<BoolResponseViewModel>(new BoolResponseViewModel() { Result = true });
         }
-        
+
         if (lobby != null && lobby.Participators.Any(p => p.UserId == _userGuid))
         {
             //TODO: What happens if the user is the owner?
-            
+
             lobby.Participators.RemoveAll(p => p.UserId == _userGuid);
-            
+
             await _lobbyRepository.UpdateAsync(lobby, LobbyUpdatedReason.PlayerLeftByRequest);
 
             //await Clients.Caller.SendAsync("OnLobbyUpdated", lobby); //TODO: Maybe send to all? Or all except caller?
-            
+
             return new ServerResponse<BoolResponseViewModel>(new BoolResponseViewModel() { Result = true });
         }
 
