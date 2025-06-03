@@ -34,4 +34,19 @@ public class PolydystopiaLobbyRepository : IPolydystopiaLobbyRepository
         await _dbContext.SaveChangesAsync();
         return lobbyGameViewModel;
     }
+
+    public async Task<bool> DeleteAsync(Guid id)
+    {
+        var lobby = await _dbContext.Lobbies.FindAsync(id);
+    
+        if (lobby == null)
+        {
+            return false;
+        }
+    
+        _dbContext.Lobbies.Remove(lobby);
+        await _dbContext.SaveChangesAsync();
+    
+        return true;
+    }
 }

@@ -274,7 +274,7 @@ public class PolytopiaHub : Hub
 
 
         response.Bots = new List<int>();
-        
+
         await _lobbyRepository.CreateAsync(response);
 
         return new ServerResponse<LobbyGameViewModel>(response);
@@ -286,7 +286,9 @@ public class PolytopiaHub : Hub
         var lobby = await _lobbyRepository.GetByIdAsync(model.LobbyId);
 
         if (lobby == null)
+        {
             return new ServerResponse<BoolResponseViewModel>(new BoolResponseViewModel() { Result = false });
+        }
 
         foreach (var participatorViewModel in lobby.Participators)
         {
@@ -297,7 +299,7 @@ public class PolytopiaHub : Hub
         {
             lobby.Bots = model.Bots;
         }
-        
+
         if (model.RemovePlayers != null)
         {
             lobby.Participators.RemoveAll(p => model.RemovePlayers.Contains(p.UserId));
@@ -307,8 +309,8 @@ public class PolytopiaHub : Hub
         {
             foreach (var invitedPlayerGuid in model.InvitePlayers)
             {
-                if(lobby.Participators.Any(p => p.UserId == invitedPlayerGuid)) continue;
-                
+                if (lobby.Participators.Any(p => p.UserId == invitedPlayerGuid)) continue;
+
                 var invitePlayer =
                     await _userRepository.GetByIdAsync(invitedPlayerGuid); //TODO: Use normal id. Not steam
 
@@ -337,6 +339,33 @@ public class PolytopiaHub : Hub
         await Clients.Caller.SendAsync("OnLobbyUpdated", lobby); //TODO: Maybe send to all?
 
         return new ServerResponse<BoolResponseViewModel>(new BoolResponseViewModel() { Result = true });
+    }
+
+    public async Task<ServerResponse<BoolResponseViewModel>> LeaveLobby(Guid lobbyId)
+    {
+        var lobby = await _lobbyRepository.GetByIdAsync(lobbyId);
+
+        if (lobby != null && lobby.OwnerId == _userGuid)
+        {
+            await _lobbyRepository.DeleteAsync(lobbyId);
+            
+            return new ServerResponse<BoolResponseViewModel>(new BoolResponseViewModel() { Result = true });
+        }
+        
+        if (lobby != null && lobby.Participators.Any(p => p.UserId == _userGuid))
+        {
+            //TODO: What happens if the user is the owner?
+            
+            lobby.Participators.RemoveAll(p => p.UserId == _userGuid);
+            
+            await _lobbyRepository.UpdateAsync(lobby, LobbyUpdatedReason.PlayerLeftByRequest);
+
+            //await Clients.Caller.SendAsync("OnLobbyUpdated", lobby); //TODO: Maybe send to all? Or all except caller?
+            
+            return new ServerResponse<BoolResponseViewModel>(new BoolResponseViewModel() { Result = true });
+        }
+
+        return new ServerResponse<BoolResponseViewModel>(new BoolResponseViewModel() { Result = false });
     }
 
     public ServerResponse<BoolResponseViewModel> SubscribeToLobby(SubscribeToLobbyBindingModel model)
