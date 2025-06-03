@@ -1,5 +1,4 @@
-﻿using System.Reflection;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
 using PolytopiaB2.Carrier.Database.Friendship;
 using PolytopiaBackendBase.Auth;
@@ -14,6 +13,7 @@ public class PolydystopiaDbContext : DbContext
     public DbSet<PolytopiaUserViewModel> Users { get; set; }
     public DbSet<FriendshipEntity> Friends { get; set; }
     public DbSet<LobbyGameViewModel> Lobbies { get; set; }
+    public DbSet<GameViewModel> Games { get; set; }
 
     public PolydystopiaDbContext(DbContextOptions<PolydystopiaDbContext> options) : base(options)
     {
@@ -108,5 +108,20 @@ public class PolydystopiaDbContext : DbContext
         lobbyEntity.Property(e => e.Bots).HasConversion(
             v => JsonConvert.SerializeObject(v, jsonSettings),
             v => JsonConvert.DeserializeObject<List<int>>(v, jsonSettings));
+        
+        
+        
+        var gameEntity = modelBuilder.Entity<GameViewModel>();
+
+        gameEntity.HasKey(e => e.Id);
+
+        gameEntity.Property(e => e.GameContext).HasConversion(
+            v => v != null ? JsonConvert.SerializeObject(v, jsonSettings) : null,
+            v => !string.IsNullOrEmpty(v) ? JsonConvert.DeserializeObject<GameContext>(v, jsonSettings) : null);
+
+        gameEntity.Property(e => e.TimerSettings).HasConversion(
+            v => v != null ? JsonConvert.SerializeObject(v, jsonSettings) : null,
+            v => !string.IsNullOrEmpty(v) ? JsonConvert.DeserializeObject<PolytopiaBackendBase.Timers.TimerSettings>(v, jsonSettings) : null);
+
     }
 }

@@ -13,6 +13,7 @@ using MonoMod.RuntimeDetour;
 using PolytopiaA10.Carrier.Hubs.ModifiedProtocol;
 using PolytopiaB2.Carrier.Database;
 using PolytopiaB2.Carrier.Database.Friendship;
+using PolytopiaB2.Carrier.Database.Game;
 using PolytopiaB2.Carrier.Database.Lobby;
 using PolytopiaB2.Carrier.Database.User;
 using PolytopiaB2.Carrier.Hubs;
@@ -84,6 +85,7 @@ builder.Services.AddSignalR().AddNewtonsoftJsonAotProtocol();
 builder.Services.AddScoped<IPolydystopiaUserRepository, PolydystopiaUserRepository>();
 builder.Services.AddScoped<IFriendshipRepository, FriendshipRepository>();
 builder.Services.AddScoped<IPolydystopiaLobbyRepository, PolydystopiaLobbyRepository>();
+builder.Services.AddScoped<IPolydystopiaGameRepository, PolydystopiaGameRepository>();
 
 var app = builder.Build();
 
