@@ -6,6 +6,7 @@ using PolytopiaB2.Carrier.Database;
 using PolytopiaB2.Carrier.Database.Friendship;
 using PolytopiaB2.Carrier.Database.Lobby;
 using PolytopiaB2.Carrier.Database.User;
+using PolytopiaB2.Carrier.Game;
 using PolytopiaB2.Carrier.Patches;
 using PolytopiaBackendBase;
 using PolytopiaBackendBase.Auth;
@@ -185,6 +186,16 @@ public class PolytopiaHub : Hub
     {
         var myLobbies = await _lobbyRepository.GetAllLobbiesByPlayer(_userGuid);
         
+        //TODO: HACK!!
+        foreach (var lobbyGameViewModel in myLobbies)
+        {
+            foreach (var participatorViewModel in lobbyGameViewModel.Participators)
+            {
+                participatorViewModel.InvitationState = PlayerInvitationState.Accepted;
+            }
+        }
+        //TODO: HACK!!
+        
         var response = new GetLobbyInvitationsViewModel() { Lobbies = myLobbies };
         return new ServerResponse<GetLobbyInvitationsViewModel>(response);
     }
@@ -193,79 +204,9 @@ public class PolytopiaHub : Hub
     {
         var response = new GameListingViewModel();
         response.gameSummaries = new List<GameSummaryViewModel>();
-        response.matchmakingGameSummaries = new List<MatchmakingGameSummaryViewModel>(); //TODO: Later
+        response.matchmakingGameSummaries = new List<MatchmakingGameSummaryViewModel>();
 
-        var myLobbies = await _lobbyRepository.GetAllLobbiesByPlayer(_userGuid);
-        foreach (var lobby in myLobbies)
-        {
-            break; //TODO
-            
-            var gameSummary = new GameSummaryViewModel();
-            gameSummary.GameId = lobby.Id;
-            gameSummary.MatchmakingGameId = lobby.MatchmakingGameId;
-            gameSummary.OwnerId = lobby.OwnerId;
-            gameSummary.DateCreated = lobby.DateCreated;
-            gameSummary.DateLastCommand = null; //?
-            gameSummary.DateLastEndTurn = null; //?
-            gameSummary.DateEnded = null; //?
-            gameSummary.TimeLimit = lobby.TimeLimit;
-            gameSummary.State = GameSessionState.Lobby;
-            gameSummary.Participators = lobby.Participators;
-            gameSummary.Result = null; //?
-            gameSummary.ReminderSent = null; //?
-            gameSummary.GameContext = lobby.GameContext; //?
-
-            
-            
-            PolytopiaDataManager.provider = new MyProvider();
-
-            var client = new HotseatClient();
-
-            var settings = new GameSettings();
-            settings.players = new Dictionary<Guid, PlayerData>();
-
-            foreach (var participatorViewModel in lobby.Participators)
-            {
-                var playerA = new PlayerData();
-                playerA.type = PlayerData.Type.Local;
-                playerA.state = PlayerData.State.Accepted;
-                playerA.knownTribe = true;
-                playerA.tribe = (TribeData.Type)participatorViewModel.SelectedTribe;
-                playerA.tribeMix = TribeData.Type.None;
-                playerA.skinType = SkinType.Default;
-                playerA.defaultName = participatorViewModel.GetNameInternal();
-                playerA.profile.id = participatorViewModel.UserId;
-                playerA.profile.SetName(participatorViewModel.GetNameInternal());
-                settings.players.Add(participatorViewModel.UserId, playerA);
-            }
-            
-            foreach (var bot in lobby.Bots)
-            {
-                var botGuid = Guid.NewGuid();
-                
-                var playerB = new PlayerData();
-                playerB.type = PlayerData.Type.Bot;
-                playerB.state = PlayerData.State.Accepted;
-                playerB.knownTribe = true;
-                playerB.tribeMix = TribeData.Type.Aimo;
-                playerB.botDifficulty = GameSettings.Difficulties.Normal;
-                playerB.skinType = SkinType.Default;
-                playerB.defaultName = "PlayerB";
-                playerB.profile.id = botGuid;
-                settings.players.Add(botGuid, playerB);
-            }
-            
-            var players = new List<PlayerState>(); //??
-
-            var result = client.CreateSession(settings, players);
-            
-            var gameStateBin = SerializationHelpers.ToByteArray<GameState>(client.GameState, client.GameState.Version);
-            gameSummary.GameSummaryData = GameStateSummary.FromGameStateByteArray(gameStateBin);
-                
-            response.gameSummaries.Add(gameSummary);
-        }
-
-        //TODO: Other types than lobby
+        //TODO
 
         return new ServerResponse<GameListingViewModel>(response);
     }
@@ -473,55 +414,18 @@ public class PolytopiaHub : Hub
         return new ServerResponse<LobbyGameViewModel>(response);
     }
 
-    public ServerResponse<LobbyGameViewModel> StartLobbyGame(StartLobbyBindingModel model)
+    public async Task<ServerResponse<LobbyGameViewModel>> StartLobbyGame(StartLobbyBindingModel model)
     {
-        var response = new LobbyGameViewModel();
-        response.Id = Guid.NewGuid();
-        response.UpdatedReason = LobbyUpdatedReason.Created;
-        response.DateCreated = DateTime.Now;
-        response.DateModified = DateTime.Now;
-        response.Name = "Test Lobby";
-        response.MapPreset = MapPreset.WaterWorld;
-        response.MapSize = 30;
-        response.OpponentCount = 1;
-        response.GameMode = GameMode.Custom;
-        response.OwnerId = Guid.Parse("d078d324-62f1-4d86-b603-5449986ace5c");
-        response.DisabledTribes = new List<int>();
-        response.StartedGameId = Guid.Parse("597f332b-281c-464c-a8e7-6a79f4496360");
-        response.IsPersistent = true;
-        response.IsSharable = true;
-        response.TimeLimit = 0;
-        response.ScoreLimit = 0;
-        response.InviteLink = "https://play.polytopia.io/lobby/4114-281c-464c-a8e7-6a79f4496360";
-        response.MatchmakingGameId = 421241;
-        response.ChallengermodeGameId = Guid.Parse("597f332b-281c-464c-a8e7-6a79f4496360");
-        response.StartTime = DateTime.Now;
-        response.GameContext = new GameContext()
+        var lobby = await _lobbyRepository.GetByIdAsync(model.LobbyId);
+
+        if (lobby == null)
         {
-            ExternalMatchId = Guid.Parse("597f332b-281c-464c-a8e7-6a79f4496360"),
-            ExternalTournamentId = Guid.Parse("597f332b-281c-464c-a8e7-6a79f4496360")
-        };
-        response.Participators = new List<ParticipatorViewModel>();
-        response.Participators.Add(new ParticipatorViewModel()
-        {
-            UserId = Guid.Parse("d078d324-62f1-4d86-b603-5449986ace5c"),
-            Name = "Paranoia",
-            NumberOfFriends = 0,
-            NumberOfMultiplayerGames = 0,
-            GameVersion = new List<ClientGameVersionViewModel>(),
-            MultiplayerRating = 0,
-            SelectedTribe = 1,
-            SelectedTribeSkin = 1,
-            AvatarStateData =
-                Convert.FromBase64String("YgAAACgAAAAMAAAAAAAAABEAAAAAAAAAHgAAAAAAAAAfAAAAAAAAADIAAAC4SusA"),
-            InvitationState = PlayerInvitationState.Accepted
-        });
+            return new ServerResponse<LobbyGameViewModel>() {Success = false};
+        }
 
-
-        response.Bots = new List<int>();
-        response.Bots.Add(3);
-
-        return new ServerResponse<LobbyGameViewModel>(response);
+        var result = PolydystopiaGameManager.CreateGame(lobby);
+        
+        return new ServerResponse<LobbyGameViewModel>(lobby) {Success = result};
     }
 
 
