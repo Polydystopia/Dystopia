@@ -33,7 +33,6 @@ public class PolytopiaController : ControllerBase
         _gameRepository = gameRepository;
     }
 
-
     [Route("api/start/get_versioning")]
     public ServerResponse<VersioningViewModel> GetVersioning([FromBody] VersioningBindingModel bindingModel)
     {
@@ -105,7 +104,7 @@ public class PolytopiaController : ControllerBase
 
     [Route("api/auth/steam_notifications")]
     public ServerResponse<SteamNotificationsModels.RequestSteamNotificationsResponse> ActivateSteamNotifications(
-        [FromBody] SteamNotificationsModels.RequestSteamNotificationsBindingModel model)
+        [FromBody] SteamNotificationsModels.RequestSteamNotificationsBindingModel model) //TODO
     {
         return new ServerResponse<SteamNotificationsModels.RequestSteamNotificationsResponse>(
             new SteamNotificationsModels.RequestSteamNotificationsResponse()
@@ -116,19 +115,19 @@ public class PolytopiaController : ControllerBase
     }
 
     [Route("api/game/upload_numsingleplayergames")]
-    public ServerResponse<ResponseViewModel> UploadNumSingleplayerGames([FromBody] object model)
+    public ServerResponse<ResponseViewModel> UploadNumSingleplayerGames([FromBody] object model) //TODO
     {
         return new ServerResponse<ResponseViewModel>(new ResponseViewModel());
     }
 
     [Route("api/game/upload_triberating")]
-    public ServerResponse<ResponseViewModel> UploadTribeRating([FromBody] object model)
+    public ServerResponse<ResponseViewModel> UploadTribeRating([FromBody] object model) //TODO
     {
         return new ServerResponse<ResponseViewModel>(new ResponseViewModel());
     }
 
     [Route("api/start/get_start_viewmodel")]
-    public ServerResponse<StartViewModel> GetStartViewModel([FromBody] object model)
+    public ServerResponse<StartViewModel> GetStartViewModel([FromBody] object model) //TODO
     {
         return new ServerResponse<StartViewModel>(new StartViewModel()
         {
@@ -138,9 +137,8 @@ public class PolytopiaController : ControllerBase
     }
 
     [Route("api/game/get_triberating")]
-    public ServerResponse<ResponseViewModel> GetTribeRating([FromBody] object model)
+    public ServerResponse<ResponseViewModel> GetTribeRating([FromBody] object model) //TODO
     {
-        //TODO
         return new ServerResponse<ResponseViewModel>(new ResponseViewModel());
     }
 
@@ -167,5 +165,11 @@ public class PolytopiaController : ControllerBase
         }
         
         return new ServerResponse<GameViewModel>(gameViewModel);
+    }
+
+    [Route("/api/auth/whoami")]
+    public async Task<ServerResponse<PolytopiaToken>> WhoAmI() //TODO
+    {
+        return new ServerResponse<PolytopiaToken>(new PolytopiaToken());
     }
 }
