@@ -111,27 +111,8 @@ public static class PolydystopiaGameManager
 
         var succ2 = SerializationHelpers.FromByteArray<GameState>(game.CurrentGameStateData, out GameState gameState);
 
-        //var actionManager = new ActionManager(gameState);
-        //actionManager.ExecuteCommand(cmd, out var error);
-
-        var client = new HotseatClient();
-
-        //client.CurrentGameId = gameId; //TODO
-        client.Reset();
-        client.UpdateGameStateImmediate(gameState, StateUpdateReason.GameJoined);
-        client.PrepareSession();
-
-        await client.SendCommand(cmd); //No return?
-
-        Update(gameState);
-
-        //TODO: HACK see if needed
-        if (gameState.CurrentPlayerIndex == gameState.PlayerCount)
-        {
-            client.ActionManager.ExecuteCommand(new EndTurnCommand(255), out var error);
-            Update(gameState);
-        }
-        //TODO: HACK see if needed
+        GameStateUtils.PerformCommands(gameState, new List<CommandBase>() { cmd }, out List<CommandBase> list,
+            out var events);
 
         if (succ1 && succ2)
         {
