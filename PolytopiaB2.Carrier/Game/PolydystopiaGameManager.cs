@@ -1,8 +1,10 @@
 ﻿using System.Reflection;
+using Microsoft.AspNetCore.SignalR;
 using Newtonsoft.Json;
 using Polytopia.Data;
 using PolytopiaB2.Carrier.Database.Game;
 using PolytopiaB2.Carrier.Patches;
+using PolytopiaBackendBase.Auth;
 using PolytopiaBackendBase.Game;
 using PolytopiaBackendBase.Game.ViewModels;
 using PolytopiaBackendBase.Timers;
@@ -11,9 +13,12 @@ namespace PolytopiaB2.Carrier.Game;
 
 public static class PolydystopiaGameManager
 {
+    public static readonly Dictionary<Guid, List<(Guid id, IClientProxy proxy)>> GameSubscribers;
+
     static PolydystopiaGameManager()
     {
         PolytopiaDataManager.provider = new MyProvider();
+        GameSubscribers = new Dictionary<Guid, List<(Guid id, IClientProxy proxy)>>();
     }
 
     public static async Task<bool> CreateGame(LobbyGameViewModel lobby, IPolydystopiaGameRepository gameRepository)
@@ -98,7 +103,7 @@ public static class PolydystopiaGameManager
     }
 
     public static async Task<bool> SendCommand(SendCommandBindingModel commandBindingModel,
-        IPolydystopiaGameRepository gameRepository)
+        IPolydystopiaGameRepository gameRepository, Guid senderId)
     {
         //GameManager.Instance = new GameManager();
         //GameManager.Instance.SetHotseatClient();
@@ -111,8 +116,21 @@ public static class PolydystopiaGameManager
 
         var succ2 = SerializationHelpers.FromByteArray<GameState>(game.CurrentGameStateData, out GameState gameState);
 
+        var currCommandCount = gameState.CommandStack.Count;
+
         GameStateUtils.PerformCommands(gameState, new List<CommandBase>() { cmd }, out List<CommandBase> list,
             out var events);
+
+        await SendCommandBack(game.Id, commandBindingModel.Command, senderId);
+
+        var newCommandsCount = gameState.CommandStack.Count - currCommandCount - 1;
+
+        for (int i = 0; i < newCommandsCount; i++)
+        {
+            var command = gameState.CommandStack[gameState.CommandStack.Count - newCommandsCount + i];
+
+            await SendCommandBack(game.Id, new PolytopiaCommandViewModel(CommandBase.ToByteArray(command, version)));
+        }
 
         if (succ1 && succ2)
         {
@@ -129,32 +147,61 @@ public static class PolydystopiaGameManager
 
     private static void Update(GameState gameState)
     {
-        bool pendingCommandTrigger = gameState.TryGetPendingCommandTrigger(gameState.CurrentPlayer, out CommandTrigger _);
+        bool pendingCommandTrigger =
+            gameState.TryGetPendingCommandTrigger(gameState.CurrentPlayer, out CommandTrigger _);
         if (gameState.ActionStack != null && gameState.ActionStack.Count > 0 && !pendingCommandTrigger)
         {
             int index = gameState.ActionStack.Count - 1;
             ActionBase action = gameState.ActionStack[index];
             if (action.IsValid(gameState))
             {
-                Log.Spam("{0} Executing action ({2}):\t{1}", (object) "Spam", (object) action, (object) (index + 1));
+                Log.Spam("{0} Executing action ({2}):\t{1}", (object)"Spam", (object)action, (object)(index + 1));
                 action.Execute(gameState);
             }
             else
-                Log.Spam("{0} Action is invalid ({2}):\t{1}", (object) "Spam", (object) action, (object) (index + 1));
+                Log.Spam("{0} Action is invalid ({2}):\t{1}", (object)"Spam", (object)action, (object)(index + 1));
+
             gameState.ActionStack.RemoveAt(index);
             Update(gameState);
         }
-        else if ((int) gameState.LastProcessedCommand < gameState.CommandStack.Count)
+        else if ((int)gameState.LastProcessedCommand < gameState.CommandStack.Count)
         {
-            CommandBase command = gameState.CommandStack[(int) gameState.LastProcessedCommand++];
-            Log.Spam("{0} Executing command ({2}):\t{1}", (object) "Spam", (object) command, (object) (gameState.CommandStack.Count - (int) gameState.LastProcessedCommand + 1));
+            CommandBase command = gameState.CommandStack[(int)gameState.LastProcessedCommand++];
+            Log.Spam("{0} Executing command ({2}):\t{1}", (object)"Spam", (object)command,
+                (object)(gameState.CommandStack.Count - (int)gameState.LastProcessedCommand + 1));
             command.Execute(gameState);
             Update(gameState);
         }
         else
         {
-            Log.Verbose("{0} Finished processing", (object) "Verbose");
+            Log.Verbose("{0} Finished processing", (object)"Verbose");
             //this.StopProcessing(); TODO
         }
+    }
+
+    private static async Task SendCommandBack(Guid gameId, PolytopiaCommandViewModel command, Guid? senderId = null)
+    {
+        var commandArray = new CommandArrayViewModel();
+        commandArray.GameId = gameId;
+        commandArray.Commands = new List<PolytopiaCommandViewModel>()
+        {
+            command
+        };
+
+        var gameSubscribers = GameSubscribers[gameId].Where(u => senderId == null || u.id != senderId)
+            .Select(gs => gs.proxy).ToList();
+        var tasks = gameSubscribers.Select(async gameSubscriber =>
+        {
+            try
+            {
+                await gameSubscriber.SendAsync("OnCommand", commandArray);
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+            }
+        });
+
+        await Task.WhenAll(tasks);
     }
 }

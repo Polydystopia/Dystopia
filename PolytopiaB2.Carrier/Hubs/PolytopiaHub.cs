@@ -189,22 +189,6 @@ public partial class PolytopiaHub : Hub
 
         gameSummaryViewModel.Participators.Add(participator);
 
-        //gameSummaryViewModel.GameSummaryData
-        //gameSummaryViewModel.GameSummaryData
-        //gameSummaryViewModel.GameSummaryData
 
-        await SendGameSummaryUpdatedToAll(gameSummaryViewModel, StateUpdateReason.ValidCommand);
-    }
-
-    public async Task SendCommandToAll(Guid userId, CommandArrayViewModel commandArray)
-    {
-        await Clients.All.SendAsync("OnCommand", commandArray);
-    }
-
-    public async Task SendGameSummaryUpdatedToAll(
-        GameSummaryViewModel model,
-        StateUpdateReason pushReason)
-    {
-        await Clients.All.SendAsync("OnGameSummaryUpdated", model, pushReason);
     }
 }

@@ -1,4 +1,6 @@
-﻿using PolytopiaBackendBase;
+﻿using Microsoft.AspNetCore.SignalR;
+using PolytopiaB2.Carrier.Game;
+using PolytopiaBackendBase;
 using PolytopiaBackendBase.Common;
 using PolytopiaBackendBase.Game.BindingModels;
 
@@ -28,7 +30,26 @@ public partial class PolytopiaHub
 
     public ServerResponse<ResponseViewModel> SubscribeToGame(SubscribeToGameBindingModel model)
     {
+        var subList = PolydystopiaGameManager.GameSubscribers;
+        if (!subList.ContainsKey(model.GameId))
+        {
+            subList.Add(model.GameId, new List<(Guid id, IClientProxy proxy)>());
+        }
+
+        var myId = _userGuid;
+        var myProxy = Clients.Caller;
+        var el = subList[model.GameId];
+
+        var existingIndex = el.FindIndex(x => x.id == myId);
+        if (existingIndex >= 0)
+        {
+            el.RemoveAt(existingIndex);
+        }
+
+        el.Add((myId, myProxy));
+
         var responseViewModel = new ResponseViewModel();
         return new ServerResponse<ResponseViewModel>(responseViewModel);
     }
+
 }

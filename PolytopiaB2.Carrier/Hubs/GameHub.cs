@@ -70,7 +70,7 @@ public partial class PolytopiaHub
 
     public async Task<ServerResponse<ResponseViewModel>> SendCommand(SendCommandBindingModel model)
     {
-        var res = await PolydystopiaGameManager.SendCommand(model, _gameRepository);
+        var res = await PolydystopiaGameManager.SendCommand(model, _gameRepository, _userGuid);
 
         //SendCommandToOthers(Guid.Empty, arr); //TODO
 
