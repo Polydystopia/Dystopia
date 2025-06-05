@@ -11,8 +11,8 @@ using PolytopiaB2.Carrier.Database;
 namespace PolytopiaB2.Carrier.Migrations
 {
     [DbContext(typeof(PolydystopiaDbContext))]
-    [Migration("20250602085904_AddLobbyEntity")]
-    partial class AddLobbyEntity
+    [Migration("20250605094049_AddUserNameAndAliasColumns")]
+    partial class AddUserNameAndAliasColumns
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -48,6 +48,9 @@ namespace PolytopiaB2.Carrier.Migrations
                 {
                     b.Property<Guid>("PolytopiaId")
                         .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Alias")
                         .HasColumnType("TEXT");
 
                     b.Property<bool>("AllowsFriendRequests")
@@ -98,12 +101,56 @@ namespace PolytopiaB2.Carrier.Migrations
                     b.Property<bool>("UserMigrated")
                         .HasColumnType("INTEGER");
 
+                    b.Property<string>("UserName")
+                        .HasColumnType("TEXT");
+
                     b.Property<string>("Victories")
                         .HasColumnType("TEXT");
 
                     b.HasKey("PolytopiaId");
 
                     b.ToTable("Users");
+                });
+
+            modelBuilder.Entity("PolytopiaBackendBase.Game.GameViewModel", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT");
+
+                    b.Property<byte[]>("CurrentGameStateData")
+                        .HasColumnType("BLOB");
+
+                    b.Property<DateTime?>("DateCreated")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime?>("DateCurrentTurnDeadline")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime?>("DateLastCommand")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("GameContext")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("GameSettingsJson")
+                        .HasColumnType("TEXT");
+
+                    b.Property<byte[]>("InitialGameStateData")
+                        .HasColumnType("BLOB");
+
+                    b.Property<Guid?>("OwnerId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("State")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("TimerSettings")
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Games");
                 });
 
             modelBuilder.Entity("PolytopiaBackendBase.Game.LobbyGameViewModel", b =>

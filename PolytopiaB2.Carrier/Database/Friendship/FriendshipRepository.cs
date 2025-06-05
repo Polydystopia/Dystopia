@@ -85,7 +85,7 @@ public class FriendshipRepository : IFriendshipRepository
         foreach (var user in friendUsers)
         {
             var friend = new PolytopiaFriendViewModel();
-            friend.User = PolydystopiaUserRepository.AddMissingData(user);
+            friend.User = user;
             friend.FriendshipStatus = await GetFriendshipStatusAsync(userId, user.PolytopiaId);
             
             friendViewModels.Add(friend);

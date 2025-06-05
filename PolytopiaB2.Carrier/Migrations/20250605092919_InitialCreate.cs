@@ -12,6 +12,60 @@ namespace PolytopiaB2.Carrier.Migrations
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.CreateTable(
+                name: "Games",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "TEXT", nullable: false),
+                    OwnerId = table.Column<Guid>(type: "TEXT", nullable: true),
+                    DateCreated = table.Column<DateTime>(type: "TEXT", nullable: true),
+                    DateLastCommand = table.Column<DateTime>(type: "TEXT", nullable: true),
+                    State = table.Column<int>(type: "INTEGER", nullable: false),
+                    GameSettingsJson = table.Column<string>(type: "TEXT", nullable: true),
+                    InitialGameStateData = table.Column<byte[]>(type: "BLOB", nullable: true),
+                    CurrentGameStateData = table.Column<byte[]>(type: "BLOB", nullable: true),
+                    TimerSettings = table.Column<string>(type: "TEXT", nullable: true),
+                    DateCurrentTurnDeadline = table.Column<DateTime>(type: "TEXT", nullable: true),
+                    GameContext = table.Column<string>(type: "TEXT", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Games", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Lobbies",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "TEXT", nullable: false),
+                    UpdatedReason = table.Column<int>(type: "INTEGER", nullable: false),
+                    DateCreated = table.Column<DateTime>(type: "TEXT", nullable: true),
+                    DateModified = table.Column<DateTime>(type: "TEXT", nullable: true),
+                    Name = table.Column<string>(type: "TEXT", nullable: true),
+                    MapPreset = table.Column<int>(type: "INTEGER", nullable: false),
+                    MapSize = table.Column<int>(type: "INTEGER", nullable: false),
+                    OpponentCount = table.Column<short>(type: "INTEGER", nullable: false),
+                    GameMode = table.Column<int>(type: "INTEGER", nullable: false),
+                    OwnerId = table.Column<Guid>(type: "TEXT", nullable: false),
+                    DisabledTribes = table.Column<string>(type: "TEXT", nullable: true),
+                    StartedGameId = table.Column<Guid>(type: "TEXT", nullable: true),
+                    IsPersistent = table.Column<bool>(type: "INTEGER", nullable: false),
+                    IsSharable = table.Column<bool>(type: "INTEGER", nullable: false),
+                    TimeLimit = table.Column<int>(type: "INTEGER", nullable: false),
+                    ScoreLimit = table.Column<int>(type: "INTEGER", nullable: false),
+                    InviteLink = table.Column<string>(type: "TEXT", nullable: true),
+                    MatchmakingGameId = table.Column<long>(type: "INTEGER", nullable: true),
+                    ChallengermodeGameId = table.Column<Guid>(type: "TEXT", nullable: true),
+                    StartTime = table.Column<DateTime>(type: "TEXT", nullable: true),
+                    GameContext = table.Column<string>(type: "TEXT", nullable: true),
+                    Participators = table.Column<string>(type: "TEXT", nullable: true),
+                    Bots = table.Column<string>(type: "TEXT", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Lobbies", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Users",
                 columns: table => new
                 {
@@ -77,6 +131,12 @@ namespace PolytopiaB2.Carrier.Migrations
         {
             migrationBuilder.DropTable(
                 name: "Friends");
+
+            migrationBuilder.DropTable(
+                name: "Games");
+
+            migrationBuilder.DropTable(
+                name: "Lobbies");
 
             migrationBuilder.DropTable(
                 name: "Users");

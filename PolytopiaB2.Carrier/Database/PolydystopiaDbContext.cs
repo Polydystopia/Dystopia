@@ -35,6 +35,9 @@ public class PolydystopiaDbContext : DbContext
 
         polytopiaUserViewModelEntity.HasKey(e => e.PolytopiaId);
 
+        polytopiaUserViewModelEntity.Property<string>("UserName");
+        polytopiaUserViewModelEntity.Property<string>("Alias");
+
         polytopiaUserViewModelEntity.Property(e => e.Victories).HasConversion(
             v => JsonConvert.SerializeObject
                 (v, jsonSettings),

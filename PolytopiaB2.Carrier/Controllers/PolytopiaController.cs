@@ -62,14 +62,16 @@ public class PolytopiaController : ControllerBase
 
         var parsedSteamTicket = AppTicketParser.ParseAppTicket(model.SteamAuthTicket.Data);
 
-        var userFromDb = await _userRepository.GetBySteamIdAsync(parsedSteamTicket.SteamID);
+        var username = "Player " + Guid.NewGuid(); //TODO: get username from steam
+
+        var userFromDb = await _userRepository.GetBySteamIdAsync(parsedSteamTicket.SteamID, username);
         
         var token = new PolytopiaToken();
 
         var claims = new List<Claim>
         {
             new("nameid", userFromDb.PolytopiaId.ToString()),
-            new("unique_name", userFromDb.SteamId), //TODO
+            new("unique_name", userFromDb.GetUniqueNameInternal()),
             new("AspNet.Identity.SecurityStamp", "PCSD6HQ3RTGJDIWAT4BBJY3IFW5ARY3J"), //TODO: what is this?
             new("steam", userFromDb.SteamId)
         };

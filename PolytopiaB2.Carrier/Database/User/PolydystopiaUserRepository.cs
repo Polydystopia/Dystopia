@@ -16,44 +16,34 @@ public class PolydystopiaUserRepository : IPolydystopiaUserRepository
         _dbContext = dbContext;
     }
 
-    /// <summary>
-    /// Retrieves a user by Steam ID asynchronously. If the user does not exist, a new user is created.
-    /// </summary>
-    /// <param name="steamId">The SteamID of the user to retrieve or create.</param>
-    /// <returns>A task that represents the asynchronous operation. The task result contains the user information.</returns>
-    public async Task<PolytopiaUserViewModel> GetBySteamIdAsync(SteamID steamId)
+    public async Task<PolytopiaUserViewModel> GetBySteamIdAsync(SteamID steamId, string username)
     {
         var model = await _dbContext.Users.FirstOrDefaultAsync(u => u.SteamId == steamId.ToString());
 
         if (model == null)
         {
-            model = await CreateAsync(steamId);
+            model = await CreateAsync(steamId, username);
         }
 
-        return AddMissingData(model);
+        return model;
     }
 
     public async Task<PolytopiaUserViewModel?> GetByIdAsync(Guid polytopiaId)
     {
         var model = await _dbContext.Users.FindAsync(polytopiaId) ?? null;
 
-        return AddMissingData(model);
+        return model;
     }
 
-    /// <summary>
-    /// Creates a new user record asynchronously based on the provided Steam ID.
-    /// </summary>
-    /// <param name="steamId">The SteamID used to create the new user.</param>
-    /// <returns>A task that represents the asynchronous operation. The task result contains the newly created user information.</returns>
-    public async Task<PolytopiaUserViewModel> CreateAsync(SteamID steamId)
+    public async Task<PolytopiaUserViewModel> CreateAsync(SteamID steamId, string username)
     {
         var steamIdString = steamId.ToString();
 
         var user = new PolytopiaUserViewModel();
 
         user.PolytopiaId = Guid.NewGuid();
-        user.UserName = steamIdString; //TODO: Get real name looks like not saved to db
-        user.Alias = steamIdString; //TODO: Get real name looks like not saved to db
+        user.UserName = username;
+        user.Alias = username; //TODO: Find out if needed
         user.FriendCode = "12345678"; //TODO: Generate random friend code
         user.AllowsFriendRequests = true;
         user.SteamId = steamIdString;
@@ -90,28 +80,25 @@ public class PolydystopiaUserRepository : IPolydystopiaUserRepository
 
     public async Task<List<PolytopiaUserViewModel>> GetAllByNameStartsWith(string name)
     {
-        var foundUsers = await _dbContext.Users.Where(user => user.SteamId.StartsWith(name)).ToListAsync();
+        var foundUsers = await _dbContext.Users
+            .WhereUserNameStartsWith(name)
+            .ToListAsync();
 
-        return AddMissingData(foundUsers);
+        return foundUsers;
+    }
+}
+
+public static class QueryExtensions
+{
+    public static IQueryable<PolytopiaUserViewModel> WhereUserNameStartsWith(
+        this IQueryable<PolytopiaUserViewModel> query, string name)
+    {
+        return query.Where(user => EF.Property<string>(user, "UserName").StartsWith(name));
     }
 
-    public static PolytopiaUserViewModel AddMissingData(PolytopiaUserViewModel? user)
+    public static IQueryable<PolytopiaUserViewModel> WhereAliasStartsWith(
+        this IQueryable<PolytopiaUserViewModel> query, string name)
     {
-        if (user == null) return null;
-
-        user.UserName = user.SteamId;
-        user.Alias = user.SteamId;
-
-        return user;
-    }
-
-    public static  List<PolytopiaUserViewModel> AddMissingData(List<PolytopiaUserViewModel> users)
-    {
-        foreach (var user in users)
-        {
-            AddMissingData(user);
-        }
-
-        return users;
+        return query.Where(user => EF.Property<string>(user, "Alias").StartsWith(name));
     }
 }

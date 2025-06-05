@@ -11,7 +11,7 @@ using PolytopiaB2.Carrier.Database;
 namespace PolytopiaB2.Carrier.Migrations
 {
     [DbContext(typeof(PolydystopiaDbContext))]
-    [Migration("20250601173231_InitialCreate")]
+    [Migration("20250605092919_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -104,6 +104,124 @@ namespace PolytopiaB2.Carrier.Migrations
                     b.HasKey("PolytopiaId");
 
                     b.ToTable("Users");
+                });
+
+            modelBuilder.Entity("PolytopiaBackendBase.Game.GameViewModel", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT");
+
+                    b.Property<byte[]>("CurrentGameStateData")
+                        .HasColumnType("BLOB");
+
+                    b.Property<DateTime?>("DateCreated")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime?>("DateCurrentTurnDeadline")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime?>("DateLastCommand")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("GameContext")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("GameSettingsJson")
+                        .HasColumnType("TEXT");
+
+                    b.Property<byte[]>("InitialGameStateData")
+                        .HasColumnType("BLOB");
+
+                    b.Property<Guid?>("OwnerId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("State")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("TimerSettings")
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Games");
+                });
+
+            modelBuilder.Entity("PolytopiaBackendBase.Game.LobbyGameViewModel", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Bots")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid?>("ChallengermodeGameId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime?>("DateCreated")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime?>("DateModified")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("DisabledTribes")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("GameContext")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("GameMode")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("InviteLink")
+                        .HasColumnType("TEXT");
+
+                    b.Property<bool>("IsPersistent")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<bool>("IsSharable")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("MapPreset")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("MapSize")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<long?>("MatchmakingGameId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("Name")
+                        .HasColumnType("TEXT");
+
+                    b.Property<short>("OpponentCount")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<Guid>("OwnerId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Participators")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("ScoreLimit")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<DateTime?>("StartTime")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid?>("StartedGameId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("TimeLimit")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("UpdatedReason")
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Lobbies");
                 });
 
             modelBuilder.Entity("PolytopiaB2.Carrier.Database.Friendship.FriendshipEntity", b =>

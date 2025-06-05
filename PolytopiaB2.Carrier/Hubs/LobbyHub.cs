@@ -15,7 +15,7 @@ public partial class PolytopiaHub
     {
         var myLobbies = await _lobbyRepository.GetAllLobbiesByPlayer(_userGuid);
 
-        //TODO: HACK!!
+        //TODO: HACK!! Since I do not want to use two devices all the time. Change later.
         foreach (var lobbyGameViewModel in myLobbies)
         {
             foreach (var participatorViewModel in lobbyGameViewModel.Participators)
@@ -23,7 +23,6 @@ public partial class PolytopiaHub
                 participatorViewModel.InvitationState = PlayerInvitationState.Accepted;
             }
         }
-        //TODO: HACK!!
 
         var response = new GetLobbyInvitationsViewModel() { Lobbies = myLobbies };
         return new ServerResponse<GetLobbyInvitationsViewModel>(response);
@@ -66,7 +65,7 @@ public partial class PolytopiaHub
         response.Participators.Add(new ParticipatorViewModel()
         {
             UserId = _userGuid,
-            Name = ownUser.SteamId, //TODO
+            Name = ownUser.GetUniqueNameInternal(),
             NumberOfFriends = ownUser.NumFriends ?? 0,
             NumberOfMultiplayerGames = ownUser.NumMultiplayergames ?? 0,
             GameVersion = ownUser.GameVersions,
@@ -95,11 +94,6 @@ public partial class PolytopiaHub
             return new ServerResponse<BoolResponseViewModel>(new BoolResponseViewModel() { Result = false });
         }
 
-        foreach (var participatorViewModel in lobby.Participators)
-        {
-            participatorViewModel.Name = participatorViewModel.UserId.ToString();
-        }
-
         if (model.Bots != null)
         {
             lobby.Bots = model.Bots;
@@ -124,7 +118,7 @@ public partial class PolytopiaHub
                 var participator = new ParticipatorViewModel()
                 {
                     UserId = invitedPlayerGuid,
-                    Name = invitePlayer.SteamId, //TODO
+                    Name = invitePlayer.GetUniqueNameInternal(),
                     NumberOfFriends = invitePlayer.NumFriends ?? 0,
                     NumberOfMultiplayerGames = invitePlayer.NumMultiplayergames ?? 0,
                     GameVersion = invitePlayer.GameVersions,
@@ -173,53 +167,9 @@ public partial class PolytopiaHub
         return new ServerResponse<BoolResponseViewModel>(new BoolResponseViewModel() { Result = false });
     }
 
-    public ServerResponse<LobbyGameViewModel> RespondToLobbyInvitation(RespondToLobbyInvitation model)
+    public ServerResponse<LobbyGameViewModel> RespondToLobbyInvitation(RespondToLobbyInvitation model) //TODO
     {
         var response = new LobbyGameViewModel();
-        response.Id = Guid.NewGuid();
-        response.UpdatedReason = LobbyUpdatedReason.Created;
-        response.DateCreated = DateTime.Now;
-        response.DateModified = DateTime.Now;
-        response.Name = "Test Lobby";
-        response.MapPreset = MapPreset.WaterWorld;
-        response.MapSize = 30;
-        response.OpponentCount = 1;
-        response.GameMode = GameMode.Custom;
-        response.OwnerId = Guid.Parse("d078d324-62f1-4d86-b603-5449986ace5c");
-        response.DisabledTribes = new List<int>();
-        response.StartedGameId = Guid.Parse("597f332b-281c-464c-a8e7-6a79f4496360");
-        response.IsPersistent = true;
-        response.IsSharable = true;
-        response.TimeLimit = 0;
-        response.ScoreLimit = 0;
-        response.InviteLink = "https://play.polytopia.io/lobby/4114-281c-464c-a8e7-6a79f4496360";
-        response.MatchmakingGameId = 421241;
-        response.ChallengermodeGameId = Guid.Parse("597f332b-281c-464c-a8e7-6a79f4496360");
-        response.StartTime = DateTime.Now;
-        response.GameContext = new GameContext()
-        {
-            ExternalMatchId = Guid.Parse("597f332b-281c-464c-a8e7-6a79f4496360"),
-            ExternalTournamentId = Guid.Parse("597f332b-281c-464c-a8e7-6a79f4496360")
-        };
-        response.Participators = new List<ParticipatorViewModel>();
-        response.Participators.Add(new ParticipatorViewModel()
-        {
-            UserId = Guid.Parse("d078d324-62f1-4d86-b603-5449986ace5c"),
-            Name = "Paranoia",
-            NumberOfFriends = 0,
-            NumberOfMultiplayerGames = 0,
-            GameVersion = new List<ClientGameVersionViewModel>(),
-            MultiplayerRating = 0,
-            SelectedTribe = 1,
-            SelectedTribeSkin = 1,
-            AvatarStateData =
-                Convert.FromBase64String("YgAAACgAAAAMAAAAAAAAABEAAAAAAAAAHgAAAAAAAAAfAAAAAAAAADIAAAC4SusA"),
-            InvitationState = PlayerInvitationState.Accepted
-        });
-
-
-        response.Bots = new List<int>();
-        response.Bots.Add(3);
 
         return new ServerResponse<LobbyGameViewModel>(response);
     }

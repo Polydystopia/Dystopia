@@ -47,6 +47,9 @@ namespace PolytopiaB2.Carrier.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("TEXT");
 
+                    b.Property<string>("Alias")
+                        .HasColumnType("TEXT");
+
                     b.Property<bool>("AllowsFriendRequests")
                         .HasColumnType("INTEGER");
 
@@ -94,6 +97,9 @@ namespace PolytopiaB2.Carrier.Migrations
 
                     b.Property<bool>("UserMigrated")
                         .HasColumnType("INTEGER");
+
+                    b.Property<string>("UserName")
+                        .HasColumnType("TEXT");
 
                     b.Property<string>("Victories")
                         .HasColumnType("TEXT");

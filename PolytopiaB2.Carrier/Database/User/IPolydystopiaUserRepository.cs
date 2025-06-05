@@ -5,8 +5,8 @@ namespace PolytopiaB2.Carrier.Database.User;
 
 public interface IPolydystopiaUserRepository
 {
-    Task<PolytopiaUserViewModel> GetBySteamIdAsync(SteamID steamId);
+    Task<PolytopiaUserViewModel> GetBySteamIdAsync(SteamID steamId, string username);
     Task<PolytopiaUserViewModel?> GetByIdAsync(Guid polytopiaId);
-    Task<PolytopiaUserViewModel> CreateAsync(SteamID steamId);
+    Task<PolytopiaUserViewModel> CreateAsync(SteamID steamId, string username);
     Task<List<PolytopiaUserViewModel>> GetAllByNameStartsWith(string name);
 }
