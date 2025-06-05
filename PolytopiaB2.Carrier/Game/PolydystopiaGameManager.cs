@@ -123,6 +123,14 @@ public static class PolydystopiaGameManager
 
         Update(gameState);
 
+        //TODO: HACK see if needed
+        if (gameState.CurrentPlayerIndex == gameState.PlayerCount)
+        {
+            client.ActionManager.ExecuteCommand(new EndTurnCommand(255), out var error);
+            Update(gameState);
+        }
+        //TODO: HACK see if needed
+
         if (succ1 && succ2)
         {
             game.CurrentGameStateData = SerializationHelpers.ToByteArray<GameState>(gameState, version);
