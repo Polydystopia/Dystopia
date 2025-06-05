@@ -67,6 +67,8 @@ public static class PolydystopiaGameManager
 
         var result = await client.CreateSession(settings, unused_player_states);
 
+        Update(client.GameState);
+
         if (result == CreateSessionResult.Success)
         {
             var gamestate = client.GameState;
