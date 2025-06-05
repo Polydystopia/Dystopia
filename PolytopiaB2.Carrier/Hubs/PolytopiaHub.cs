@@ -188,7 +188,7 @@ public class PolytopiaHub : Hub
     public async Task<ServerResponse<GetLobbyInvitationsViewModel>> GetLobbiesInvitations()
     {
         var myLobbies = await _lobbyRepository.GetAllLobbiesByPlayer(_userGuid);
-        
+
         //TODO: HACK!!
         foreach (var lobbyGameViewModel in myLobbies)
         {
@@ -198,18 +198,65 @@ public class PolytopiaHub : Hub
             }
         }
         //TODO: HACK!!
-        
+
         var response = new GetLobbyInvitationsViewModel() { Lobbies = myLobbies };
         return new ServerResponse<GetLobbyInvitationsViewModel>(response);
     }
 
     public async Task<ServerResponse<GameListingViewModel>> GetGameListingsV3()
     {
+        PolytopiaDataManager.provider = new MyProvider(); //?
+
         var response = new GameListingViewModel();
         response.gameSummaries = new List<GameSummaryViewModel>();
-        response.matchmakingGameSummaries = new List<MatchmakingGameSummaryViewModel>();
+        response.matchmakingGameSummaries = new List<MatchmakingGameSummaryViewModel>(); //TODO
 
-        //TODO
+        var myGames = await _gameRepository.GetAllGamesByPlayer(_userGuid);
+        foreach (var game in myGames)
+        {
+            var succ = GameStateSummary.FromGameStateByteArray(game.CurrentGameStateData,
+                out GameStateSummary stateSummary, out var gameState);
+
+            var gameSettings = JsonConvert.DeserializeObject<GameSettings>(game.GameSettingsJson);
+
+            var summary = new GameSummaryViewModel();
+            summary.GameId = game.Id;
+            summary.MatchmakingGameId = null;
+            summary.OwnerId = game.OwnerId;
+            summary.DateCreated = game.DateCreated;
+            summary.DateLastCommand = game.DateLastCommand;
+            summary.DateLastEndTurn = DateTime.Now.Subtract(TimeSpan.FromMinutes(10)); //TODO
+            summary.DateEnded = null; //TODO
+            summary.TimeLimit = gameSettings.TimeLimit;
+            summary.State = game.State;
+            summary.Participators = new List<ParticipatorViewModel>();
+            foreach (var player in gameSettings.players)
+            {
+                var playerData = player.Value;
+
+                var participator = new ParticipatorViewModel()
+                {
+                    UserId = player.Key,
+                    Name = playerData.GetNameInternal(), //TODO
+                    NumberOfFriends = playerData.profile.numFriends,
+                    NumberOfMultiplayerGames = playerData.profile.numMultiplayerGames,
+                    GameVersion = new List<ClientGameVersionViewModel>() {}, //TODO
+                    MultiplayerRating = playerData.profile.multiplayerRating,
+                    SelectedTribe = 2, //TODO
+                    SelectedTribeSkin = 0, //TODO
+                    AvatarStateData = SerializationHelpers.ToByteArray(playerData.profile.avatarState, gameState.Version),
+                    InvitationState = PlayerInvitationState.Accepted
+                };
+
+                summary.Participators.Add(participator);
+            }
+            summary.Result = null; //?
+
+            summary.GameSummaryData = SerializationHelpers.ToByteArray(stateSummary, gameState.Version);
+            summary.GameContext = new GameContext(); //?
+
+            response.gameSummaries.Add(summary);
+        }
 
         return new ServerResponse<GameListingViewModel>(response);
     }
@@ -423,12 +470,21 @@ public class PolytopiaHub : Hub
 
         if (lobby == null)
         {
-            return new ServerResponse<LobbyGameViewModel>() {Success = false};
+            return new ServerResponse<LobbyGameViewModel>() { Success = false };
         }
 
         var result = await PolydystopiaGameManager.CreateGame(lobby, _gameRepository);
-        
-        return new ServerResponse<LobbyGameViewModel>(lobby) {Success = result};
+
+        lobby.StartedGameId = lobby.Id;
+
+        if (result)
+        {
+            var lobbyDeleted = await _lobbyRepository.DeleteAsync(model.LobbyId);
+
+            return new ServerResponse<LobbyGameViewModel>(lobby) { Success = lobbyDeleted };
+        }
+
+        return new ServerResponse<LobbyGameViewModel>(lobby) { Success = false };
     }
 
 
@@ -508,53 +564,11 @@ public class PolytopiaHub : Hub
         return new ServerResponse<MatchmakingSubmissionViewModel>(matchmakingSubmissionViewModel);
     }
 
-    public ServerResponse<ResponseViewModel> SendCommand(SendCommandBindingModel model)
+    public async Task<ServerResponse<ResponseViewModel>> SendCommand(SendCommandBindingModel model)
     {
-        var client = PolytopiaController.client;
+        var res = await PolydystopiaGameManager.SendCommand(model, _gameRepository);
 
-        var succ1 = CommandBase.FromByteArray(model.Command.SerializedData, out var cmd, out var version);
-
-        client.SendCommand(cmd).Wait();
-
-        var arr = new CommandArrayViewModel();
-        arr.GameId = Guid.Parse("597f332b-281c-464c-a8e7-6a79f4496360");
-        arr.Commands = new List<PolytopiaCommandViewModel>()
-        {
-            model.Command
-        };
-
-        SendCommandToOthers(Guid.Empty, arr);
-
-        if (cmd is EndTurnCommand)
-        {
-            client.GameState.EndPlayerTurn();
-
-            CommandBase command = new CommandBase();
-
-            while (command is not EndTurnCommand)
-            {
-                if (!CommandTriggerUtils.TryGetTriggerCommand(client.GameState, out command))
-                {
-                    command = AI.GetMove(client.GameState, client.GameState.PlayerStates[1]);
-
-                    if (command is StayCommand)
-                    {
-                        command = AI.EndCommand(client.GameState, client.GameState.PlayerStates[1]);
-                    }
-                }
-
-                if (command.IsValid(client.GameState))
-                {
-                    var arr2 = new CommandArrayViewModel();
-                    arr2.GameId = Guid.Parse("597f332b-281c-464c-a8e7-6a79f4496360");
-                    arr2.Commands = new List<PolytopiaCommandViewModel>()
-                    {
-                        new(CommandBase.ToByteArray(command, 104))
-                    };
-                    SendCommandToAll(Guid.Empty, arr2);
-                }
-            }
-        }
+        //SendCommandToOthers(Guid.Empty, arr); //TODO
 
         var responseViewModel = new ResponseViewModel();
         return new ServerResponse<ResponseViewModel>(responseViewModel);

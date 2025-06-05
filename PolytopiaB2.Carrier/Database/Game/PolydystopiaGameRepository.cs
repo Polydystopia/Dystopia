@@ -24,4 +24,36 @@ public class PolydystopiaGameRepository : IPolydystopiaGameRepository
         await _dbContext.SaveChangesAsync();
         return gameViewModel;
     }
+
+    public async Task<GameViewModel> UpdateAsync(GameViewModel gameViewModel)
+    {
+        _dbContext.Games.Update(gameViewModel);
+        await _dbContext.SaveChangesAsync();
+
+        return gameViewModel;
+    }
+
+    public async Task<List<GameViewModel>> GetAllGamesByPlayer(Guid playerId)
+    {
+        var playerGames = new List<GameViewModel>();
+
+        foreach (var gameViewModel in _dbContext.Games)
+        {
+            var succ = SerializationHelpers.FromByteArray<GameState>(gameViewModel.CurrentGameStateData, out GameState gameState);
+
+            if (succ)
+            {
+                foreach (var player in gameState.PlayerStates)
+                {
+                    if (player.AccountId == playerId)
+                    {
+                        playerGames.Add(gameViewModel);
+                        break;
+                    }
+                }
+            }
+        }
+
+        return playerGames;
+    }
 }

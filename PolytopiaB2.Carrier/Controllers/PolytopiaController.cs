@@ -154,8 +154,6 @@ public class PolytopiaController : ControllerBase
     //        });
     //}
 
-    public static HotseatClient client;
-
     [Route("api/game/join_game")]
     public async Task<ServerResponse<GameViewModel>> JoinGame([FromBody] JoinGameBindingModel model)
     {
