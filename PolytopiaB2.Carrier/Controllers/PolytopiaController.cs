@@ -37,9 +37,9 @@ public class PolytopiaController : ControllerBase
     public ServerResponse<VersioningViewModel> GetVersioning([FromBody] VersioningBindingModel bindingModel)
     {
         var versioningViewModel = new VersioningViewModel();
-        //versioningViewModel.SystemMessage = "Private server by Paranoia";
+        versioningViewModel.SystemMessage = "Custom server WIP\nPlease report any bugs to the developers at\nhttps://github.com/Polydystopia/curly-octo-waffle\n\ndiscord: juli.gg\nmail: polydystopia@juli.gg\n\nHave fun!\n" + Guid.NewGuid();
 
-        versioningViewModel.VersionEnabledStatuses = new List<VersionEnabledStatus>()
+        versioningViewModel.VersionEnabledStatuses = new List<VersionEnabledStatus>() //TODO Find out what these do
         {
             new() { Enabled = true, Message = null, Feature = VersionedFeature.App },
             new() { Enabled = true, Message = null, Feature = VersionedFeature.Network },
