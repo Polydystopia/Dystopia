@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.SignalR;
 using PolytopiaB2.Carrier.Game;
 using PolytopiaBackendBase;
+using PolytopiaBackendBase.Auth;
 using PolytopiaBackendBase.Common;
 using PolytopiaBackendBase.Game.BindingModels;
 
@@ -8,19 +9,19 @@ namespace PolytopiaB2.Carrier.Hubs;
 
 public partial class PolytopiaHub
 {
-    public ServerResponse<ResponseViewModel> SubscribeToParticipatingGameSummaries()
+    public ServerResponse<ResponseViewModel> SubscribeToParticipatingGameSummaries() //TODO
     {
         var responseViewModel = new ResponseViewModel();
         return new ServerResponse<ResponseViewModel>(responseViewModel);
     }
 
-    public ServerResponse<ResponseViewModel> SubscribeToFriends()
+    public ServerResponse<ResponseViewModel> SubscribeToFriends() //TODO
     {
         var responseViewModel = new ResponseViewModel();
         return new ServerResponse<ResponseViewModel>(responseViewModel);
     }
 
-    public ServerResponse<BoolResponseViewModel> SubscribeToLobby(SubscribeToLobbyBindingModel model)
+    public ServerResponse<BoolResponseViewModel> SubscribeToLobby(SubscribeToLobbyBindingModel model) //TODO
     {
         var response = new BoolResponseViewModel();
         response.Result = true;
@@ -52,4 +53,12 @@ public partial class PolytopiaHub
         return new ServerResponse<ResponseViewModel>(responseViewModel);
     }
 
+    public async Task<ServerResponse<PlayersStatusesResponse>> SubscribeToGameParticipantsStatuses(
+        SubscribeToGameParticipantsStatusesBindingModel model) //TODO
+    {
+        var response = new PlayersStatusesResponse();
+        response.Statuses = new Dictionary<string, PlayerStatus>();
+
+        return new ServerResponse<PlayersStatusesResponse>(response);
+    }
 }

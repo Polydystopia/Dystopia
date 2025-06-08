@@ -4,6 +4,7 @@ using PolytopiaB2.Carrier.Patches;
 using PolytopiaBackendBase;
 using PolytopiaBackendBase.Auth;
 using PolytopiaBackendBase.Game;
+using PolytopiaBackendBase.Game.BindingModels;
 using PolytopiaBackendBase.Game.ViewModels;
 
 namespace PolytopiaB2.Carrier.Hubs;
@@ -81,5 +82,25 @@ public partial class PolytopiaHub
 
         var responseViewModel = new ResponseViewModel();
         return new ServerResponse<ResponseViewModel>(responseViewModel);
+    }
+
+    public async Task<ServerResponse<ResponseViewModel>> SetParticipationDone(
+        SetParticipationDoneBindingModel model)
+    {
+        var responseViewModel = new ResponseViewModel();
+        return new ServerResponse<ResponseViewModel>(responseViewModel);
+    }
+
+    public async Task<ServerResponseList<GameSummaryViewModel>> GetRecentGames(
+        RecentGamesBindingModel model)
+    {
+        var list = new List<GameSummaryViewModel>();
+        return new ServerResponseList<GameSummaryViewModel>(list);
+    }
+
+    public async Task<ServerResponseList<GameSummaryViewModel>> GetSavedGames()
+    {
+        var list = new List<GameSummaryViewModel>();
+        return new ServerResponseList<GameSummaryViewModel>(list);
     }
 }
