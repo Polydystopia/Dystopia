@@ -23,7 +23,7 @@ public static class PolydystopiaGameManager
 
     public static async Task<bool> CreateGame(LobbyGameViewModel lobby, IPolydystopiaGameRepository gameRepository)
     {
-        var client = new HotseatClient();
+        var client = new HotseatClient(); //TODO we should not need this
 
         var settings = new GameSettings();
 
@@ -100,6 +100,31 @@ public static class PolydystopiaGameManager
         }
 
         return false;
+    }
+
+    public static async Task<bool> Resign(ResignBindingModel model, IPolydystopiaGameRepository gameRepository, Guid senderId)
+    {
+        var game = await gameRepository.GetByIdAsync(model.GameId);
+
+        var succ = SerializationHelpers.FromByteArray<GameState>(game.CurrentGameStateData, out GameState gameState);
+
+        foreach (var player in gameState.PlayerStates)
+        {
+            if (player.AutoPlay) continue;
+            if (player.AccountId != senderId) continue;
+
+            var resignCommand = new ResignCommand(player.Id, player.Id, 0, false);
+
+            var commandModel = new SendCommandBindingModel
+            {
+                GameId = model.GameId,
+                Command = new PolytopiaCommandViewModel(CommandBase.ToByteArray(resignCommand, gameState.Version))
+            };
+
+            await SendCommand(commandModel, gameRepository, senderId);
+        }
+
+        return true;
     }
 
     public static async Task<bool> SendCommand(SendCommandBindingModel commandBindingModel,

@@ -68,11 +68,16 @@ public partial class PolytopiaHub
         return new ServerResponse<GameListingViewModel>(response);
     }
 
+    public async Task<ServerResponse<ResponseViewModel>> Resign(ResignBindingModel model)
+    {
+        var res = await PolydystopiaGameManager.Resign(model, _gameRepository, _userGuid);
+
+        return new ServerResponse<ResponseViewModel>();
+    }
+
     public async Task<ServerResponse<ResponseViewModel>> SendCommand(SendCommandBindingModel model)
     {
         var res = await PolydystopiaGameManager.SendCommand(model, _gameRepository, _userGuid);
-
-        //SendCommandToOthers(Guid.Empty, arr); //TODO
 
         var responseViewModel = new ResponseViewModel();
         return new ServerResponse<ResponseViewModel>(responseViewModel);
