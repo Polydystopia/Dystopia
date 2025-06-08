@@ -131,9 +131,30 @@ public class PolytopiaController : ControllerBase
     {
         return new ServerResponse<StartViewModel>(new StartViewModel()
         {
-            ActionableGamesCount = 69,
-            UnseenNewsItemCount = 111
+            ActionableGamesCount = 0,
+            UnseenNewsItemCount = 1
         });
+    }
+
+    [Route("api/news/get_news")]
+    public ServerResponse<NewsObject> GetNews([FromBody] object startDate) //TODO
+    {
+        var news = new NewsObject();
+        news.News = new List<NewsItem>();
+
+        var item = new NewsItem();
+        item.Id = 2;
+        var specificDate2 = new DateTime(2025, 6, 8, 0, 0, 0, DateTimeKind.Utc);
+        item.Date = new DateTimeOffset(specificDate2).ToUnixTimeSeconds();
+
+        item.Body = "Custom server WIP\nPlease report any bugs to the developers at\nhttps://github.com/Polydystopia/curly-octo-waffle\n\ndiscord: juli.gg\nmail: polydystopia@juli.gg\n\nHave fun!";
+        item.Link = "https://github.com/Polydystopia/curly-octo-waffle";
+
+        item.Image = @"https://avatars.githubusercontent.com/u/120461041";
+
+        news.News.Add(item);
+
+        return new ServerResponse<NewsObject>(news);
     }
 
     [Route("api/game/get_triberating")]
