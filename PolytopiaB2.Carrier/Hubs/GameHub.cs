@@ -22,6 +22,8 @@ public partial class PolytopiaHub
         var myGames = await _gameRepository.GetAllGamesByPlayer(_userGuid);
         foreach (var game in myGames)
         {
+            if (game.State != GameSessionState.Started) continue;
+
             var succ = GameStateSummary.FromGameStateByteArray(game.CurrentGameStateData,
                 out GameStateSummary stateSummary, out var gameState);
 
@@ -48,16 +50,18 @@ public partial class PolytopiaHub
                     Name = playerData.GetNameInternal(), //TODO
                     NumberOfFriends = playerData.profile.numFriends,
                     NumberOfMultiplayerGames = playerData.profile.numMultiplayerGames,
-                    GameVersion = new List<ClientGameVersionViewModel>() {}, //TODO
+                    GameVersion = new List<ClientGameVersionViewModel>() { }, //TODO
                     MultiplayerRating = playerData.profile.multiplayerRating,
                     SelectedTribe = 2, //TODO
                     SelectedTribeSkin = 0, //TODO
-                    AvatarStateData = SerializationHelpers.ToByteArray(playerData.profile.avatarState, gameState.Version),
+                    AvatarStateData =
+                        SerializationHelpers.ToByteArray(playerData.profile.avatarState, gameState.Version),
                     InvitationState = PlayerInvitationState.Accepted
                 };
 
                 summary.Participators.Add(participator);
             }
+
             summary.Result = null; //?
 
             summary.GameSummaryData = SerializationHelpers.ToByteArray(stateSummary, gameState.Version);
@@ -73,22 +77,20 @@ public partial class PolytopiaHub
     {
         var res = await PolydystopiaGameManager.Resign(model, _gameRepository, _userGuid);
 
-        return new ServerResponse<ResponseViewModel>();
+        return res ? new ServerResponse<ResponseViewModel>(new ResponseViewModel()) : new ServerResponse<ResponseViewModel>();
     }
 
     public async Task<ServerResponse<ResponseViewModel>> SendCommand(SendCommandBindingModel model)
     {
         var res = await PolydystopiaGameManager.SendCommand(model, _gameRepository, _userGuid);
 
-        var responseViewModel = new ResponseViewModel();
-        return new ServerResponse<ResponseViewModel>(responseViewModel);
+        return res ? new ServerResponse<ResponseViewModel>(new ResponseViewModel()) : new ServerResponse<ResponseViewModel>();
     }
 
     public async Task<ServerResponse<ResponseViewModel>> SetParticipationDone(
         SetParticipationDoneBindingModel model)
     {
-        var responseViewModel = new ResponseViewModel();
-        return new ServerResponse<ResponseViewModel>(responseViewModel);
+        return new ServerResponse<ResponseViewModel>(new ResponseViewModel());
     }
 
     public async Task<ServerResponseList<GameSummaryViewModel>> GetRecentGames(

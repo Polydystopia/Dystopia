@@ -53,6 +53,17 @@ public partial class PolytopiaHub
         return new ServerResponse<ResponseViewModel>(responseViewModel);
     }
 
+    public async Task<ServerResponse<ResponseViewModel>> UnsubscribeToGame(
+        UnsubscribeToGameBindingModel model)
+    {
+        if (PolydystopiaGameManager.GameSubscribers.TryGetValue(model.GameId, out var subscribers))
+        {
+            subscribers.RemoveAll(x => x.id == _userGuid);
+        }
+
+        return new ServerResponse<ResponseViewModel>(new ResponseViewModel());
+    }
+
     public async Task<ServerResponse<PlayersStatusesResponse>> SubscribeToGameParticipantsStatuses(
         SubscribeToGameParticipantsStatusesBindingModel model) //TODO
     {

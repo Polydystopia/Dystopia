@@ -113,7 +113,7 @@ public static class PolydystopiaGameManager
             if (player.AutoPlay) continue;
             if (player.AccountId != senderId) continue;
 
-            var resignCommand = new ResignCommand(player.Id, player.Id, 0, false);
+            var resignCommand = new ResignCommand(gameState.CurrentPlayer, player.Id, 0, false);
 
             var commandModel = new SendCommandBindingModel
             {
@@ -161,6 +161,11 @@ public static class PolydystopiaGameManager
         {
             game.CurrentGameStateData = SerializationHelpers.ToByteArray<GameState>(gameState, version);
             game.DateLastCommand = DateTime.Now;
+
+            if (gameState.CurrentState == GameState.State.Ended)
+            {
+                game.State = GameSessionState.Ended;
+            }
 
             await gameRepository.UpdateAsync(game);
 
