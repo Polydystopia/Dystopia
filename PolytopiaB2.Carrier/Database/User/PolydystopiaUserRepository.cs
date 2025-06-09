@@ -62,9 +62,7 @@ public class PolydystopiaUserRepository : IPolydystopiaUserRepository
         user.NumGames = 0;
         user.NumMultiplayergames = 0;
         user.MultiplayerRating = 1000;
-        user.AvatarStateData =
-            Convert.FromBase64String(
-                "YgAAACgAAAAMAAAAAAAAABEAAAAAAAAAHgAAAAAAAAAfAAAAAAAAADIAAAC4SusA"); //TODO: Reverse avatar state
+        user.AvatarStateData = SerializationHelpers.ToByteArray(AvatarExtensions.CreateRandomState(VersionManager.AvatarDataVersion), VersionManager.GameVersion);
         user.UserMigrated = true;
         user.GameVersions = new List<ClientGameVersionViewModel>();
         user.GameVersions = new List<ClientGameVersionViewModel> //TODO: Get real game versions

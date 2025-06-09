@@ -23,8 +23,6 @@ using PolytopiaBackendBase.Game;
 using PolytopiaBackendBase.Game.ViewModels;
 using UnityEngine;
 
-//TimeHook.Initialize();
-
 var builder = WebApplication.CreateBuilder(args);
 
 var dbPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "polytopia.db");
@@ -99,15 +97,14 @@ app.MapGet("/", () => "Hello World!");
 
 Log.AddLogger(new MyLogger());
 
-//var harmony = new Harmony("carrier");
-//harmony.PatchAll();
-
 using (var scope = app.Services.CreateScope())
 {
     var dbContext = scope.ServiceProvider.GetRequiredService<PolydystopiaDbContext>();
     
     dbContext.Database.Migrate();
 }
+
+PolytopiaDataManager.provider = new MyProvider();
 
 app.Run();
 
