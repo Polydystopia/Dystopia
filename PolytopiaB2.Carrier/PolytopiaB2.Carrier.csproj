@@ -46,7 +46,15 @@
     </ItemGroup>
 
     <ItemGroup>
+      <Folder Include="External\Data\AvatarData\" />
+      <Folder Include="External\Data\GameLogicData\" />
       <Folder Include="Migrations\" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <None Update="External\Data\**\*">
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </None>
     </ItemGroup>
 
 </Project>

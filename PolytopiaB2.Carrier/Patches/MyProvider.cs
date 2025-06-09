@@ -4,11 +4,13 @@ public class MyProvider : IPolytopiaDataProvider
 {
     public string LoadAvatarData(int version)
     {
-        return File.ReadAllText(@"C:\Steam\steamapps\common\The Battle of Polytopia\AvatarData\1.txt");
+        var avatarDataPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "External", "Data", "AvatarData", "1.txt");
+        return File.ReadAllText(avatarDataPath);
     }
 
     public string LoadGameLogicData(int version)
     {
-        return File.ReadAllText(@"C:\Steam\steamapps\common\The Battle of Polytopia\GameLogicData\19.txt");
+        var gameLogicDataPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "External", "Data", "GameLogicData", "19.txt");
+        return File.ReadAllText(gameLogicDataPath);
     }
 }
