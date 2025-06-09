@@ -116,79 +116,12 @@ public partial class PolytopiaHub : Hub
     }
 
     public ServerResponse<MatchmakingSubmissionViewModel> SubmitMatchmakingRequest(
-        SubmitMatchmakingBindingModel model)
+        SubmitMatchmakingBindingModel model) //TODO
     {
-        var participator = new ParticipatorViewModel()
-        {
-            UserId = Guid.Parse("d078d324-62f1-4d86-b603-5449986ace5c"),
-            Name = "Paranoia",
-            NumberOfFriends = 0,
-            NumberOfMultiplayerGames = 0,
-            GameVersion = new List<ClientGameVersionViewModel>(),
-            MultiplayerRating = 0,
-            SelectedTribe = 1,
-            SelectedTribeSkin = 1,
-            AvatarStateData =
-                Convert.FromBase64String("YgAAACgAAAAMAAAAAAAAABEAAAAAAAAAHgAAAAAAAAAfAAAAAAAAADIAAAC4SusA"),
-            InvitationState = PlayerInvitationState.Accepted
-        };
-
-
         var matchmakingSubmissionViewModel = new MatchmakingSubmissionViewModel();
-        matchmakingSubmissionViewModel.GameName = "lol";
-        matchmakingSubmissionViewModel.IsWaitingForOpponents = true;
 
-        var matchmakingGameSummaryViewModel = new MatchmakingGameSummaryViewModel();
-        matchmakingGameSummaryViewModel.Id = 124152;
-        matchmakingGameSummaryViewModel.GameMode = GameMode.Custom;
-        matchmakingGameSummaryViewModel.MapPreset = MapPreset.WaterWorld;
-        matchmakingGameSummaryViewModel.MapSize = 30;
-        matchmakingGameSummaryViewModel.OpponentCount = 1;
-        matchmakingGameSummaryViewModel.Name = "loltroll";
-        matchmakingGameSummaryViewModel.WithPickedTribe = true;
 
-        matchmakingGameSummaryViewModel.Participators = new List<ParticipatorViewModel>();
-        matchmakingGameSummaryViewModel.Participators.Add(participator);
-
-        matchmakingSubmissionViewModel.MatchmakingGameSummaryViewModel = matchmakingGameSummaryViewModel;
 
         return new ServerResponse<MatchmakingSubmissionViewModel>(matchmakingSubmissionViewModel);
-    }
-
-
-
-    public async Task SendCommandToOthers(Guid userId, CommandArrayViewModel commandArray)
-    {
-        await Clients.Others.SendAsync("OnCommand", commandArray);
-
-        var gameSummaryViewModel = new GameSummaryViewModel();
-
-        gameSummaryViewModel.GameId = Guid.Parse("597f332b-281c-464c-a8e7-6a79f4496360");
-        gameSummaryViewModel.State = GameSessionState.Started;
-        gameSummaryViewModel.DateCreated = DateTime.Now;
-        gameSummaryViewModel.TimeLimit = 360;
-        gameSummaryViewModel.DateLastCommand = DateTime.Now;
-        gameSummaryViewModel.DateLastEndTurn = DateTime.Now;
-
-        gameSummaryViewModel.Participators = new List<ParticipatorViewModel>();
-
-        var participator = new ParticipatorViewModel()
-        {
-            UserId = Guid.Parse("d078d324-62f1-4d86-b603-5449986ace5c"),
-            Name = "Paranoia",
-            NumberOfFriends = 0,
-            NumberOfMultiplayerGames = 0,
-            GameVersion = new List<ClientGameVersionViewModel>(),
-            MultiplayerRating = 0,
-            SelectedTribe = 1,
-            SelectedTribeSkin = 1,
-            AvatarStateData =
-                Convert.FromBase64String("YgAAACgAAAAMAAAAAAAAABEAAAAAAAAAHgAAAAAAAAAfAAAAAAAAADIAAAC4SusA"),
-            InvitationState = PlayerInvitationState.Invited
-        };
-
-        gameSummaryViewModel.Participators.Add(participator);
-
-
     }
 }

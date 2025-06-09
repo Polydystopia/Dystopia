@@ -23,7 +23,7 @@ using PolytopiaBackendBase.Game;
 using PolytopiaBackendBase.Game.ViewModels;
 using UnityEngine;
 
-TimeHook.Initialize();
+//TimeHook.Initialize();
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -99,8 +99,8 @@ app.MapGet("/", () => "Hello World!");
 
 Log.AddLogger(new MyLogger());
 
-var harmony = new Harmony("carrier");
-harmony.PatchAll();
+//var harmony = new Harmony("carrier");
+//harmony.PatchAll();
 
 using (var scope = app.Services.CreateScope())
 {

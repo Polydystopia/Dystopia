@@ -23,8 +23,6 @@ public static class PolydystopiaGameManager
 
     public static async Task<bool> CreateGame(LobbyGameViewModel lobby, IPolydystopiaGameRepository gameRepository)
     {
-        var client = new HotseatClient(); //TODO we should not need this
-
         var settings = new GameSettings();
 
         settings.ApplyLobbySettings(lobby);
@@ -70,39 +68,97 @@ public static class PolydystopiaGameManager
 
         var unused_player_states = new List<PlayerState>(); //?? Seems unused
 
-        var result = await client.CreateSession(settings, unused_player_states);
 
-        Update(client.GameState);
-
-        if (result == CreateSessionResult.Success)
+        GameState gameState = new GameState()
         {
-            var gamestate = client.GameState;
-
-            var gameViewModel = new GameViewModel();
-            gameViewModel.Id = lobby.Id;
-            gameViewModel.OwnerId = lobby.OwnerId;
-            gameViewModel.DateCreated = DateTime.Now; //?
-            gameViewModel.DateLastCommand = DateTime.Now; //?
-            gameViewModel.State = GameSessionState.Started;
-            gameViewModel.GameSettingsJson =
-                JsonConvert.SerializeObject(gamestate.Settings); //TODO: Check all serialized?
-            gameViewModel.InitialGameStateData =
-                SerializationHelpers.ToByteArray<GameState>(gamestate, gamestate.Version);
-            gameViewModel.CurrentGameStateData =
-                SerializationHelpers.ToByteArray<GameState>(gamestate, gamestate.Version);
-            gameViewModel.TimerSettings = new TimerSettings(); //??? Used?
-            gameViewModel.DateCurrentTurnDeadline = DateTime.Now.AddDays(1); //TODO: Calc
-            gameViewModel.GameContext = new GameContext(); //TODO?
-
-            await gameRepository.CreateAsync(gameViewModel);
-
-            return true;
+            Version = VersionManager.GameVersion,
+            Settings = settings,
+            PlayerStates = new List<PlayerState>()
+        };
+        for (int index = 0; index < settings.Players.Length; ++index)
+        {
+            PlayerData player = settings.Players[index];
+            if (player.type != PlayerData.Type.Bot)
+            {
+                PlayerState playerState = new PlayerState()
+                {
+                    Id = (byte)(index + 1),
+                    AccountId = player.profile.id,
+                    AutoPlay = player.type == PlayerData.Type.Bot,
+                    UserName = player.GetNameInternal(),
+                    tribe = player.tribe,
+                    tribeMix = player.tribeMix,
+                    hasChosenTribe = true,
+                    skinType = player.skinType
+                };
+                gameState.PlayerStates.Add(playerState);
+                Log.Verbose("Created player: {0}", (object)playerState);
+            }
+            else
+            {
+                GameStateUtils.AddAIOpponent(gameState, GameStateUtils.GetRandomPickableTribe(gameState),
+                    GameSettings.HandicapFromDifficulty(player.botDifficulty), player.skinType);
+            }
         }
 
-        return false;
+        GameStateUtils.SetPlayerColors(gameState);
+        GameStateUtils.AddNaturePlayer(gameState);
+        Log.Verbose("{0} Creating world...", (object)"Verbose");
+        ushort num = (ushort)Math.Max(settings.MapSize,
+            (int)MapDataExtensions.GetMinimumMapSize(gameState.PlayerCount));
+        gameState.Map = new MapData(num, num);
+        MapGeneratorSettings generatorSettings = settings.GetMapGeneratorSettings();
+        new MapGenerator().Generate(gameState, generatorSettings);
+        Log.Verbose("{0} Creating initial state for {1} players...", (object)"Verbose", (object)gameState.PlayerCount);
+
+        foreach (PlayerState playerState3 in gameState.PlayerStates)
+        {
+            foreach (PlayerState playerState4 in gameState.PlayerStates)
+                playerState3.aggressions[playerState4.Id] = 0;
+            if (playerState3.Id != byte.MaxValue)
+            {
+                playerState3.Currency = 5;
+                TribeData data3;
+                UnitData data4;
+                if (gameState.GameLogicData.TryGetData(playerState3.tribe, out data3) &&
+                    gameState.GameLogicData.TryGetData(data3.startingUnit.type, out data4))
+                {
+                    TileData tile = gameState.Map.GetTile(playerState3.startTile);
+                    UnitState unitState = ActionUtils.TrainUnitScored(gameState, playerState3, tile, data4);
+                    unitState.attacked = false;
+                    unitState.moved = false;
+                }
+            }
+        }
+
+        Log.Verbose("{0} Session created successfully", (object)"Verbose");
+        gameState.CommandStack.Add((CommandBase)new StartMatchCommand((byte)1));
+
+        Update(gameState);
+
+        var gameViewModel = new GameViewModel();
+        gameViewModel.Id = lobby.Id;
+        gameViewModel.OwnerId = lobby.OwnerId;
+        gameViewModel.DateCreated = DateTime.Now; //?
+        gameViewModel.DateLastCommand = DateTime.Now; //?
+        gameViewModel.State = GameSessionState.Started;
+        gameViewModel.GameSettingsJson =
+            JsonConvert.SerializeObject(gameState.Settings); //TODO: Check all serialized?
+        gameViewModel.InitialGameStateData =
+            SerializationHelpers.ToByteArray<GameState>(gameState, gameState.Version);
+        gameViewModel.CurrentGameStateData =
+            SerializationHelpers.ToByteArray<GameState>(gameState, gameState.Version);
+        gameViewModel.TimerSettings = new TimerSettings(); //??? Used?
+        gameViewModel.DateCurrentTurnDeadline = DateTime.Now.AddDays(1); //TODO: Calc
+        gameViewModel.GameContext = new GameContext(); //TODO?
+
+        await gameRepository.CreateAsync(gameViewModel);
+
+        return true;
     }
 
-    public static async Task<bool> Resign(ResignBindingModel model, IPolydystopiaGameRepository gameRepository, Guid senderId)
+    public static async Task<bool> Resign(ResignBindingModel model, IPolydystopiaGameRepository gameRepository,
+        Guid senderId)
     {
         var game = await gameRepository.GetByIdAsync(model.GameId);
 
@@ -130,9 +186,6 @@ public static class PolydystopiaGameManager
     public static async Task<bool> SendCommand(SendCommandBindingModel commandBindingModel,
         IPolydystopiaGameRepository gameRepository, Guid senderId)
     {
-        //GameManager.Instance = new GameManager();
-        //GameManager.Instance.SetHotseatClient();
-
         var game = await gameRepository.GetByIdAsync(commandBindingModel.GameId);
 
         if (game == null) return false;

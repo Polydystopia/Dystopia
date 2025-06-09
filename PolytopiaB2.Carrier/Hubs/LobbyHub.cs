@@ -16,13 +16,13 @@ public partial class PolytopiaHub
         var myLobbies = await _lobbyRepository.GetAllLobbiesByPlayer(_userGuid);
 
         //TODO: HACK!! Since I do not want to use two devices all the time. Change later.
-        foreach (var lobbyGameViewModel in myLobbies)
-        {
-            foreach (var participatorViewModel in lobbyGameViewModel.Participators)
-            {
-                participatorViewModel.InvitationState = PlayerInvitationState.Accepted;
-            }
-        }
+        //foreach (var lobbyGameViewModel in myLobbies)
+        //{
+        //    foreach (var participatorViewModel in lobbyGameViewModel.Participators)
+        //    {
+        //        participatorViewModel.InvitationState = PlayerInvitationState.Accepted;
+        //    }
+        //}
 
         var response = new GetLobbyInvitationsViewModel() { Lobbies = myLobbies };
         return new ServerResponse<GetLobbyInvitationsViewModel>(response);
@@ -167,11 +167,38 @@ public partial class PolytopiaHub
         return new ServerResponse<BoolResponseViewModel>(new BoolResponseViewModel() { Result = false });
     }
 
-    public ServerResponse<LobbyGameViewModel> RespondToLobbyInvitation(RespondToLobbyInvitation model) //TODO
+    public async Task<ServerResponse<LobbyGameViewModel>> RespondToLobbyInvitation(RespondToLobbyInvitation model)
     {
-        var response = new LobbyGameViewModel();
+        var lobby = await _lobbyRepository.GetByIdAsync(model.LobbyId);
 
-        return new ServerResponse<LobbyGameViewModel>(response);
+        if(lobby == null) return new ServerResponse<LobbyGameViewModel>() { Success = false };
+
+        var status = lobby.GetInvitationStateForPlayer(_userGuid);
+
+        if (status != PlayerInvitationState.Invited) return new ServerResponse<LobbyGameViewModel>() { Success = false };
+
+        foreach (var participatorViewModel in lobby.Participators)
+        {
+            if (participatorViewModel.UserId == _userGuid)
+            {
+                if (model.Accepted)
+                {
+                    participatorViewModel.InvitationState = PlayerInvitationState.Accepted;
+                    participatorViewModel.SelectedTribe = model.TribeId;
+                    participatorViewModel.SelectedTribeSkin = model.TribeSkinId;
+                }
+                else
+                {
+                    participatorViewModel.InvitationState = PlayerInvitationState.Declined;
+                }
+
+                await _lobbyRepository.UpdateAsync(lobby, LobbyUpdatedReason.PlayerRespondedToInvitation);
+
+                break;
+            }
+        }
+
+        return new ServerResponse<LobbyGameViewModel>(lobby);
     }
 
     public async Task<ServerResponse<LobbyGameViewModel>> StartLobbyGame(StartLobbyBindingModel model)
