@@ -8,7 +8,7 @@ namespace PolytopiaB2.Carrier.Hubs;
 
 public partial class PolytopiaHub
 {
-    public ServerResponse<PlayersStatusesResponse> GetFriendsStatuses()
+    public ServerResponse<PlayersStatusesResponse> GetFriendsStatuses() //TODO
     {
         var response = new PlayersStatusesResponse() { Statuses = new Dictionary<string, PlayerStatus>() };
         return new ServerResponse<PlayersStatusesResponse>(response);
@@ -35,6 +35,9 @@ public partial class PolytopiaHub
                 .SendAsync("OnFriendRequestAccepted", Guid.Parse(_userId)); //TODO: Also when user is offline
         }
 
+        var isRequestSenderOnline = FriendSubscribers.TryGetValue(model.FriendUserId, out var proxy);
+        if (isRequestSenderOnline) await proxy?.SendAsync("OnFriendRequestAccepted", model.FriendUserId)!;
+
         return new ServerResponse<ResponseViewModel>(new ResponseViewModel());
     }
 
@@ -51,6 +54,9 @@ public partial class PolytopiaHub
             await Clients.Group($"user-{model.FriendUserId}")
                 .SendAsync("OnFriendRequestReceived", Guid.Parse(_userId)); //TODO: Also when user is offline
         }
+
+        var isRequestReceiverOnline = FriendSubscribers.TryGetValue(model.FriendUserId, out var proxy);
+        if (isRequestReceiverOnline) await proxy?.SendAsync("OnFriendRequestReceived", model.FriendUserId)!;
 
         return new ServerResponse<ResponseViewModel>(new ResponseViewModel());
     }

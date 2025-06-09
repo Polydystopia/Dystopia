@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.SignalR;
 using Newtonsoft.Json;
 using Polytopia.Data;
 using PolytopiaB2.Carrier.Database.Game;
+using PolytopiaB2.Carrier.Hubs;
 using PolytopiaB2.Carrier.Patches;
 using PolytopiaBackendBase.Auth;
 using PolytopiaBackendBase.Game;
@@ -13,12 +14,9 @@ namespace PolytopiaB2.Carrier.Game;
 
 public static class PolydystopiaGameManager
 {
-    public static readonly Dictionary<Guid, List<(Guid id, IClientProxy proxy)>> GameSubscribers;
-
     static PolydystopiaGameManager()
     {
         PolytopiaDataManager.provider = new MyProvider();
-        GameSubscribers = new Dictionary<Guid, List<(Guid id, IClientProxy proxy)>>();
     }
 
     public static async Task<bool> CreateGame(LobbyGameViewModel lobby, IPolydystopiaGameRepository gameRepository)
@@ -271,7 +269,7 @@ public static class PolydystopiaGameManager
             command
         };
 
-        var gameSubscribers = GameSubscribers[gameId].Where(u => senderId == null || u.id != senderId)
+        var gameSubscribers = PolytopiaHub.GameSubscribers[gameId].Where(u => senderId == null || u.id != senderId)
             .Select(gs => gs.proxy).ToList();
         var tasks = gameSubscribers.Select(async gameSubscriber =>
         {
