@@ -35,6 +35,14 @@ public class PolydystopiaUserRepository : IPolydystopiaUserRepository
         return model;
     }
 
+    public async Task<bool> UpdateAsync(PolytopiaUserViewModel userViewModel)
+    {
+        _dbContext.Users.Update(userViewModel);
+        await _dbContext.SaveChangesAsync();
+
+        return true;
+    }
+
     public async Task<PolytopiaUserViewModel> CreateAsync(SteamID steamId, string username)
     {
         var steamIdString = steamId.ToString();

@@ -53,9 +53,20 @@ public partial class PolytopiaHub : Hub
         await base.OnConnectedAsync();
     }
 
-    public ServerResponse<ResponseViewModel> UpdateAvatar(AvatarBindingModel model)
+    public async Task<ServerResponse<ResponseViewModel>> UpdateAvatar(AvatarBindingModel model)
     {
         var responseViewModel = new ResponseViewModel();
+
+        var user = await _userRepository.GetByIdAsync(_userGuid);
+
+        if (user == null) return new ServerResponse<ResponseViewModel>(ErrorCode.UserNotFound, "User not found");
+
+        var validAvatar = SerializationHelpers.FromByteArray<AvatarState>(model.AvatarStateData, out _);
+        if (!validAvatar) return new ServerResponse<ResponseViewModel>(ErrorCode.InvalidUserCommand, "Avatar is invalid");
+
+        user.AvatarStateData = model.AvatarStateData;
+        await _userRepository.UpdateAsync(user);
+
         return new ServerResponse<ResponseViewModel>(responseViewModel);
     }
 
@@ -119,7 +130,6 @@ public partial class PolytopiaHub : Hub
         SubmitMatchmakingBindingModel model) //TODO
     {
         var matchmakingSubmissionViewModel = new MatchmakingSubmissionViewModel();
-
 
 
         return new ServerResponse<MatchmakingSubmissionViewModel>(matchmakingSubmissionViewModel);
