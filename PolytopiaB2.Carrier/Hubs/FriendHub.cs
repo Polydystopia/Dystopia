@@ -26,14 +26,10 @@ public partial class PolytopiaHub
     {
         var currentStatus = await _friendRepository.GetFriendshipStatusAsync(Guid.Parse(_userId), model.FriendUserId);
 
-        if (currentStatus == FriendshipStatus.ReceivedRequest)
-        {
-            await _friendRepository.SetFriendshipStatusAsync(Guid.Parse(_userId), model.FriendUserId,
-                FriendshipStatus.Accepted);
+        if (currentStatus != FriendshipStatus.ReceivedRequest) return new ServerResponse<ResponseViewModel>(new ResponseViewModel());
 
-            Clients.Group($"user-{model.FriendUserId}")
-                .SendAsync("OnFriendRequestAccepted", Guid.Parse(_userId)); //TODO: Also when user is offline
-        }
+        await _friendRepository.SetFriendshipStatusAsync(Guid.Parse(_userId), model.FriendUserId,
+            FriendshipStatus.Accepted);
 
         var isRequestSenderOnline = FriendSubscribers.TryGetValue(model.FriendUserId, out var friendProxy);
         if (isRequestSenderOnline)
@@ -55,14 +51,10 @@ public partial class PolytopiaHub
     {
         var currentStatus = await _friendRepository.GetFriendshipStatusAsync(Guid.Parse(_userId), model.FriendUserId);
 
-        if (currentStatus == FriendshipStatus.None)
-        {
-            await _friendRepository.SetFriendshipStatusAsync(Guid.Parse(_userId), model.FriendUserId,
-                FriendshipStatus.SentRequest);
+        if (currentStatus != FriendshipStatus.None) return new ServerResponse<ResponseViewModel>(new ResponseViewModel());
 
-            await Clients.Group($"user-{model.FriendUserId}")
-                .SendAsync("OnFriendRequestReceived", Guid.Parse(_userId)); //TODO: Also when user is offline
-        }
+        await _friendRepository.SetFriendshipStatusAsync(Guid.Parse(_userId), model.FriendUserId,
+            FriendshipStatus.SentRequest);
 
         var isRequestReceiverOnline = FriendSubscribers.TryGetValue(model.FriendUserId, out var friendProxy);
         if (isRequestReceiverOnline)

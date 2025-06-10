@@ -5,7 +5,6 @@ using PolytopiaBackendBase.Game;
 
 namespace PolytopiaB2.Carrier.Database.Friendship;
 
-//TODO: Friendships are kinda bugged rn since we can only project SentRequest or ReceivedRequest, we need to check who called this method and set the status accordingly. This does not work for the case where the user1Id is the one who sent the request.
 public class FriendshipRepository : IFriendshipRepository
 {
     private readonly PolydystopiaDbContext _dbContext;
@@ -17,18 +16,13 @@ public class FriendshipRepository : IFriendshipRepository
 
     public async Task<FriendshipStatus> GetFriendshipStatusAsync(Guid user1Id, Guid user2Id)
     {
-        var forUser = user1Id;
-
-        if (user1Id.CompareTo(user2Id) > 0)
-            (user1Id, user2Id) = (user2Id, user1Id);
-
         var friendship = await _dbContext.Friends
-            .FirstOrDefaultAsync(f => f.UserId1 == user1Id && f.UserId2 == user2Id);
+            .FirstOrDefaultAsync(f =>
+                (f.UserId1 == user1Id && f.UserId2 == user2Id) || (f.UserId1 == user2Id && f.UserId2 == user1Id));
 
         if (friendship?.Status == FriendshipStatus.SentRequest)
         {
-            // Since we can only project SentRequest or ReceivedRequest, we need to check who called this method and set the status accordingly
-            friendship.Status = user1Id == forUser ? FriendshipStatus.SentRequest : FriendshipStatus.ReceivedRequest;
+            return friendship.UserId1 == user1Id ? FriendshipStatus.SentRequest : FriendshipStatus.ReceivedRequest;
         }
 
         return friendship?.Status ?? FriendshipStatus.None;
@@ -36,11 +30,9 @@ public class FriendshipRepository : IFriendshipRepository
 
     public async Task<bool> SetFriendshipStatusAsync(Guid user1Id, Guid user2Id, FriendshipStatus status)
     {
-        if (user1Id.CompareTo(user2Id) > 0)
-            (user1Id, user2Id) = (user2Id, user1Id);
-
         var friendship = await _dbContext.Friends
-            .FirstOrDefaultAsync(f => f.UserId1 == user1Id && f.UserId2 == user2Id);
+            .FirstOrDefaultAsync(f =>
+                (f.UserId1 == user1Id && f.UserId2 == user2Id) || (f.UserId1 == user2Id && f.UserId2 == user1Id));
 
         if (friendship == null)
         {
@@ -50,7 +42,7 @@ public class FriendshipRepository : IFriendshipRepository
                 UserId2 = user2Id,
                 Status = status,
                 CreatedAt = DateTime.UtcNow,
-                UpdatedAt = DateTime.UtcNow
+                UpdatedAt = DateTime.UtcNow,
             };
             _dbContext.Friends.Add(friendship);
         }
@@ -87,10 +79,10 @@ public class FriendshipRepository : IFriendshipRepository
             var friend = new PolytopiaFriendViewModel();
             friend.User = user;
             friend.FriendshipStatus = await GetFriendshipStatusAsync(userId, user.PolytopiaId);
-            
+
             friendViewModels.Add(friend);
         }
-        
+
         return friendViewModels;
     }
 
@@ -100,7 +92,8 @@ public class FriendshipRepository : IFriendshipRepository
             (user1Id, user2Id) = (user2Id, user1Id);
 
         var friendship = await _dbContext.Friends
-            .FirstOrDefaultAsync(f => f.UserId1 == user1Id && f.UserId2 == user2Id);
+            .FirstOrDefaultAsync(f =>
+                (f.UserId1 == user1Id && f.UserId2 == user2Id) || (f.UserId1 == user2Id && f.UserId2 == user1Id));
 
         if (friendship != null)
         {
