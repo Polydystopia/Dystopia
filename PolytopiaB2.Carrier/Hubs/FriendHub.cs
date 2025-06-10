@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.SignalR;
+using PolytopiaB2.Carrier.Database.Friendship;
 using PolytopiaBackendBase;
 using PolytopiaBackendBase.Auth;
 using PolytopiaBackendBase.Common;
@@ -26,7 +27,8 @@ public partial class PolytopiaHub
     {
         var currentStatus = await _friendRepository.GetFriendshipStatusAsync(Guid.Parse(_userId), model.FriendUserId);
 
-        if (currentStatus != FriendshipStatus.ReceivedRequest) return new ServerResponse<ResponseViewModel>(new ResponseViewModel());
+        if (currentStatus != FriendshipStatus.ReceivedRequest)
+            return new ServerResponse<ResponseViewModel>(new ResponseViewModel());
 
         await _friendRepository.SetFriendshipStatusAsync(Guid.Parse(_userId), model.FriendUserId,
             FriendshipStatus.Accepted);
@@ -51,7 +53,8 @@ public partial class PolytopiaHub
     {
         var currentStatus = await _friendRepository.GetFriendshipStatusAsync(Guid.Parse(_userId), model.FriendUserId);
 
-        if (currentStatus != FriendshipStatus.None) return new ServerResponse<ResponseViewModel>(new ResponseViewModel());
+        if (currentStatus != FriendshipStatus.None)
+            return new ServerResponse<ResponseViewModel>(new ResponseViewModel());
 
         await _friendRepository.SetFriendshipStatusAsync(Guid.Parse(_userId), model.FriendUserId,
             FriendshipStatus.SentRequest);
@@ -75,15 +78,13 @@ public partial class PolytopiaHub
     {
         var currentStatus = await _friendRepository.GetFriendshipStatusAsync(Guid.Parse(_userId), model.FriendUserId);
 
-        if (currentStatus == FriendshipStatus.Accepted)
+        if (currentStatus
+            is FriendshipStatus.Accepted
+            or FriendshipStatus.SentRequest
+            or FriendshipStatus.ReceivedRequest)
         {
             await _friendRepository.SetFriendshipStatusAsync(Guid.Parse(_userId), model.FriendUserId,
                 FriendshipStatus.None);
-        }
-        else if (currentStatus == FriendshipStatus.ReceivedRequest)
-        {
-            await _friendRepository.SetFriendshipStatusAsync(Guid.Parse(_userId), model.FriendUserId,
-                FriendshipStatus.None); //TODO: Set rejected
         }
 
         var isRequestReceiverOnline = FriendSubscribers.TryGetValue(model.FriendUserId, out var friendProxy);

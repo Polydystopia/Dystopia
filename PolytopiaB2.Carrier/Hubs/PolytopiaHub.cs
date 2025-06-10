@@ -50,6 +50,9 @@ public partial class PolytopiaHub : Hub
 
         await Groups.AddToGroupAsync(Context.ConnectionId, $"user-{_userId}");
 
+        SubscribeToFriends();
+        SubscribeToParticipatingGameSummaries();
+
         await base.OnConnectedAsync();
     }
 

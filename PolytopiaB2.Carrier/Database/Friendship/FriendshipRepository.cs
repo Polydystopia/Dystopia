@@ -46,6 +46,10 @@ public class FriendshipRepository : IFriendshipRepository
             };
             _dbContext.Friends.Add(friendship);
         }
+        else if (status is FriendshipStatus.None or FriendshipStatus.Rejected)
+        {
+            return await DeleteFriendshipAsync(user1Id, user2Id);
+        }
         else
         {
             friendship.Status = status;
@@ -88,9 +92,6 @@ public class FriendshipRepository : IFriendshipRepository
 
     public async Task<bool> DeleteFriendshipAsync(Guid user1Id, Guid user2Id)
     {
-        if (user1Id.CompareTo(user2Id) > 0)
-            (user1Id, user2Id) = (user2Id, user1Id);
-
         var friendship = await _dbContext.Friends
             .FirstOrDefaultAsync(f =>
                 (f.UserId1 == user1Id && f.UserId2 == user2Id) || (f.UserId1 == user2Id && f.UserId2 == user1Id));
