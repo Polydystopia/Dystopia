@@ -38,7 +38,7 @@ public partial class PolytopiaHub
         var isRequestSenderOnline = FriendSubscribers.TryGetValue(model.FriendUserId, out var friendProxy);
         if (isRequestSenderOnline)
         {
-            await friendProxy?.SendAsync("OnFriendRequestAccepted", model.FriendUserId)!;
+            await friendProxy?.SendAsync("OnFriendRequestAccepted", Guid.Parse(_userId))!;
 
             var friendFriends = await _friendRepository.GetFriendsForUserAsync(model.FriendUserId);
             await friendProxy?.SendAsync("OnFriendsUpdated", friendFriends)!;
@@ -67,7 +67,7 @@ public partial class PolytopiaHub
         var isRequestReceiverOnline = FriendSubscribers.TryGetValue(model.FriendUserId, out var friendProxy);
         if (isRequestReceiverOnline)
         {
-            await friendProxy?.SendAsync("OnFriendRequestReceived", model.FriendUserId)!;
+            await friendProxy?.SendAsync("OnFriendRequestReceived", Guid.Parse(_userId))!;
 
             var friendFriends = await _friendRepository.GetFriendsForUserAsync(model.FriendUserId);
             await friendProxy?.SendAsync("OnFriendsUpdated", friendFriends)!;
