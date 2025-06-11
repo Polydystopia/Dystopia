@@ -56,6 +56,37 @@ public partial class PolytopiaHub : Hub
         await base.OnConnectedAsync();
     }
 
+    public override async Task OnDisconnectedAsync(Exception? exception)
+    {
+        OnlinePlayers.Remove(_userGuid);
+
+        FriendSubscribers.Remove(_userGuid);
+
+        foreach (var gameSubscription in GameSubscribers.Values)
+        {
+            gameSubscription.RemoveAll(x => x.id == _userGuid);
+        }
+
+        foreach (var lobbySubscription in LobbySubscribers.Values)
+        {
+            lobbySubscription.RemoveAll(x => x.id == _userGuid);
+        }
+
+        var emptyGameKeys = GameSubscribers.Where(kvp => kvp.Value.Count == 0).Select(kvp => kvp.Key).ToList();
+        foreach (var key in emptyGameKeys)
+        {
+            GameSubscribers.Remove(key);
+        }
+
+        var emptyLobbyKeys = LobbySubscribers.Where(kvp => kvp.Value.Count == 0).Select(kvp => kvp.Key).ToList();
+        foreach (var key in emptyLobbyKeys)
+        {
+            LobbySubscribers.Remove(key);
+        }
+
+        await base.OnDisconnectedAsync(exception);
+    }
+
     public ServerResponse<TribeRatingsViewModel> GetTribeRatings()
     {
         var response = new TribeRatingsViewModel();
