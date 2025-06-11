@@ -1,5 +1,4 @@
 ﻿using Microsoft.AspNetCore.SignalR;
-using PolytopiaB2.Carrier.Database.Friendship;
 using PolytopiaBackendBase;
 using PolytopiaBackendBase.Auth;
 using PolytopiaBackendBase.Common;
@@ -9,10 +8,44 @@ namespace PolytopiaB2.Carrier.Hubs;
 
 public partial class PolytopiaHub
 {
-    public ServerResponse<PlayersStatusesResponse> GetFriendsStatuses() //TODO
+    public async Task<ServerResponse<PlayersStatusesResponse>> GetFriendsStatuses()
     {
-        var response = new PlayersStatusesResponse() { Statuses = new Dictionary<string, PlayerStatus>() };
-        return new ServerResponse<PlayersStatusesResponse>(response);
+        var statuses = new Dictionary<string, PlayerStatus>();
+
+        var myFriends = await _friendRepository.GetFriendsForUserAsync(Guid.Parse(_userId));
+
+        foreach (var friend in myFriends)
+        {
+            bool foundInGame = false;
+
+            foreach (var game in GameSubscribers)
+            {
+                foreach (var playerInGame in game.Value)
+                {
+                    if (playerInGame.id == friend.User.PolytopiaId)
+                    {
+                        statuses[friend.User.PolytopiaId.ToString()] = new PlayerStatus()
+                            { GameId = game.Key, PlayerOnlineStatus = PlayerOnlineStatus.PlayingGame };
+                        foundInGame = true;
+                        break;
+                    }
+                }
+                if (foundInGame) break;
+            }
+
+            if (OnlinePlayers.Contains(friend.User.PolytopiaId))
+            {
+                statuses[friend.User.PolytopiaId.ToString()] = new PlayerStatus()
+                    { PlayerOnlineStatus = PlayerOnlineStatus.Online };
+            }
+            else
+            {
+                statuses[friend.User.PolytopiaId.ToString()] = new PlayerStatus()
+                    { PlayerOnlineStatus = PlayerOnlineStatus.Offline };
+            }
+        }
+
+        return new ServerResponse<PlayersStatusesResponse>(new PlayersStatusesResponse() { Statuses = statuses });
     }
 
     public async Task<ServerResponseList<PolytopiaFriendViewModel>> GetFriends()
