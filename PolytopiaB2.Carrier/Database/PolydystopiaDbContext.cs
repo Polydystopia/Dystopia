@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
 using PolytopiaB2.Carrier.Database.Friendship;
+using PolytopiaB2.Carrier.Database.Matchmaking;
 using PolytopiaBackendBase.Auth;
 using PolytopiaBackendBase.Challengermode.Data;
 using PolytopiaBackendBase.Game;
@@ -14,6 +15,7 @@ public class PolydystopiaDbContext : DbContext
     public DbSet<FriendshipEntity> Friends { get; set; }
     public DbSet<LobbyGameViewModel> Lobbies { get; set; }
     public DbSet<GameViewModel> Games { get; set; }
+    public DbSet<MatchmakingEntity> Matchmaking { get; set; }
 
     public PolydystopiaDbContext(DbContextOptions<PolydystopiaDbContext> options) : base(options)
     {
@@ -94,12 +96,10 @@ public class PolydystopiaDbContext : DbContext
 
         lobbyEntity.HasKey(e => e.Id);
 
-        // Configure GameContext as JSON since it's a complex object
         lobbyEntity.Property(e => e.GameContext).HasConversion(
             v => v != null ? JsonConvert.SerializeObject(v, jsonSettings) : null,
             v => !string.IsNullOrEmpty(v) ? JsonConvert.DeserializeObject<GameContext>(v, jsonSettings) : null);
 
-        // Configure JSON serialization for complex properties
         lobbyEntity.Property(e => e.DisabledTribes).HasConversion(
             v => JsonConvert.SerializeObject(v, jsonSettings),
             v => JsonConvert.DeserializeObject<List<int>>(v, jsonSettings));
@@ -126,5 +126,20 @@ public class PolydystopiaDbContext : DbContext
             v => v != null ? JsonConvert.SerializeObject(v, jsonSettings) : null,
             v => !string.IsNullOrEmpty(v) ? JsonConvert.DeserializeObject<PolytopiaBackendBase.Timers.TimerSettings>(v, jsonSettings) : null);
 
+
+
+        var matchmakingEntity = modelBuilder.Entity<MatchmakingEntity>();
+
+        matchmakingEntity.HasKey(e => e.Id);
+
+        matchmakingEntity
+            .HasOne(m => m.LobbyGameViewModel)
+            .WithMany()
+            .HasForeignKey(m => m.LobbyGameViewModelId)
+            .OnDelete(DeleteBehavior.SetNull);
+
+        matchmakingEntity.Property(e => e.PlayerIds).HasConversion(
+            v => JsonConvert.SerializeObject(v, jsonSettings),
+            v => JsonConvert.DeserializeObject<List<Guid>>(v, jsonSettings));
     }
 }

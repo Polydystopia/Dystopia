@@ -6,6 +6,7 @@ using PolytopiaB2.Carrier.Database;
 using PolytopiaB2.Carrier.Database.Friendship;
 using PolytopiaB2.Carrier.Database.Game;
 using PolytopiaB2.Carrier.Database.Lobby;
+using PolytopiaB2.Carrier.Database.Matchmaking;
 using PolytopiaB2.Carrier.Database.User;
 using PolytopiaB2.Carrier.Game;
 using PolytopiaB2.Carrier.Patches;
@@ -24,6 +25,7 @@ public partial class PolytopiaHub : Hub
     private readonly IFriendshipRepository _friendRepository;
     private readonly IPolydystopiaLobbyRepository _lobbyRepository;
     private readonly IPolydystopiaGameRepository _gameRepository;
+    private readonly IPolydystopiaMatchmakingRepository _matchmakingRepository;
 
     private string _userId => Context.User?.FindFirst("nameid")?.Value ?? string.Empty;
     private string _username => Context.User?.FindFirst("unique_name")?.Value ?? string.Empty;
@@ -32,12 +34,14 @@ public partial class PolytopiaHub : Hub
     private Guid _userGuid => Guid.Parse(_userId);
 
     public PolytopiaHub(IPolydystopiaUserRepository userRepository, IFriendshipRepository friendRepository,
-        IPolydystopiaLobbyRepository lobbyRepository, IPolydystopiaGameRepository gameRepository)
+        IPolydystopiaLobbyRepository lobbyRepository, IPolydystopiaGameRepository gameRepository,
+        IPolydystopiaMatchmakingRepository matchmakingRepository)
     {
         _userRepository = userRepository;
         _friendRepository = friendRepository;
         _lobbyRepository = lobbyRepository;
         _gameRepository = gameRepository;
+        _matchmakingRepository = matchmakingRepository;
     }
 
     public override async Task OnConnectedAsync()
@@ -132,7 +136,7 @@ public partial class PolytopiaHub : Hub
     }
 
     public ServerResponse<MatchmakingSubmissionViewModel> SubmitMatchmakingRequest(
-        SubmitMatchmakingBindingModel model) //TODO
+        SubmitMatchmakingBindingModel model)
     {
         var matchmakingSubmissionViewModel = new MatchmakingSubmissionViewModel();
 
