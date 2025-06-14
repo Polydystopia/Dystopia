@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using PolytopiaB2.Carrier.Database;
 
@@ -10,9 +11,11 @@ using PolytopiaB2.Carrier.Database;
 namespace PolytopiaB2.Carrier.Migrations
 {
     [DbContext(typeof(PolydystopiaDbContext))]
-    partial class PolydystopiaDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250614070233_AddMatchmakingEntity")]
+    partial class AddMatchmakingEntity
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "7.0.20");
