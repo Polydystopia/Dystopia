@@ -91,7 +91,7 @@ public partial class PolytopiaHub : Hub
         await base.OnDisconnectedAsync(exception);
     }
 
-    public ServerResponse<TribeRatingsViewModel> GetTribeRatings()
+    public ServerResponse<TribeRatingsViewModel> GetTribeRatings() //TODO
     {
         var response = new TribeRatingsViewModel();
         response.PolytopiaUserId = Guid.Parse(_userId);
@@ -99,13 +99,7 @@ public partial class PolytopiaHub : Hub
         return new ServerResponse<TribeRatingsViewModel>(response);
     }
 
-    public ServerResponse<PlayersStatusesResponse> LeaveAllMatchmakingGames()
-    {
-        var response = new PlayersStatusesResponse() { Statuses = new Dictionary<string, PlayerStatus>() };
-        return new ServerResponse<PlayersStatusesResponse>(response);
-    }
-
-    public ServerResponse<GameSummaryViewModel> GetGameSummaryViewModelByIdAsync(Guid gameId)
+    public ServerResponse<GameSummaryViewModel> GetGameSummaryViewModelByIdAsync(Guid gameId) //TODO
     {
         var gameSummaryViewModel = new GameSummaryViewModel();
 
@@ -133,14 +127,5 @@ public partial class PolytopiaHub : Hub
         gameSummaryViewModel.Participators.Add(participator);
 
         return new ServerResponse<GameSummaryViewModel>(gameSummaryViewModel);
-    }
-
-    public ServerResponse<MatchmakingSubmissionViewModel> SubmitMatchmakingRequest(
-        SubmitMatchmakingBindingModel model)
-    {
-        var matchmakingSubmissionViewModel = new MatchmakingSubmissionViewModel();
-
-
-        return new ServerResponse<MatchmakingSubmissionViewModel>(matchmakingSubmissionViewModel);
     }
 }

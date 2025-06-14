@@ -5,6 +5,28 @@ namespace PolytopiaB2.Carrier.Database.Matchmaking;
 
 public class MatchmakingEntity
 {
+    public MatchmakingEntity()
+    {
+
+    }
+
+    public MatchmakingEntity(LobbyGameViewModel lobbyGameViewModel, int version, int mapSize, MapPreset mapPreset, GameMode gameMode, int scoreLimit, int timeLimit, Platform platform, bool allowCrossPlay, int maxPlayers)
+    {
+        Id = Guid.NewGuid();
+        LobbyGameViewModel = lobbyGameViewModel;
+        LobbyGameViewModelId = lobbyGameViewModel.Id;
+        Version = version;
+        MapSize = mapSize;
+        MapPreset = mapPreset;
+        GameMode = gameMode;
+        ScoreLimit = scoreLimit;
+        TimeLimit = timeLimit;
+        Platform = platform;
+        AllowCrossPlay = allowCrossPlay;
+        MaxPlayers = maxPlayers;
+        PlayerIds = new List<Guid>();
+    }
+
     public Guid Id { get; set; }
 
     public Guid? LobbyGameViewModelId { get; set; }

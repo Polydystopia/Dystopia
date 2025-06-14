@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.SignalR;
 using PolytopiaB2.Carrier.Game;
+using PolytopiaB2.Carrier.Game.Lobby;
 using PolytopiaBackendBase;
 using PolytopiaBackendBase.Auth;
 using PolytopiaBackendBase.Common;
@@ -30,54 +31,12 @@ public partial class PolytopiaHub
 
     public async Task<ServerResponse<LobbyGameViewModel>> CreateLobby(CreateLobbyBindingModel model)
     {
-        var response = new LobbyGameViewModel();
-        response.Id = Guid.NewGuid();
-        response.UpdatedReason = LobbyUpdatedReason.Created;
-        response.DateCreated = DateTime.Now;
-        response.DateModified = DateTime.Now;
-        response.Name = "Love you " + model.GameName; //TODO: Cooler names
-        response.MapPreset = model.MapPreset;
-        response.MapSize = model.MapSize;
-        response.OpponentCount = model.OpponentCount;
-        response.GameMode = model.GameMode;
-        response.OwnerId = _userGuid;
-        response.DisabledTribes = model.DisabledTribes;
-        //response.StartedGameId = Guid.Parse("597f332b-281c-464c-a8e7-6a79f4496360");
-        response.IsPersistent = model.IsPersistent; //?
-        response.IsSharable = true; //?
-        response.TimeLimit = model.TimeLimit;
-        response.ScoreLimit = model.ScoreLimit;
-        response.InviteLink = "https://play.polytopia.io/lobby/4114-281c-464c-a8e7-6a79f4496360"; //TODO ?
-        //response.MatchmakingGameId = response.Id.GetHashCode(); //?
-        //response.ChallengermodeGameId = response.Id; //?
-        //response.StartTime = DateTime.Now; //?
-        response.GameContext = new GameContext()
-        {
-            ExternalMatchId = response.Id, //?
-            ExternalTournamentId = response.Id, //?
-        };
-        response.Participators = new List<ParticipatorViewModel>();
-
         var ownUser = await _userRepository.GetByIdAsync(_userGuid);
+        if (ownUser == null)
+            return new ServerResponse<LobbyGameViewModel>()
+                { Success = false, ErrorCode = ErrorCode.UserNotFound, ErrorMessage = "Own user not found." };
 
-        if (ownUser == null) return new ServerResponse<LobbyGameViewModel>(response) { Success = false };
-
-        response.Participators.Add(new ParticipatorViewModel()
-        {
-            UserId = _userGuid,
-            Name = ownUser.GetUniqueNameInternal(),
-            NumberOfFriends = ownUser.NumFriends ?? 0,
-            NumberOfMultiplayerGames = ownUser.NumMultiplayergames ?? 0,
-            GameVersion = ownUser.GameVersions,
-            MultiplayerRating = ownUser.MultiplayerRating ?? 0,
-            SelectedTribe = model.OwnerTribe,
-            SelectedTribeSkin = model.OwnerTribeSkin,
-            AvatarStateData = ownUser.AvatarStateData,
-            InvitationState = PlayerInvitationState.Accepted
-        });
-
-
-        response.Bots = new List<int>();
+        var response = PolydystopiaLobbyManager.CreateLobby(model, ownUser);
 
         await _lobbyRepository.CreateAsync(response);
 
@@ -171,11 +130,12 @@ public partial class PolytopiaHub
     {
         var lobby = await _lobbyRepository.GetByIdAsync(model.LobbyId);
 
-        if(lobby == null) return new ServerResponse<LobbyGameViewModel>() { Success = false };
+        if (lobby == null) return new ServerResponse<LobbyGameViewModel>() { Success = false };
 
         var status = lobby.GetInvitationStateForPlayer(_userGuid);
 
-        if (status != PlayerInvitationState.Invited) return new ServerResponse<LobbyGameViewModel>() { Success = false };
+        if (status != PlayerInvitationState.Invited)
+            return new ServerResponse<LobbyGameViewModel>() { Success = false };
 
         foreach (var participatorViewModel in lobby.Participators)
         {
