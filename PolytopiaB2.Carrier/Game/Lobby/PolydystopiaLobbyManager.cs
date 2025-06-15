@@ -61,6 +61,17 @@ public static class PolydystopiaLobbyManager
 
     public static LobbyGameViewModel CreateLobby(SubmitMatchmakingBindingModel model, PolytopiaUserViewModel ownUser)
     {
+        var opponents = (short)(model.OpponentCount != 0 ? model.OpponentCount : Random.Shared.Next(2, 9));
+
+        var mapSize = opponents switch
+        {
+            1 => MapSize.Tiny.ToMapWidth(),
+            2 => MapSize.Small.ToMapWidth(),
+            3 => MapSize.Normal.ToMapWidth(),
+            >= 4 => MapSize.Large.ToMapWidth(),
+            _ => 0
+        };
+
         var gameId = Guid.NewGuid();
 
         var lobby = new LobbyGameViewModel();
@@ -69,10 +80,12 @@ public static class PolydystopiaLobbyManager
         lobby.DateCreated = DateTime.Now;
         lobby.DateModified = DateTime.Now;
         lobby.Name = "Love you " + Guid.NewGuid(); //TODO: Cooler names
-        lobby.MapPreset = model.MapPreset;
-        lobby.MapSize = model.MapSize;
-        lobby.OpponentCount = model.OpponentCount;
-        lobby.GameMode = model.GameMode;
+        lobby.MapPreset = model.MapPreset == MapPreset.None
+            ? Enum.GetValues<MapPreset>().Where(x => x != MapPreset.None).OrderBy(x => Random.Shared.Next()).First()
+            : model.MapPreset;
+        lobby.MapSize = mapSize;
+        lobby.OpponentCount = opponents;
+        lobby.GameMode = model.GameMode != GameMode.None ? model.GameMode : GameMode.Domination; //TODO rdm
         lobby.OwnerId = ownUser.PolytopiaId;
         lobby.DisabledTribes = new List<int>();
         //response.StartedGameId = Guid.Parse("597f332b-281c-464c-a8e7-6a79f4496360");
