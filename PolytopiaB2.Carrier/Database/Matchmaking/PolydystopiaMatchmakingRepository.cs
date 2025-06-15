@@ -20,6 +20,13 @@ public class PolydystopiaMatchmakingRepository : IPolydystopiaMatchmakingReposit
         return matchmakingEntity;
     }
 
+    public async Task<MatchmakingEntity> UpdateAsync(MatchmakingEntity matchmakingEntity)
+    {
+        _dbContext.Matchmaking.Update(matchmakingEntity);
+        await _dbContext.SaveChangesAsync();
+        return matchmakingEntity;
+    }
+
     public async Task<List<MatchmakingEntity>> GetAllFittingLobbies(Guid playerId, int version, int mapSize, MapPreset mapPreset, GameMode gameMode, int scoreLimit,
         int timeLimit, Platform platform, bool allowCrossPlay)
     {

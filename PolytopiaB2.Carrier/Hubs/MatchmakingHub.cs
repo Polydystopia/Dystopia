@@ -12,7 +12,7 @@ public partial class PolytopiaHub
     public async Task<ServerResponse<MatchmakingSubmissionViewModel>> SubmitMatchmakingRequest(
         SubmitMatchmakingBindingModel model)
     {
-        var matchmakingSubmissionViewModel = await PolydystopiaMatchmakingManager.QueuePlayer(_userGuid, model, _matchmakingRepository, _userRepository);
+        var matchmakingSubmissionViewModel = await PolydystopiaMatchmakingManager.QueuePlayer(_userGuid, model, Clients.Caller, _matchmakingRepository, _userRepository, _lobbyRepository);
 
         return new ServerResponse<MatchmakingSubmissionViewModel>(matchmakingSubmissionViewModel);
     }

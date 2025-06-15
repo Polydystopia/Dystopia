@@ -81,7 +81,7 @@ public static class PolydystopiaLobbyManager
         lobby.TimeLimit = model.TimeLimit;
         lobby.ScoreLimit = model.ScoreLimit;
         lobby.InviteLink = "https://play.polytopia.io/lobby/4114-281c-464c-a8e7-6a79f4496360"; //TODO ?
-        lobby.MatchmakingGameId = gameId.GetHashCode(); //?
+        lobby.MatchmakingGameId = Random.Shared.NextInt64(1000000000L, long.MaxValue);
         //response.ChallengermodeGameId = response.Id; //?
         //response.StartTime = DateTime.Now; //?
         lobby.GameContext = new GameContext()

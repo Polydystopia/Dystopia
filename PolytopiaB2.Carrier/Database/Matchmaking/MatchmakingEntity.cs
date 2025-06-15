@@ -24,7 +24,7 @@ public class MatchmakingEntity
         Platform = platform;
         AllowCrossPlay = allowCrossPlay;
         MaxPlayers = maxPlayers;
-        PlayerIds = new List<Guid>();
+        PlayerIds = lobbyGameViewModel.Participators.Select(p => p.UserId).ToList();
     }
 
     public Guid Id { get; set; }

@@ -1,4 +1,6 @@
-﻿using PolytopiaB2.Carrier.Database.Matchmaking;
+﻿using Microsoft.AspNetCore.SignalR;
+using PolytopiaB2.Carrier.Database.Lobby;
+using PolytopiaB2.Carrier.Database.Matchmaking;
 using PolytopiaB2.Carrier.Database.User;
 using PolytopiaB2.Carrier.Game.Lobby;
 using PolytopiaBackendBase.Game;
@@ -7,7 +9,7 @@ namespace PolytopiaB2.Carrier.Game.Matchmaking;
 
 public static class PolydystopiaMatchmakingManager
 {
-    public static async Task<MatchmakingSubmissionViewModel?> QueuePlayer(Guid playerId, SubmitMatchmakingBindingModel model, IPolydystopiaMatchmakingRepository _matchmakingRepository, IPolydystopiaUserRepository _userRepository)
+    public static async Task<MatchmakingSubmissionViewModel?> QueuePlayer(Guid playerId, SubmitMatchmakingBindingModel model, IClientProxy ownProxy, IPolydystopiaMatchmakingRepository _matchmakingRepository, IPolydystopiaUserRepository _userRepository, IPolydystopiaLobbyRepository _lobbyRepository)
     {
         var fittingLobbies = await _matchmakingRepository.GetAllFittingLobbies(playerId, model.Version, model.MapSize, model.MapPreset, model.GameMode, model.ScoreLimit, model.TimeLimit, model.Platform, model.AllowCrossPlay);
 
@@ -21,26 +23,28 @@ public static class PolydystopiaMatchmakingManager
         if (selectedLobby == null)
         {
             var lobbyGameViewModel = PolydystopiaLobbyManager.CreateLobby(model, ownUser);
+            var participator = new ParticipatorViewModel()
+            {
+                UserId = ownUser.PolytopiaId,
+                Name = ownUser.GetUniqueNameInternal(),
+                NumberOfFriends = ownUser.NumFriends ?? 0,
+                NumberOfMultiplayerGames = ownUser.NumMultiplayergames ?? 0,
+                GameVersion = ownUser.GameVersions,
+                MultiplayerRating = ownUser.MultiplayerRating ?? 0,
+                SelectedTribe = 0, //?
+                SelectedTribeSkin = 0, //?
+                AvatarStateData = ownUser.AvatarStateData,
+                InvitationState = PlayerInvitationState.Invited
+            };
+
+            lobbyGameViewModel.Participators.Add(participator);
 
             selectedLobby = new MatchmakingEntity(lobbyGameViewModel, model.Version, model.MapSize, model.MapPreset, model.GameMode, model.ScoreLimit, model.TimeLimit, model.Platform, model.AllowCrossPlay, model.OpponentCount + 1);
+            await _lobbyRepository.CreateAsync(lobbyGameViewModel);
             await _matchmakingRepository.CreateAsync(selectedLobby);
         }
 
-        selectedLobby.LobbyGameViewModel.Participators.Add(new ParticipatorViewModel()
-        {
-            UserId = ownUser.PolytopiaId,
-            Name = ownUser.GetUniqueNameInternal(),
-            NumberOfFriends = ownUser.NumFriends ?? 0,
-            NumberOfMultiplayerGames = ownUser.NumMultiplayergames ?? 0,
-            GameVersion = ownUser.GameVersions,
-            MultiplayerRating = ownUser.MultiplayerRating ?? 0,
-            SelectedTribe = model.SelectedTribe,
-            SelectedTribeSkin = 0, //?
-            AvatarStateData = ownUser.AvatarStateData,
-            InvitationState = PlayerInvitationState.Accepted
-        });
-
-        selectedLobby.PlayerIds.Add(playerId);
+        await ownProxy.SendAsync("OnLobbyInvitation", selectedLobby.LobbyGameViewModel);
 
         var submission = new MatchmakingSubmissionViewModel();
         submission.GameName = selectedLobby.LobbyGameViewModel.Name;

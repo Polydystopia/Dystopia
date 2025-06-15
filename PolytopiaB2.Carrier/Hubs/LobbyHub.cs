@@ -130,7 +130,7 @@ public partial class PolytopiaHub
     {
         var lobby = await _lobbyRepository.GetByIdAsync(model.LobbyId);
 
-        if (lobby == null) return new ServerResponse<LobbyGameViewModel>() { Success = false };
+        if (lobby == null) return new ServerResponse<LobbyGameViewModel>() { Success = false, ErrorCode = ErrorCode.UserNotFound, ErrorMessage = "User is not invited to game."};
 
         var status = lobby.GetInvitationStateForPlayer(_userGuid);
 
