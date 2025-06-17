@@ -39,9 +39,34 @@ public static class PolydystopiaMatchmakingManager
 
             lobbyGameViewModel.Participators.Add(participator);
 
-            selectedLobby = new MatchmakingEntity(lobbyGameViewModel, model.Version, model.MapSize, model.MapPreset, model.GameMode, model.ScoreLimit, model.TimeLimit, model.Platform, model.AllowCrossPlay, model.OpponentCount + 1);
+            var maxPlayers = model.OpponentCount != 0 ? model.OpponentCount : (short)Random.Shared.Next(2, 9);
+
+            selectedLobby = new MatchmakingEntity(lobbyGameViewModel, model.Version, model.MapSize, model.MapPreset, model.GameMode, model.ScoreLimit, model.TimeLimit, model.Platform, model.AllowCrossPlay, maxPlayers);
             await _lobbyRepository.CreateAsync(lobbyGameViewModel);
             await _matchmakingRepository.CreateAsync(selectedLobby);
+        }
+        else
+        {
+            selectedLobby.PlayerIds.Add(playerId);
+
+            var participator = new ParticipatorViewModel()
+            {
+                UserId = ownUser.PolytopiaId,
+                Name = ownUser.GetUniqueNameInternal(),
+                NumberOfFriends = ownUser.NumFriends ?? 0,
+                NumberOfMultiplayerGames = ownUser.NumMultiplayergames ?? 0,
+                GameVersion = ownUser.GameVersions,
+                MultiplayerRating = ownUser.MultiplayerRating ?? 0,
+                SelectedTribe = 0, //?
+                SelectedTribeSkin = 0, //?
+                AvatarStateData = ownUser.AvatarStateData,
+                InvitationState = PlayerInvitationState.Invited
+            };
+
+            selectedLobby.LobbyGameViewModel.Participators.Add(participator);
+
+            await _lobbyRepository.UpdateAsync(selectedLobby.LobbyGameViewModel, LobbyUpdatedReason.PlayersInvited);
+            await _matchmakingRepository.UpdateAsync(selectedLobby);
         }
 
         await ownProxy.SendAsync("OnLobbyInvitation", selectedLobby.LobbyGameViewModel);

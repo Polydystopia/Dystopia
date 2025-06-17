@@ -135,7 +135,7 @@ public partial class PolytopiaHub
         var status = lobby.GetInvitationStateForPlayer(_userGuid);
 
         if (status != PlayerInvitationState.Invited)
-            return new ServerResponse<LobbyGameViewModel>() { Success = false };
+            return new ServerResponse<LobbyGameViewModel>() { Success = false, ErrorCode = ErrorCode.PlayerNotFound, ErrorMessage = "Player is not invited"};
 
         foreach (var participatorViewModel in lobby.Participators)
         {
