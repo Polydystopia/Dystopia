@@ -61,6 +61,11 @@ public class PolytopiaController : ControllerBase
 
         var parsedSteamTicket = AppTicketParser.ParseAppTicket(model.SteamAuthTicket.Data);
 
+        if (parsedSteamTicket == null || !parsedSteamTicket.HasValidSignature)
+        {
+            return Forbid("Invalid auth ticket data");
+        }
+
         var username = "Player " + Guid.NewGuid(); //TODO: get username from steam
 
         var userFromDb = await _userRepository.GetBySteamIdAsync(parsedSteamTicket.SteamID, username);
