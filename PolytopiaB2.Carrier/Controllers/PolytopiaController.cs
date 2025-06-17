@@ -16,6 +16,7 @@ using PolytopiaBackendBase.Auth;
 using PolytopiaBackendBase.Common;
 using PolytopiaBackendBase.Game;
 using PolytopiaBackendBase.Notifications;
+using SteamKit2;
 using SteamTicketDecrypt.Console;
 using Steamworks;
 
@@ -61,12 +62,29 @@ public class PolytopiaController : ControllerBase
 
         var parsedSteamTicket = AppTicketParser.ParseAppTicket(model.SteamAuthTicket.Data);
 
+        var env = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT"); //TODO: Hack use DI later
+        var isDevEnv = string.Equals(env, Environments.Development, StringComparison.OrdinalIgnoreCase);
+
         if (parsedSteamTicket == null || !parsedSteamTicket.HasValidSignature)
         {
-            return Forbid("Invalid auth ticket data");
+            if (isDevEnv)
+            {
+                parsedSteamTicket = new AppTicketDetails();
+
+                using var sha256 = System.Security.Cryptography.SHA256.Create();
+                byte[] hashBytes = sha256.ComputeHash(Encoding.UTF8.GetBytes(model.DeviceId));
+
+                var deviceIdSteamIdBytes = BitConverter.ToUInt64(hashBytes, 0);
+
+                parsedSteamTicket.SteamID = new SteamID(deviceIdSteamIdBytes);
+            }
+            else
+            {
+                return Forbid("Invalid auth ticket data");
+            }
         }
 
-        var username = "Player " + Guid.NewGuid(); //TODO: get username from steam
+        var username = !isDevEnv ? "Player " + Guid.NewGuid() : model.DeviceId; //TODO: get username from steam
 
         var userFromDb = await _userRepository.GetBySteamIdAsync(parsedSteamTicket.SteamID, username);
         
