@@ -22,4 +22,9 @@ public class NewsService : INewsService
 
         return news;
     }
+
+    public string GetSystemMessage()
+    {
+        return "Custom server WIP\nPlease report any bugs to the developers at\nhttps://github.com/Polydystopia/curly-octo-waffle\n\ndiscord: juli.gg\nmail: polydystopia@juli.gg\n\nHave fun!\n" + Guid.NewGuid();
+    }
 }
