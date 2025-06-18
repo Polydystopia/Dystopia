@@ -39,11 +39,11 @@ public class PolytopiaController : ControllerBase
     }
 
     [Route("api/start/get_versioning")]
-    public ServerResponse<VersioningViewModel> GetVersioning([FromBody] VersioningBindingModel bindingModel)
+    public async Task<ServerResponse<VersioningViewModel>> GetVersioning([FromBody] VersioningBindingModel bindingModel)
     {
         var versioningViewModel = new VersioningViewModel();
 
-        versioningViewModel.SystemMessage = _newsService.GetSystemMessage();
+        versioningViewModel.SystemMessage = await _newsService.GetSystemMessage();
 
         versioningViewModel.VersionEnabledStatuses = new List<VersionEnabledStatus>() //TODO Find out what these do
         {
@@ -165,11 +165,11 @@ public class PolytopiaController : ControllerBase
     }
 
     [Route("api/news/get_news")]
-    public ServerResponse<NewsObject> GetNews([FromBody] object startDate) //TODO respect startDate
+    public async Task<ServerResponse<NewsObject>> GetNews([FromBody] object startDate) //TODO respect startDate
     {
         var news = new NewsObject();
 
-        news.News = _newsService.GetNews();
+        news.News = await _newsService.GetNews();
 
         return new ServerResponse<NewsObject>(news);
     }

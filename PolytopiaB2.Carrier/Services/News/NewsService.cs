@@ -1,30 +1,40 @@
-﻿using PolytopiaBackendBase.Game;
+﻿using PolytopiaB2.Carrier.Database.News;
+using PolytopiaBackendBase.Game;
 
 namespace PolytopiaB2.Carrier.Services.News;
 
 public class NewsService : INewsService
 {
-    public List<NewsItem> GetNews()
+    private readonly INewsRepository _newsRepository;
+
+    public NewsService(INewsRepository newsRepository)
     {
-        var news = new List<NewsItem>();
-
-        var item = new NewsItem();
-        item.Id = 2;
-        var specificDate2 = new DateTime(2025, 6, 8, 0, 0, 0, DateTimeKind.Utc);
-        item.Date = new DateTimeOffset(specificDate2).ToUnixTimeSeconds();
-
-        item.Body = "Custom server WIP\nPlease report any bugs to the developers at\nhttps://github.com/Polydystopia/curly-octo-waffle\n\ndiscord: juli.gg\nmail: polydystopia@juli.gg\n\nHave fun!";
-        item.Link = "https://github.com/Polydystopia/curly-octo-waffle";
-
-        item.Image = @"https://avatars.githubusercontent.com/u/120461041";
-
-        news.Add(item);
-
-        return news;
+        _newsRepository = newsRepository;
     }
 
-    public string GetSystemMessage()
+    public async Task<List<NewsItem>> GetNews()
     {
-        return "Custom server WIP\nPlease report any bugs to the developers at\nhttps://github.com/Polydystopia/curly-octo-waffle\n\ndiscord: juli.gg\nmail: polydystopia@juli.gg\n\nHave fun!\n" + Guid.NewGuid();
+        var news = await _newsRepository.GetActiveNewsAsync();
+
+        return news.Select(entity => new NewsItem
+        {
+            Id = entity.Id,
+            Body = entity.Body,
+            Link = entity.Link,
+            Image = entity.Image,
+            Date = entity.GetUnixTimestamp()
+        }).ToList();
+    }
+
+    public async Task<string> GetSystemMessage()
+    {
+        var message = await _newsRepository.GetSystemMessageAsync();
+
+        if (string.IsNullOrEmpty(message?.Body))
+        {
+            return string.Empty;
+        }
+
+        return message.Body + $"\n{Guid.NewGuid()}";
     }
 }

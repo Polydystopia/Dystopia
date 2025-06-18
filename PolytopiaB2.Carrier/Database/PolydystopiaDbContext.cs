@@ -2,6 +2,7 @@
 using Newtonsoft.Json;
 using PolytopiaB2.Carrier.Database.Friendship;
 using PolytopiaB2.Carrier.Database.Matchmaking;
+using PolytopiaB2.Carrier.Database.News;
 using PolytopiaBackendBase.Auth;
 using PolytopiaBackendBase.Challengermode.Data;
 using PolytopiaBackendBase.Game;
@@ -16,6 +17,7 @@ public class PolydystopiaDbContext : DbContext
     public DbSet<LobbyGameViewModel> Lobbies { get; set; }
     public DbSet<GameViewModel> Games { get; set; }
     public DbSet<MatchmakingEntity> Matchmaking { get; set; }
+    public DbSet<NewsEntity?> News { get; set; }
 
     public PolydystopiaDbContext(DbContextOptions<PolydystopiaDbContext> options) : base(options)
     {

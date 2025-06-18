@@ -4,7 +4,7 @@ namespace PolytopiaB2.Carrier.Services.News;
 
 public interface INewsService
 {
-    List<NewsItem> GetNews();
+    Task<List<NewsItem>> GetNews();
 
-    string GetSystemMessage();
+    Task<string> GetSystemMessage();
 }
