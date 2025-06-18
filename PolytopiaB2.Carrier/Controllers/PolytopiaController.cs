@@ -11,6 +11,7 @@ using PolytopiaB2.Carrier.Database.Game;
 using PolytopiaB2.Carrier.Database.User;
 using PolytopiaB2.Carrier.Models;
 using PolytopiaB2.Carrier.Patches;
+using PolytopiaB2.Carrier.Services.News;
 using PolytopiaBackendBase;
 using PolytopiaBackendBase.Auth;
 using PolytopiaBackendBase.Common;
@@ -28,10 +29,13 @@ public class PolytopiaController : ControllerBase
     private readonly IPolydystopiaUserRepository _userRepository;
     private readonly IPolydystopiaGameRepository _gameRepository;
 
-    public PolytopiaController(IPolydystopiaUserRepository userRepository, IPolydystopiaGameRepository gameRepository)
+    private readonly INewsService _newsService;
+
+    public PolytopiaController(IPolydystopiaUserRepository userRepository, IPolydystopiaGameRepository gameRepository, INewsService newsService)
     {
         _userRepository = userRepository;
         _gameRepository = gameRepository;
+        _newsService = newsService;
     }
 
     [Route("api/start/get_versioning")]
@@ -160,22 +164,11 @@ public class PolytopiaController : ControllerBase
     }
 
     [Route("api/news/get_news")]
-    public ServerResponse<NewsObject> GetNews([FromBody] object startDate) //TODO
+    public ServerResponse<NewsObject> GetNews([FromBody] object startDate) //TODO respect startDate
     {
         var news = new NewsObject();
-        news.News = new List<NewsItem>();
 
-        var item = new NewsItem();
-        item.Id = 2;
-        var specificDate2 = new DateTime(2025, 6, 8, 0, 0, 0, DateTimeKind.Utc);
-        item.Date = new DateTimeOffset(specificDate2).ToUnixTimeSeconds();
-
-        item.Body = "Custom server WIP\nPlease report any bugs to the developers at\nhttps://github.com/Polydystopia/curly-octo-waffle\n\ndiscord: juli.gg\nmail: polydystopia@juli.gg\n\nHave fun!";
-        item.Link = "https://github.com/Polydystopia/curly-octo-waffle";
-
-        item.Image = @"https://avatars.githubusercontent.com/u/120461041";
-
-        news.News.Add(item);
+        news.News = _newsService.GetNews();
 
         return new ServerResponse<NewsObject>(news);
     }

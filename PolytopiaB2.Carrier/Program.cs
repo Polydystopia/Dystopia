@@ -19,6 +19,7 @@ using PolytopiaB2.Carrier.Database.Matchmaking;
 using PolytopiaB2.Carrier.Database.User;
 using PolytopiaB2.Carrier.Hubs;
 using PolytopiaB2.Carrier.Patches;
+using PolytopiaB2.Carrier.Services.News;
 using PolytopiaBackendBase;
 using PolytopiaBackendBase.Game;
 using PolytopiaBackendBase.Game.ViewModels;
@@ -86,6 +87,8 @@ builder.Services.AddScoped<IFriendshipRepository, FriendshipRepository>();
 builder.Services.AddScoped<IPolydystopiaLobbyRepository, PolydystopiaLobbyRepository>();
 builder.Services.AddScoped<IPolydystopiaGameRepository, PolydystopiaGameRepository>();
 builder.Services.AddScoped<IPolydystopiaMatchmakingRepository, PolydystopiaMatchmakingRepository>();
+
+builder.Services.AddScoped<INewsService, NewsService>();
 
 var app = builder.Build();
 
