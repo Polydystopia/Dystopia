@@ -61,6 +61,8 @@ public partial class PolytopiaHub : Hub
         SubscribeToFriends();
         SubscribeToParticipatingGameSummaries();
 
+        OnlinePlayers[_userGuid] = Clients.Caller;
+
         await base.OnConnectedAsync();
     }
 

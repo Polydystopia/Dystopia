@@ -9,7 +9,7 @@ namespace PolytopiaB2.Carrier.Hubs;
 
 public partial class PolytopiaHub
 {
-    public static readonly List<Guid> OnlinePlayers = new();
+    public static readonly Dictionary<Guid, IClientProxy> OnlinePlayers = new();
 
     public static readonly Dictionary<Guid, List<(Guid id, IClientProxy proxy)>> GameSubscribers = new();
     public static readonly Dictionary<Guid, List<(Guid id, IClientProxy proxy)>> LobbySubscribers = new();

@@ -89,6 +89,11 @@ public partial class PolytopiaHub
                 };
 
                 lobby.Participators.Add(participator);
+
+                if (OnlinePlayers.TryGetValue(invitedPlayerGuid, out var onlineFriendProxy))
+                {
+                    await onlineFriendProxy.SendAsync("OnLobbyInvitation", lobby);
+                }
             }
         }
 

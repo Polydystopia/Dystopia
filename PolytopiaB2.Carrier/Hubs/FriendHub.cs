@@ -33,7 +33,7 @@ public partial class PolytopiaHub
                 if (foundInGame) break;
             }
 
-            if (OnlinePlayers.Contains(friend.User.PolytopiaId))
+            if (OnlinePlayers.ContainsKey(friend.User.PolytopiaId))
             {
                 statuses[friend.User.PolytopiaId.ToString()] = new PlayerStatus()
                     { PlayerOnlineStatus = PlayerOnlineStatus.Online };
