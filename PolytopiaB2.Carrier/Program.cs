@@ -24,6 +24,7 @@ using PolytopiaB2.Carrier.Services.News;
 using PolytopiaBackendBase;
 using PolytopiaBackendBase.Game;
 using PolytopiaBackendBase.Game.ViewModels;
+using Serilog;
 using UnityEngine;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -31,6 +32,24 @@ var builder = WebApplication.CreateBuilder(args);
 var dbPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "polytopia.db");
 builder.Services.AddDbContext<PolydystopiaDbContext>(options =>
     options.UseSqlite($"Data Source={dbPath}"));
+
+builder.Logging.ClearProviders();
+
+builder.Host.UseSerilog((context, configuration) =>
+    configuration
+        .ReadFrom.Configuration(context.Configuration)
+        .WriteTo.Console()
+        .WriteTo.File(
+            path: "logs/app-.txt",
+            rollingInterval: RollingInterval.Day,
+            retainedFileCountLimit: 30,
+            fileSizeLimitBytes: 10_000_000,
+            rollOnFileSizeLimit: true,
+            shared: true,
+            flushToDiskInterval: TimeSpan.FromSeconds(1))
+        .Enrich.FromLogContext()
+        .Enrich.WithProperty("Application", "PolytopiaB2.Carrier"));
+
 
 builder.Services.AddAuthentication(options =>
     {
@@ -51,7 +70,7 @@ builder.Services.AddAuthentication(options =>
                 Encoding.UTF8.GetBytes("higul0u9pgwojaingwagvupöjoahg8wag890zuahgvbuaagau9j")), //TODO: Other key
             NameClaimType = "unique_name",
         };
-        
+
         options.SecurityTokenValidators.Clear();
         options.SecurityTokenValidators.Add(new CustomJwtSecurityTokenHandler());
 
@@ -64,15 +83,15 @@ builder.Services.AddAuthentication(options =>
                     authHeader.StartsWith("Bearer ", StringComparison.OrdinalIgnoreCase))
                 {
                     var accessToken = authHeader.Substring("Bearer ".Length).Trim();
-                    
+
                     var path = context.HttpContext.Request.Path;
-                    if (!string.IsNullOrEmpty(accessToken) && 
+                    if (!string.IsNullOrEmpty(accessToken) &&
                         path.StartsWithSegments("/gamehub"))
                     {
                         context.Token = accessToken;
                     }
                 }
-            
+
                 return Task.CompletedTask;
             }
         };
@@ -107,7 +126,7 @@ Log.AddLogger(new MyLogger());
 using (var scope = app.Services.CreateScope())
 {
     var dbContext = scope.ServiceProvider.GetRequiredService<PolydystopiaDbContext>();
-    
+
     dbContext.Database.Migrate();
 }
 
@@ -117,10 +136,11 @@ app.Run();
 
 public class CustomJwtSecurityTokenHandler : JwtSecurityTokenHandler
 {
-    public override ClaimsPrincipal ValidateToken(string token, TokenValidationParameters validationParameters, out SecurityToken validatedToken)
+    public override ClaimsPrincipal ValidateToken(string token, TokenValidationParameters validationParameters,
+        out SecurityToken validatedToken)
     {
         var principal = base.ValidateToken(token, validationParameters, out validatedToken);
-        
+
         var jwtToken = validatedToken as JwtSecurityToken;
         if (jwtToken != null)
         {
@@ -136,7 +156,7 @@ public class CustomJwtSecurityTokenHandler : JwtSecurityTokenHandler
                 }
             }
         }
-        
+
         return principal;
     }
 }
