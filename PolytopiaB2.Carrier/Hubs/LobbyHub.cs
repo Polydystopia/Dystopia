@@ -186,25 +186,28 @@ public partial class PolytopiaHub
 
         if (lobby == null)
         {
-            return new ServerResponse<LobbyGameViewModel>() { Success = false };
+            return new ServerResponse<LobbyGameViewModel>() { Success = false, ErrorCode = ErrorCode.GameNotFound, ErrorMessage = "Lobby not found"};
         }
 
+        _logger.LogInformation("Starting game {lobbyId}", lobby.Id);
         var result = await PolydystopiaGameManager.CreateGame(lobby, _gameRepository);
 
         lobby.StartedGameId = lobby.Id;
 
         if (lobby.MatchmakingGameId != null)
         {
+            _logger.LogInformation("Deleting matchmaking {lobbyId} because game started", lobby.Id);
             await _matchmakingRepository.DeleteByIdAsync(lobby.Id);
         }
 
         if (result)
         {
+            _logger.LogInformation("Deleting lobby {lobbyId} because game started", lobby.Id);
             var lobbyDeleted = await _lobbyRepository.DeleteAsync(model.LobbyId);
 
             return new ServerResponse<LobbyGameViewModel>(lobby) { Success = lobbyDeleted };
         }
 
-        return new ServerResponse<LobbyGameViewModel>(lobby) { Success = false };
+        return new ServerResponse<LobbyGameViewModel>(lobby) { Success = false, ErrorCode = ErrorCode.StartGameFailed, ErrorMessage = "Could not create game" };
     }
 }
