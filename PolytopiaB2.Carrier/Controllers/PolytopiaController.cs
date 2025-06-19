@@ -31,11 +31,15 @@ public class PolytopiaController : ControllerBase
 
     private readonly INewsService _newsService;
 
-    public PolytopiaController(IPolydystopiaUserRepository userRepository, IPolydystopiaGameRepository gameRepository, INewsService newsService)
+    private readonly ILogger<PolytopiaController> _logger;
+
+    public PolytopiaController(IPolydystopiaUserRepository userRepository, IPolydystopiaGameRepository gameRepository,
+        INewsService newsService, ILogger<PolytopiaController> logger)
     {
         _userRepository = userRepository;
         _gameRepository = gameRepository;
         _newsService = newsService;
+        _logger = logger;
     }
 
     [Route("api/start/get_versioning")]
@@ -62,6 +66,9 @@ public class PolytopiaController : ControllerBase
     {
         if (model?.SteamAuthTicket?.Data == null)
         {
+            _logger.LogInformation(
+                "Steam login attempt from IP address {RemoteIpAddress} failed. Invalid auth ticket data",
+                HttpContext.Connection.RemoteIpAddress?.ToString() ?? "Unknown");
             return BadRequest("Invalid auth ticket data");
         }
 
@@ -85,6 +92,9 @@ public class PolytopiaController : ControllerBase
             }
             else
             {
+                _logger.LogInformation(
+                    "Steam login attempt from IP address {RemoteIpAddress} failed. Invalid auth ticket data",
+                    HttpContext.Connection.RemoteIpAddress?.ToString() ?? "Unknown");
                 return Forbid("Invalid auth ticket data");
             }
         }
@@ -92,7 +102,11 @@ public class PolytopiaController : ControllerBase
         var username = !isDevEnv ? "Player " + Guid.NewGuid() : model.DeviceId; //TODO: get username from steam
 
         var userFromDb = await _userRepository.GetBySteamIdAsync(parsedSteamTicket.SteamID, username);
-        
+
+        _logger.LogInformation("Steam login attempt from IP address {RemoteIpAddress}. User {UserName}",
+            HttpContext.Connection.RemoteIpAddress?.ToString() ?? "Unknown",
+            userFromDb.GetUniqueNameInternal() ?? "Unknown");
+
         var token = new PolytopiaToken();
 
         var claims = new List<Claim>
@@ -102,10 +116,11 @@ public class PolytopiaController : ControllerBase
             new("AspNet.Identity.SecurityStamp", "PCSD6HQ3RTGJDIWAT4BBJY3IFW5ARY3J"), //TODO: what is this?
             new("steam", userFromDb.SteamId)
         };
-        
-        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("higul0u9pgwojaingwagvupöjoahg8wag890zuahgvbuaagau9j")); //TODO: key
+
+        var key = new SymmetricSecurityKey(
+            Encoding.UTF8.GetBytes("higul0u9pgwojaingwagvupöjoahg8wag890zuahgvbuaagau9j")); //TODO: key
         var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
-        
+
         var now = DateTime.UtcNow;
         var expiryDate = now.AddDays(1);
 
@@ -117,12 +132,12 @@ public class PolytopiaController : ControllerBase
             expires: expiryDate,
             signingCredentials: creds
         );
-        
+
         var tokenHandler = new JwtSecurityTokenHandler();
-        
+
         token.JwtToken = tokenHandler.WriteToken(jwtToken);
         token.ExpiresAt = expiryDate;
-        
+
         token.User = userFromDb;
 
         var json = JsonConvert.SerializeObject(new ServerResponse<PolytopiaToken>(token));
@@ -199,9 +214,9 @@ public class PolytopiaController : ControllerBase
 
         if (gameViewModel == null)
         {
-            return new ServerResponse<GameViewModel>() {Success = false};
+            return new ServerResponse<GameViewModel>() { Success = false };
         }
-        
+
         return new ServerResponse<GameViewModel>(gameViewModel);
     }
 
