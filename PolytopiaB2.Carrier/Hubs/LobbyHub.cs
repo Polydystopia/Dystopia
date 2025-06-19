@@ -105,15 +105,20 @@ public partial class PolytopiaHub
 
         if (lobby != null && lobby.OwnerId == _userGuid)
         {
-            await _lobbyRepository.DeleteAsync(lobbyId);
+            if (lobby.MatchmakingGameId != null && lobby.Participators.Count > 1)
+            {
+                lobby.OwnerId = lobby.Participators.FirstOrDefault(p => p.UserId != _userGuid)!.UserId;
+            }
+            else
+            {
+                await _lobbyRepository.DeleteAsync(lobbyId);
 
-            return new ServerResponse<BoolResponseViewModel>(new BoolResponseViewModel() { Result = true });
+                return new ServerResponse<BoolResponseViewModel>(new BoolResponseViewModel() { Result = true });
+            }
         }
 
         if (lobby != null && lobby.Participators.Any(p => p.UserId == _userGuid))
         {
-            //TODO: What happens if the user is the owner?
-
             lobby.Participators.RemoveAll(p => p.UserId == _userGuid);
 
             await _lobbyRepository.UpdateAsync(lobby, LobbyUpdatedReason.PlayerLeftByRequest);
@@ -130,12 +135,15 @@ public partial class PolytopiaHub
     {
         var lobby = await _lobbyRepository.GetByIdAsync(model.LobbyId);
 
-        if (lobby == null) return new ServerResponse<LobbyGameViewModel>() { Success = false, ErrorCode = ErrorCode.UserNotFound, ErrorMessage = "User is not invited to game."};
+        if (lobby == null)
+            return new ServerResponse<LobbyGameViewModel>()
+                { Success = false, ErrorCode = ErrorCode.UserNotFound, ErrorMessage = "User is not invited to game." };
 
         var status = lobby.GetInvitationStateForPlayer(_userGuid);
 
         if (status != PlayerInvitationState.Invited)
-            return new ServerResponse<LobbyGameViewModel>() { Success = false, ErrorCode = ErrorCode.PlayerNotFound, ErrorMessage = "Player is not invited"};
+            return new ServerResponse<LobbyGameViewModel>()
+                { Success = false, ErrorCode = ErrorCode.PlayerNotFound, ErrorMessage = "Player is not invited" };
 
         foreach (var participatorViewModel in lobby.Participators)
         {
