@@ -33,15 +33,19 @@ public partial class PolytopiaHub : Hub
 
     private Guid _userGuid => Guid.Parse(_userId);
 
+    private readonly ILogger<PolytopiaHub> _logger;
+
     public PolytopiaHub(IPolydystopiaUserRepository userRepository, IFriendshipRepository friendRepository,
         IPolydystopiaLobbyRepository lobbyRepository, IPolydystopiaGameRepository gameRepository,
-        IPolydystopiaMatchmakingRepository matchmakingRepository)
+        IPolydystopiaMatchmakingRepository matchmakingRepository, ILogger<PolytopiaHub> logger)
     {
         _userRepository = userRepository;
         _friendRepository = friendRepository;
         _lobbyRepository = lobbyRepository;
         _gameRepository = gameRepository;
         _matchmakingRepository = matchmakingRepository;
+
+        _logger = logger;
     }
 
     public override async Task OnConnectedAsync()
