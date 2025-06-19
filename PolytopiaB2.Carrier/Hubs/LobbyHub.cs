@@ -193,6 +193,11 @@ public partial class PolytopiaHub
 
         lobby.StartedGameId = lobby.Id;
 
+        if (lobby.MatchmakingGameId != null)
+        {
+            await _matchmakingRepository.DeleteByIdAsync(lobby.Id);
+        }
+
         if (result)
         {
             var lobbyDeleted = await _lobbyRepository.DeleteAsync(model.LobbyId);

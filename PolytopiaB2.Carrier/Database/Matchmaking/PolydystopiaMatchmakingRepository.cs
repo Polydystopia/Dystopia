@@ -46,4 +46,16 @@ public class PolydystopiaMatchmakingRepository : IPolydystopiaMatchmakingReposit
                         !m.PlayerIds.Contains(playerId))
             .ToList();
     }
+
+    public async Task<bool> DeleteByIdAsync(Guid lobbyId)
+    {
+        var matchmaking = await _dbContext.Matchmaking.FindAsync(lobbyId);
+        if (matchmaking == null) return false;
+
+        _dbContext.Matchmaking.Remove(matchmaking);
+        await _dbContext.SaveChangesAsync();
+
+        return true;
+
+    }
 }
