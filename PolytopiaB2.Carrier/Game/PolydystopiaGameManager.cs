@@ -176,6 +176,8 @@ public static class PolydystopiaGameManager
             };
 
             await SendCommand(commandModel, gameRepository, senderId);
+
+            break;
         }
 
         return true;
@@ -269,20 +271,23 @@ public static class PolydystopiaGameManager
             command
         };
 
-        var gameSubscribers = PolytopiaHub.GameSubscribers[gameId].Where(u => senderId == null || u.id != senderId)
-            .Select(gs => gs.proxy).ToList();
-        var tasks = gameSubscribers.Select(async gameSubscriber =>
+        if (PolytopiaHub.GameSubscribers.TryGetValue(gameId, out var gameSubscribersList))
         {
-            try
+            var gameSubscribers = gameSubscribersList.Where(u => senderId == null || u.id != senderId)
+                .Select(gs => gs.proxy).ToList();
+            var tasks = gameSubscribers.Select(async gameSubscriber =>
             {
-                await gameSubscriber.SendAsync("OnCommand", commandArray);
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine(e);
-            }
-        });
+                try
+                {
+                    await gameSubscriber.SendAsync("OnCommand", commandArray);
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine(e);
+                }
+            });
 
-        await Task.WhenAll(tasks);
+            await Task.WhenAll(tasks);
+        }
     }
 }
