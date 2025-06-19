@@ -111,6 +111,7 @@ public partial class PolytopiaHub
             }
             else
             {
+                _logger.LogInformation("User {ownUserId} left lobby {lobbyId}", _userGuid, lobbyId);
                 _logger.LogInformation("Deleting lobby {lobbyId} since no remaining players", lobbyId);
 
                 await _lobbyRepository.DeleteAsync(lobbyId);
@@ -121,7 +122,8 @@ public partial class PolytopiaHub
 
         if (lobby != null && lobby.Participators.Any(p => p.UserId == _userGuid))
         {
-            _logger.LogInformation("User {ownUserId} left lobby {lobbyId}", _userGuid, lobbyId);;
+            _logger.LogInformation("User {ownUserId} left lobby {lobbyId}", _userGuid, lobbyId);
+            ;
 
             lobby.Participators.RemoveAll(p => p.UserId == _userGuid);
 
@@ -132,7 +134,9 @@ public partial class PolytopiaHub
             return new ServerResponse<BoolResponseViewModel>(new BoolResponseViewModel() { Result = true });
         }
 
-        _logger.LogWarning("User {ownUserId} wanted to leave lobby {lobbyId} where he is no member", _userGuid, lobbyId);;
+        _logger.LogWarning("User {ownUserId} wanted to leave lobby {lobbyId} where he is no member", _userGuid,
+            lobbyId);
+        ;
 
         return new ServerResponse<BoolResponseViewModel>(new BoolResponseViewModel() { Result = false })
             { Success = false, ErrorCode = ErrorCode.UserNotFound, ErrorMessage = "User is not in lobby." };
