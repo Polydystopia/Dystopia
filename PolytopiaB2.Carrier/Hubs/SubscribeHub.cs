@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.SignalR;
+﻿using System.Collections.Concurrent;
+using Microsoft.AspNetCore.SignalR;
 using PolytopiaB2.Carrier.Game;
 using PolytopiaBackendBase;
 using PolytopiaBackendBase.Auth;
@@ -9,31 +10,30 @@ namespace PolytopiaB2.Carrier.Hubs;
 
 public partial class PolytopiaHub
 {
-    public static readonly Dictionary<Guid, IClientProxy> OnlinePlayers = new();
+    public static readonly ConcurrentDictionary<Guid, IClientProxy> OnlinePlayers = new();
 
-    public static readonly Dictionary<Guid, List<(Guid id, IClientProxy proxy)>> GameSubscribers = new();
-    public static readonly Dictionary<Guid, List<(Guid id, IClientProxy proxy)>> LobbySubscribers = new();
+    public static readonly ConcurrentDictionary<Guid, List<(Guid id, IClientProxy proxy)>> GameSubscribers = new();
+    public static readonly ConcurrentDictionary<Guid, List<(Guid id, IClientProxy proxy)>> LobbySubscribers = new();
 
-    public static readonly Dictionary<Guid, IClientProxy> FriendSubscribers = new();
+    public static readonly ConcurrentDictionary<Guid, IClientProxy> FriendSubscribers = new();
 
-    private void Subscribe(Dictionary<Guid, List<(Guid id, IClientProxy proxy)>> subList, Guid gameId)
+    private void Subscribe(ConcurrentDictionary<Guid, List<(Guid id, IClientProxy proxy)>> subList, Guid gameId)
     {
-        if (!subList.ContainsKey(gameId))
-        {
-            subList.Add(gameId, new List<(Guid id, IClientProxy proxy)>());
-        }
-
         var myId = _userGuid;
         var myProxy = Clients.Caller;
-        var el = subList[gameId];
 
-        var existingIndex = el.FindIndex(x => x.id == myId);
-        if (existingIndex >= 0)
+        var el = subList.GetOrAdd(gameId, _ => new List<(Guid id, IClientProxy proxy)>());
+
+        lock (el)
         {
-            el.RemoveAt(existingIndex);
-        }
+            var existingIndex = el.FindIndex(x => x.id == myId);
+            if (existingIndex >= 0)
+            {
+                el.RemoveAt(existingIndex);
+            }
 
-        el.Add((myId, myProxy));
+            el.Add((myId, myProxy));
+        }
     }
 
     public ServerResponse<ResponseViewModel> SubscribeToParticipatingGameSummaries() //TODO
@@ -55,10 +55,15 @@ public partial class PolytopiaHub
 
     public ServerResponse<BoolResponseViewModel> SubscribeToLobby(SubscribeToLobbyBindingModel model) //TODO
     {
-        var response = new BoolResponseViewModel();
-        response.Result = true;
+        var subList = LobbySubscribers;
 
-        return new ServerResponse<BoolResponseViewModel>(response);
+        foreach (var lobbyId in model.LobbyIds)
+        {
+            Subscribe(subList, lobbyId);;
+        }
+
+        var responseViewModel = new BoolResponseViewModel() {Result = true};
+        return new ServerResponse<BoolResponseViewModel>(responseViewModel);
     }
 
     public ServerResponse<ResponseViewModel> SubscribeToGame(SubscribeToGameBindingModel model)

@@ -99,7 +99,10 @@ public partial class PolytopiaHub
 
         await _lobbyRepository.UpdateAsync(lobby, LobbyUpdatedReason.PlayersInvited);
 
-        await Clients.Caller.SendAsync("OnLobbyUpdated", lobby); //TODO: Maybe send to all?
+        foreach (var lobbySubscribers in LobbySubscribers[lobby.Id])
+        {
+            await lobbySubscribers.proxy.SendAsync("OnLobbyUpdated", lobby);
+        }
 
         return new ServerResponse<BoolResponseViewModel>(new BoolResponseViewModel() { Result = true });
     }
@@ -121,6 +124,12 @@ public partial class PolytopiaHub
 
                 await _lobbyRepository.DeleteAsync(lobbyId);
 
+                lobby.Participators.Clear();
+                foreach (var lobbySubscribers in LobbySubscribers[lobby.Id])
+                {
+                    await lobbySubscribers.proxy.SendAsync("OnLobbyUpdated", lobby);
+                }
+
                 return new ServerResponse<BoolResponseViewModel>(new BoolResponseViewModel() { Result = true });
             }
         }
@@ -128,20 +137,21 @@ public partial class PolytopiaHub
         if (lobby != null && lobby.Participators.Any(p => p.UserId == _userGuid))
         {
             _logger.LogInformation("User {ownUserId} left lobby {lobbyId}", _userGuid, lobbyId);
-            ;
 
             lobby.Participators.RemoveAll(p => p.UserId == _userGuid);
 
             await _lobbyRepository.UpdateAsync(lobby, LobbyUpdatedReason.PlayerLeftByRequest);
 
-            //await Clients.Caller.SendAsync("OnLobbyUpdated", lobby); //TODO: Maybe send to all? Or all except caller?
+            foreach (var lobbySubscribers in LobbySubscribers[lobby.Id])
+            {
+                await lobbySubscribers.proxy.SendAsync("OnLobbyUpdated", lobby);
+            }
 
             return new ServerResponse<BoolResponseViewModel>(new BoolResponseViewModel() { Result = true });
         }
 
         _logger.LogWarning("User {ownUserId} wanted to leave lobby {lobbyId} where he is no member", _userGuid,
             lobbyId);
-        ;
 
         return new ServerResponse<BoolResponseViewModel>(new BoolResponseViewModel() { Result = false })
             { Success = false, ErrorCode = ErrorCode.UserNotFound, ErrorMessage = "User is not in lobby." };
@@ -180,6 +190,11 @@ public partial class PolytopiaHub
 
                 break;
             }
+        }
+
+        foreach (var lobbySubscribers in LobbySubscribers[lobby.Id])
+        {
+            await lobbySubscribers.proxy.SendAsync("OnLobbyUpdated", lobby);
         }
 
         return new ServerResponse<LobbyGameViewModel>(lobby);

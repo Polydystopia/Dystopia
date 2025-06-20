@@ -68,30 +68,35 @@ public partial class PolytopiaHub : Hub
 
     public override async Task OnDisconnectedAsync(Exception? exception)
     {
-        OnlinePlayers.Remove(_userGuid);
-
-        FriendSubscribers.Remove(_userGuid);
+        OnlinePlayers.TryRemove(_userGuid, out _);
+        FriendSubscribers.TryRemove(_userGuid, out _);
 
         foreach (var gameSubscription in GameSubscribers.Values)
         {
-            gameSubscription.RemoveAll(x => x.id == _userGuid);
+            lock (gameSubscription)
+            {
+                gameSubscription.RemoveAll(x => x.id == _userGuid);
+            }
         }
 
         foreach (var lobbySubscription in LobbySubscribers.Values)
         {
-            lobbySubscription.RemoveAll(x => x.id == _userGuid);
+            lock (lobbySubscription)
+            {
+                lobbySubscription.RemoveAll(x => x.id == _userGuid);
+            }
         }
 
         var emptyGameKeys = GameSubscribers.Where(kvp => kvp.Value.Count == 0).Select(kvp => kvp.Key).ToList();
         foreach (var key in emptyGameKeys)
         {
-            GameSubscribers.Remove(key);
+            GameSubscribers.TryRemove(key, out _);
         }
 
         var emptyLobbyKeys = LobbySubscribers.Where(kvp => kvp.Value.Count == 0).Select(kvp => kvp.Key).ToList();
         foreach (var key in emptyLobbyKeys)
         {
-            LobbySubscribers.Remove(key);
+            LobbySubscribers.TryRemove(key, out _);
         }
 
         await base.OnDisconnectedAsync(exception);
