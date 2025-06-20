@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.SignalR;
+using Newtonsoft.Json;
 using PolytopiaB2.Carrier.Game;
 using PolytopiaB2.Carrier.Game.Lobby;
 using PolytopiaBackendBase;
@@ -206,12 +207,14 @@ public partial class PolytopiaHub
 
         if (lobby == null)
         {
-            return new ServerResponse<LobbyGameViewModel>() { Success = false, ErrorCode = ErrorCode.GameNotFound, ErrorMessage = "Lobby not found"};
+            return new ServerResponse<LobbyGameViewModel>()
+                { Success = false, ErrorCode = ErrorCode.GameNotFound, ErrorMessage = "Lobby not found" };
         }
 
         _logger.LogInformation("Starting game {lobbyId}", lobby.Id);
         var result = await PolydystopiaGameManager.CreateGame(lobby, _gameRepository);
 
+        lobby.StartTime = DateTime.Now;
         lobby.StartedGameId = lobby.Id;
 
         if (lobby.MatchmakingGameId != null)
@@ -225,9 +228,20 @@ public partial class PolytopiaHub
             _logger.LogInformation("Deleting lobby {lobbyId} because game started", lobby.Id);
             var lobbyDeleted = await _lobbyRepository.DeleteAsync(model.LobbyId);
 
+            var game = await _gameRepository.GetByIdAsync(lobby.Id);
+            foreach (var lobbySubscribers in LobbySubscribers[lobby.Id])
+            {
+                lobby.Participators.Clear();
+                await lobbySubscribers.proxy.SendAsync("OnLobbyUpdated", lobby);
+
+                await lobbySubscribers.proxy.SendAsync("OnGameSummaryUpdated",
+                    PolydystopiaGameManager.GetGameSummaryViewModelByGameViewModel(game), StateUpdateReason.ValidStartGame);
+            }
+
             return new ServerResponse<LobbyGameViewModel>(lobby) { Success = lobbyDeleted };
         }
 
-        return new ServerResponse<LobbyGameViewModel>(lobby) { Success = false, ErrorCode = ErrorCode.StartGameFailed, ErrorMessage = "Could not create game" };
+        return new ServerResponse<LobbyGameViewModel>(lobby)
+            { Success = false, ErrorCode = ErrorCode.StartGameFailed, ErrorMessage = "Could not create game" };
     }
 }
