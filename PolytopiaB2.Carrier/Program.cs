@@ -21,6 +21,7 @@ using PolytopiaB2.Carrier.Database.User;
 using PolytopiaB2.Carrier.Hubs;
 using PolytopiaB2.Carrier.Patches;
 using PolytopiaB2.Carrier.Services.News;
+using PolytopiaB2.Carrier.Services.Steam;
 using PolytopiaBackendBase;
 using PolytopiaBackendBase.Game;
 using PolytopiaBackendBase.Game.ViewModels;
@@ -110,6 +111,7 @@ builder.Services.AddScoped<IPolydystopiaMatchmakingRepository, PolydystopiaMatch
 builder.Services.AddScoped<INewsRepository, NewsRepository>();
 
 builder.Services.AddScoped<INewsService, NewsService>();
+builder.Services.AddScoped<ISteamService, SteamService>();
 
 var app = builder.Build();
 

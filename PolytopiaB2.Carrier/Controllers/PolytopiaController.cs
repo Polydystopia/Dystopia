@@ -12,6 +12,7 @@ using PolytopiaB2.Carrier.Database.User;
 using PolytopiaB2.Carrier.Models;
 using PolytopiaB2.Carrier.Patches;
 using PolytopiaB2.Carrier.Services.News;
+using PolytopiaB2.Carrier.Services.Steam;
 using PolytopiaBackendBase;
 using PolytopiaBackendBase.Auth;
 using PolytopiaBackendBase.Common;
@@ -30,16 +31,18 @@ public class PolytopiaController : ControllerBase
     private readonly IPolydystopiaGameRepository _gameRepository;
 
     private readonly INewsService _newsService;
+    private readonly ISteamService _steamService;
 
     private readonly ILogger<PolytopiaController> _logger;
 
     public PolytopiaController(IPolydystopiaUserRepository userRepository, IPolydystopiaGameRepository gameRepository,
-        INewsService newsService, ILogger<PolytopiaController> logger)
+        INewsService newsService, ILogger<PolytopiaController> logger, ISteamService steamService)
     {
         _userRepository = userRepository;
         _gameRepository = gameRepository;
         _newsService = newsService;
         _logger = logger;
+        _steamService = steamService;
     }
 
     [Route("api/start/get_versioning")]
@@ -72,33 +75,17 @@ public class PolytopiaController : ControllerBase
             return BadRequest("Invalid auth ticket data");
         }
 
-        var parsedSteamTicket = AppTicketParser.ParseAppTicket(model.SteamAuthTicket.Data);
+        var parsedSteamTicket = _steamService.ParseTicket(model.SteamAuthTicket.Data, model.DeviceId);
+        if (parsedSteamTicket == null)
+        {
+            _logger.LogInformation(
+                "Steam login attempt from IP address {RemoteIpAddress} failed. Invalid auth ticket data",
+                HttpContext.Connection.RemoteIpAddress?.ToString() ?? "Unknown");
+            return Forbid("Invalid auth ticket data");
+        }
 
         var env = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT"); //TODO: Hack use DI later
         var isDevEnv = string.Equals(env, Environments.Development, StringComparison.OrdinalIgnoreCase);
-
-        if (parsedSteamTicket == null || !parsedSteamTicket.HasValidSignature)
-        {
-            if (isDevEnv)
-            {
-                parsedSteamTicket = new AppTicketDetails();
-
-                using var sha256 = System.Security.Cryptography.SHA256.Create();
-                byte[] hashBytes = sha256.ComputeHash(Encoding.UTF8.GetBytes(model.DeviceId));
-
-                var deviceIdSteamIdBytes = BitConverter.ToUInt64(hashBytes, 0);
-
-                parsedSteamTicket.SteamID = new SteamID(deviceIdSteamIdBytes);
-            }
-            else
-            {
-                _logger.LogInformation(
-                    "Steam login attempt from IP address {RemoteIpAddress} failed. Invalid auth ticket data",
-                    HttpContext.Connection.RemoteIpAddress?.ToString() ?? "Unknown");
-                return Forbid("Invalid auth ticket data");
-            }
-        }
-
         var username = !isDevEnv ? "Player " + Guid.NewGuid() : model.DeviceId; //TODO: get username from steam
 
         var userFromDb = await _userRepository.GetBySteamIdAsync(parsedSteamTicket.SteamID, username);
