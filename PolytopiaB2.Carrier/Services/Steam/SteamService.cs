@@ -1,4 +1,6 @@
-﻿using System.Text;
+﻿using System.Collections.Concurrent;
+using System.Text;
+using System.Text.Json;
 using SteamKit2;
 using SteamTicketDecrypt.Console;
 
@@ -6,6 +8,8 @@ namespace PolytopiaB2.Carrier.Services.Steam;
 
 public class SteamService : ISteamService
 {
+    private const string SteamWebApiKey = "3A48395EAE4081FCED0048D368358298"; //TODO remove and revoke
+
     private readonly ILogger<SteamService> _logger;
 
     public SteamService(ILogger<SteamService> logger)
@@ -20,7 +24,7 @@ public class SteamService : ISteamService
         var env = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT"); //TODO: Hack use DI later
         var isDevEnv = string.Equals(env, Environments.Development, StringComparison.OrdinalIgnoreCase);
 
-        if (parsedSteamTicket == null || !parsedSteamTicket.HasValidSignature)
+        if (parsedSteamTicket == null)
         {
             if (isDevEnv && deviceId != null)
             {
@@ -40,5 +44,51 @@ public class SteamService : ISteamService
         }
 
         return parsedSteamTicket;
+    }
+
+    public async Task<string?> GetSteamUsernameAsync(SteamID steamId)
+    {
+        try
+        {
+            var steamId64 = steamId.ConvertToUInt64();
+
+            var url =
+                $"https://api.steampowered.com/ISteamUser/GetPlayerSummaries/v0002/?key={SteamWebApiKey}&steamids={steamId64}";
+
+            _logger.LogInformation("Requesting Steam Web API for SteamID64: {SteamId64}", steamId64);
+
+            using var httpClient = new HttpClient();
+            var response = await httpClient.GetAsync(url);
+            if (!response.IsSuccessStatusCode)
+            {
+                _logger.LogWarning("Steam Web API request failed: {StatusCode}", response.StatusCode);
+                return null;
+            }
+
+            var json = await response.Content.ReadAsStringAsync();
+            using var document = JsonDocument.Parse(json);
+
+            var players = document.RootElement
+                .GetProperty("response")
+                .GetProperty("players");
+
+            if (players.GetArrayLength() > 0)
+            {
+                var player = players[0];
+                var personaName = player.GetProperty("personaname").GetString();
+
+                _logger.LogInformation("Retrieved username '{PersonaName}' for SteamID64: {SteamId64}", personaName,
+                    steamId64);
+                return personaName;
+            }
+
+            _logger.LogWarning("No player data found for SteamID64: {SteamId64}", steamId64);
+            return null;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error retrieving Steam username via Web API for SteamID: {SteamId}", steamId);
+            return null;
+        }
     }
 }
