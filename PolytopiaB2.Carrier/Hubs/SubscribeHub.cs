@@ -95,4 +95,10 @@ public partial class PolytopiaHub
 
         return new ServerResponse<PlayersStatusesResponse>(response);
     }
+
+    public async Task<ServerResponse<ResponseViewModel>> SubscribeToTournaments(
+        SubscribeToTournamentsBindingModel model) //TODO
+    {
+        return new ServerResponse<ResponseViewModel>(new ResponseViewModel());
+    }
 }

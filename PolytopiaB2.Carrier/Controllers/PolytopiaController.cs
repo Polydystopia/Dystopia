@@ -15,6 +15,7 @@ using PolytopiaB2.Carrier.Services.News;
 using PolytopiaB2.Carrier.Services.Steam;
 using PolytopiaBackendBase;
 using PolytopiaBackendBase.Auth;
+using PolytopiaBackendBase.Challengermode.Matchmaking;
 using PolytopiaBackendBase.Common;
 using PolytopiaBackendBase.Game;
 using PolytopiaBackendBase.Notifications;
@@ -217,5 +218,13 @@ public class PolytopiaController : ControllerBase
     public async Task<ServerResponse<PolytopiaToken>> WhoAmI() //TODO
     {
         return new ServerResponse<PolytopiaToken>(new PolytopiaToken());
+    }
+
+    [Route("api/cm/list_matchmaking ")]
+    public async Task<ServerResponseList<TournamentMatchmakingQueueViewModel>> ListMatchmakingQueues() //TODO
+    {
+        var tournamentMatchmakingQueues = new List<TournamentMatchmakingQueueViewModel>();
+
+        return new ServerResponseList<TournamentMatchmakingQueueViewModel>(tournamentMatchmakingQueues);
     }
 }
