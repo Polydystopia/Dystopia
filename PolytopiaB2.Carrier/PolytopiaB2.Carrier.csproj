@@ -11,6 +11,9 @@
         <Reference Include="DebugLogger">
             <HintPath>..\..\..\..\Downloads\DepotDownloader-windows-x64\depots\874393\18293084\Polytopia_Data\Managed\DebugLogger.dll</HintPath>
         </Reference>
+        <Reference Include="DystopiaMagic">
+          <HintPath>..\..\polydystopia\DystopiaMagic\DystopiaMagic\bin\Debug\net6.0\DystopiaMagic.dll</HintPath>
+        </Reference>
         <Reference Include="GameLogicAssembly">
             <HintPath>..\..\..\..\Downloads\DepotDownloader-windows-x64\depots\874393\18293084\Polytopia_Data\Managed\GameLogicAssembly.dll</HintPath>
         </Reference>
@@ -49,6 +52,7 @@
     </ItemGroup>
 
     <ItemGroup>
+        <Folder Include="Bridge\GameLibs\" />
         <Folder Include="External\Data\AvatarData\"/>
         <Folder Include="External\Data\GameLogicData\"/>
         <Folder Include="Migrations\"/>

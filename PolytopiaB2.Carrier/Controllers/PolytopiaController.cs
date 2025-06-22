@@ -88,7 +88,7 @@ public class PolytopiaController : ControllerBase
         var env = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT"); //TODO: Hack use DI later
         var isDevEnv = string.Equals(env, Environments.Development, StringComparison.OrdinalIgnoreCase);
 
-        var username = isDevEnv ? await _steamService.GetSteamUsernameAsync(parsedSteamTicket.SteamID) : model.DeviceId;
+        var username = !isDevEnv ? await _steamService.GetSteamUsernameAsync(parsedSteamTicket.SteamID) : model.DeviceId;
         if (string.IsNullOrEmpty(username))
         {
             _logger.LogWarning("Could not get steam username for steamId {steamId}", parsedSteamTicket.SteamID);;

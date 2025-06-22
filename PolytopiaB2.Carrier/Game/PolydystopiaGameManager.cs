@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.SignalR;
 using Newtonsoft.Json;
 using Polytopia.Data;
+using PolytopiaB2.Carrier.Bridge;
 using PolytopiaB2.Carrier.Database.Game;
 using PolytopiaB2.Carrier.Hubs;
 using PolytopiaB2.Carrier.Patches;
@@ -21,6 +22,8 @@ public static class PolydystopiaGameManager
 
     public static async Task<bool> CreateGame(LobbyGameViewModel lobby, IPolydystopiaGameRepository gameRepository)
     {
+        var t = new DystopiaBridge().CreateGame(lobby);
+
         var settings = new GameSettings();
 
         settings.ApplyLobbySettings(lobby);
