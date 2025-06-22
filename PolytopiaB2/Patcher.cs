@@ -5,6 +5,7 @@ using Il2CppInterop.Runtime.Injection;
 using Il2CppInterop.Runtime.InteropTypes.Arrays;
 using Il2CppMicrosoft.Extensions.Logging;
 using Newtonsoft.Json;
+using Polytopia.Data;
 using PolytopiaBackendBase;
 using Object = Il2CppSystem.Object;
 
@@ -20,5 +21,21 @@ public class Patcher
 
         BuildConfigHelper.GetSelectedBuildConfig().buildServerURL = BuildServerURL.Custom;
         BuildConfigHelper.GetSelectedBuildConfig().customServerURL = "http://localhost:5051";
+    }
+
+    [HarmonyPatch(
+        typeof(PolytopiaDataManager),
+        nameof(PolytopiaDataManager.GetGameLogicData),
+        new[] { typeof(int), typeof(bool) }
+    )]
+    static class PolytopiaDataManager_GetGameLogicData_Patch
+    {
+        static bool Prefix(ref int version, ref bool force, ref GameLogicData __result)
+        {
+            Plugin.Log.LogInfo($"Dumping game logic datas");
+            Dumper.DumpAll();
+
+            return true;
+        }
     }
 }

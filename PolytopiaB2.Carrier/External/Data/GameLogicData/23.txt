@@ -36,7 +36,7 @@
 			"language": "lï,tï,pï,fï,nï,kï,sï,dee,lee,po,so, ,to",
 			"startingTech": [
 				"basic",
-				"meditation"
+				"philosophy"
 			],
 			"startingResource": [
 				"game"
@@ -53,7 +53,8 @@
 			"priceTier": 1,
 			"category": 1,
 			"bonus": 0,
-			"startingUnit": "warrior",
+			"startingUnit": "mindbender",
+			"startingStars": 5,
 			"idx": 2
 		},
 		"aquarion": {
@@ -184,6 +185,7 @@
 			"color": 10053120,
 			"style": 6,
 			"climate": 6,
+			"startingStars":7,
 			"language": "lo,in,ber,th,ol,go,we,don,ry,ick,ley,wa",
 			"startingTech": [
 				"basic",
@@ -262,12 +264,13 @@
 			"color": 11221974,
 			"style": 7,
 			"climate": 7,
+			"startingStars":7,
 			"language": "em,ux,lô,ga,pô,exi,uss,ni,au,ou,ly,iss,',ki",
 			"startingTech": [
 				"basic"
 			],
 			"startingResource": [
-				"game"
+				"fruit"
 			],
 			"skins":[
 				"Mercenary"
@@ -305,6 +308,7 @@
 			"category": 1,
 			"bonus": 0,
 			"startingUnit": "rider",
+			"startingStars": 6,
 			"idx": 10
 		},
 		"quetzali": {
@@ -330,6 +334,7 @@
 			"category": 1,
 			"bonus": 0,
 			"startingUnit": "defender",
+			"startingStars": 7,
 			"idx": 11
 		},
 		"vengir": {
@@ -342,7 +347,7 @@
 				"smithery"
 			],
 			"startingResource": [
-				"game"
+				"metal"
 			],
 			"resourceModifier": {
 				"fruit": 0.1,
@@ -384,6 +389,7 @@
 			"category": 1,
 			"bonus": 0,
 			"startingUnit": "warrior",
+			"startingStars": 7,
 			"idx": 13
 		},
 		"yadakk": {
@@ -412,6 +418,7 @@
 			"category": 1,
 			"bonus": 0,
 			"startingUnit": "warrior",
+			"startingStars": 7,
 			"idx": 14
 		},
 		"zebasi": {
@@ -494,15 +501,15 @@
 				"archer": "phychi",
 				"catapult": "exida",
 				"defender": "kiton",
-				"mindbender": "shaman"
+				"mindbender": "shaman",
+				"rammership":"raychi",
+				"scoutship":"boomchi",
+				"bombership":"island"
 			},
 			"techOverrides": {
 				"construction": "recycling",
 				"chivalry": "shock",
-				"aquaculture": "hydrology",
-				"sailing": "pescetism",
-				"fishing": "fishingsimple",
-				"navigation": "oceanology"
+				"aquaculture": "hydrology"
 			},
 			"startingTech": [
 				"basic",
@@ -515,7 +522,8 @@
 				"market": "clathrus",
 				"farm": "fungi",
 				"road": "mycelium",
-				"bridge": "none"
+				"bridge": "none",
+				"port":"algae"
 			},
 			"priceTier": 2,
 			"category": 2,
@@ -529,7 +537,7 @@
 				"mountain": 1.2
 			},
 			"resourceModifier": {
-				"spores": 0.2,
+				"spores": 0.3,
 				"crop": 0
 			}
 		}
@@ -946,6 +954,9 @@
 		"hydrology": {
 			"idx": 37,
 			"cost": 2,
+			"unitUnlocks": [
+				"boomchi"
+			],
 			"improvementUnlocks": [
 				"algae"
 			],
@@ -983,6 +994,9 @@
 			"improvementUnlocks": [
 				"fishing"
 			],
+			"movementUnlocks": {
+				"water": 2
+			},
 			"cost": 1,
 			"idx": 40
 		},
@@ -1013,6 +1027,9 @@
 			"techUnlocks": [
 				"navigation"
 			],
+			"movementUnlocks": {
+				"ocean": 1
+			},
 			"cost": 2,
 			"idx": 43
 		},
@@ -1269,7 +1286,7 @@
 			"movement": 1,
 			"range": 1,
 			"attack": 30,
-			"cost": 2,
+			"cost": 3,
 			"hidden": true,
 			"unitAbilities": [
 				"dash",
@@ -1382,7 +1399,7 @@
 		"mooni": {
 			"health": 100,
 			"defence": 10,
-			"movement": 1,
+			"movement": 2,
 			"range": 1,
 			"attack": 0,
 			"cost": 5,
@@ -1399,7 +1416,7 @@
 		"battlesled": {
 			"health": 150,
 			"defence": 20,
-			"movement": 2,
+			"movement": 3,
 			"range": 1,
 			"attack": 30,
 			"cost": 5,
@@ -1416,13 +1433,15 @@
 		"icefortress": {
 			"health": 200,
 			"defence": 30,
-			"movement": 1,
+			"movement": 2,
 			"range": 2,
 			"attack": 40,
 			"cost": 15,
 			"unitAbilities": [
 				"skate",
 				"scout",
+				"escape",
+				"static",
 				"land"
 			],
 			"weapon": 5,
@@ -1434,7 +1453,7 @@
 			"defence": 10,
 			"movement": 1,
 			"range": 2,
-			"attack": 1,
+			"attack": 10,
 			"cost": 3,
 			"unitAbilities": [
 				"dash",
@@ -1489,7 +1508,7 @@
 			"defence": 10,
 			"movement": 2,
 			"range": 1,
-			"attack": 30,
+			"attack": 25,
 			"cost": 3,
 			"unitAbilities": [
 				"dash",
@@ -1601,6 +1620,7 @@
 			"unitAbilities": [
 				"independent",
 				"creep",
+				"dash",
 				"explode",
 				"static",
 				"stiff",
@@ -1620,15 +1640,8 @@
 			"unitAbilities": [
 				"dash",
 				"swim",
-				"navigate",
-				"explode",
-				"creep",
-				"water"
-			],
-			"movementTerrain": [
 				"water",
-				"ocean",
-				"wetland"
+				"crawl"
 			]
 		},
 		"shaman": {
@@ -2021,6 +2034,48 @@
 			"weapon": 17,
 			"promotionLimit": 3,
 			"idx": 55
+		},
+		"boomchi": {
+			"idx": 56,
+			"cost": 5,
+			"health": 100,
+			"defence": 20,
+			"movement": 2,
+			"weapon": 7,
+			"range": 0,
+			"attack": 30,
+			"promotionLimit": 0,
+			"unitAbilities": [
+				"dash",
+				"swim",
+				"crawl",
+				"explode",
+				"water"
+			]
+		},
+		"island": {
+			"idx": 57,
+			"cost": 20,
+			"health": 200,
+			"movement": 2,
+			"range": 1,
+			"defence": 40,
+			"attack": 40,
+			"unitAbilities": [
+				"stomp",
+				"swim",
+				"water",
+				"algae",
+				"static",
+				"stiff"
+			],
+			"movementTerrain": [
+				"water",
+				"ocean",
+				"wetland"
+			],
+			"weapon": 16,
+			"promotionLimit": 0
 		}
 	},
 	"improvementData": {
@@ -2202,7 +2257,7 @@
 			"idx": 10
 		},
 		"burnforest": {
-			"cost": 5,
+			"cost": 3,
 			"terrainRequirements": [
 				{
 					"terrain": "forest"
@@ -2327,7 +2382,7 @@
 			"growthRate": 2,
 			"growthRewards": [
 				{
-					"score": 50,
+					"score": 100,
 					"population": 0
 				}
 			]
@@ -2353,7 +2408,7 @@
 			"growthRate": 2,
 			"growthRewards": [
 				{
-					"score": 50,
+					"score": 100,
 					"population": 0
 				}
 			]
@@ -2382,7 +2437,7 @@
 			"growthRate": 2,
 			"growthRewards": [
 				{
-					"score": 50,
+					"score": 100,
 					"population": 0
 				}
 			]
@@ -2408,7 +2463,7 @@
 			"growthRate": 2,
 			"growthRewards": [
 				{
-					"score": 50,
+					"score": 100,
 					"population": 0
 				}
 			]
@@ -2434,6 +2489,12 @@
 			"terrainRequirements": [
 				{
 					"terrain": "field"
+				},
+				{
+					"terrain": "forest"
+				},
+				{
+					"terrain": "mountain"
 				}
 			],
 			"adjacencyRequirements": [
@@ -2442,6 +2503,9 @@
 				}
 			],
 			"adjacencyImprovements": [
+				{
+					"improvement": "mine"
+				},
 				{
 					"improvement": "mine"
 				}
@@ -2458,7 +2522,7 @@
 			"growthRewards": [
 				{
 					"score":0,
-					"population": 2
+					"population": 1
 				}
 			],
 			"idx": 22
@@ -2632,7 +2696,7 @@
 			"idx": 29
 		},
 		"enchantanimal": {
-			"cost": 2,
+			"cost": 3,
 			"terrainRequirements": [
 				{
 					"resource": "game"
@@ -2738,7 +2802,7 @@
 			"growthRate": 2,
 			"growthRewards": [
 				{
-					"score": 50,
+					"score": 100,
 					"population": 0
 				}
 			]
@@ -2758,11 +2822,11 @@
 				"patina",
 				"poison"
 			],
-			"maxLevel": 2,
+			"maxLevel": 3,
 			"idx": 37,
 			"rewards": [
 				{
-					"population": 1
+					"population": 0
 				}
 			],
 			"growthRate": 1,
@@ -2777,11 +2841,6 @@
 			"maxLevel": 0,
 			"cost": 5,
 			"range":1,
-			"rewards": [
-				{
-					"population": 1
-				}
-			],
 			"terrainRequirements": [
 				{
 					"terrain": "water"
@@ -2790,9 +2849,16 @@
 					"terrain": "ocean"
 				}
 			],
+			"creates": [
+				{
+					"effect": "algae"
+				},
+				{
+					"resource": "fruit"
+				}
+			],
 			"improvementAbilities": [
-				"bridge",
-				"slow"
+				"discrete"
 			]
 		},
 		"mycelium": {
@@ -2801,7 +2867,8 @@
 			"range": 3,
 			"routes": [
 				"field",
-				"forest"
+				"forest",
+				"wetland"
 			],
 			"terrainRequirements": [
 				{
@@ -2809,6 +2876,9 @@
 				},
 				{
 					"terrain": "forest"
+				},
+				{
+					"terrain": "wetland"
 				}
 			],
 			"improvementAbilities": [
@@ -2820,29 +2890,34 @@
 		"clathrus": {
 			"idx": 41,
 			"maxLevel": 8,
-			"cost": 5,
+			"cost": 8,
 			"work": 1,
 			"range": 3,
-			"improvementAbilities": [
-				"limited",
-				"network"
-			],
-			"routes": [
-				"ocean",
-				"water"
-			],
 			"terrainRequirements": [
 				{
-					"terrain": "water"
+					"terrain": "field"
 				},
 				{
-					"terrain": "ocean"
+					"terrain": "forest"
+				},
+				{
+					"terrain": "wetland"
 				}
 			],
 			"adjacencyImprovements": [
 				{
-					"improvement": "algae"
+					"improvement": "fungi"
 				}
+			],
+			"adjacencyRequirements": [
+				{
+					"improvement": "fungi"
+				}
+			],
+			"improvementAbilities": [
+				"poison",
+				"limited",
+				"simple"
 			]
 		},
 		"hiddensanctuary": {
@@ -2958,7 +3033,7 @@
 			"improvementAbilities": [
 				"limited"
 			],
-			"maxLevel": 8,
+			"maxLevel": 6,
 			"idx": 50
 		},
 		"atoll": {
