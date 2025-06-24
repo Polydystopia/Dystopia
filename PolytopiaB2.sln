@@ -6,6 +6,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PolytopiaB2.Carrier", "Poly
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PolytopiaB2.Spy", "PolytopiaB2.Spy\PolytopiaB2.Spy.csproj", "{572DD519-5A51-42BA-8B4F-01D2CE6B5E10}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DystopiaShared", "DystopiaShared\DystopiaShared.csproj", "{8D6B211C-3823-4EA5-8E63-A5693FF7FE61}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -24,5 +26,9 @@ Global
 		{572DD519-5A51-42BA-8B4F-01D2CE6B5E10}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{572DD519-5A51-42BA-8B4F-01D2CE6B5E10}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{572DD519-5A51-42BA-8B4F-01D2CE6B5E10}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8D6B211C-3823-4EA5-8E63-A5693FF7FE61}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8D6B211C-3823-4EA5-8E63-A5693FF7FE61}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8D6B211C-3823-4EA5-8E63-A5693FF7FE61}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8D6B211C-3823-4EA5-8E63-A5693FF7FE61}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

@@ -1,17 +1,18 @@
 ﻿using System.Reflection;
 using System.Runtime.Loader;
 using DystopiaMagic;
+using DystopiaShared;
 using PolytopiaBackendBase.Game;
 
 
 namespace PolytopiaB2.Carrier.Bridge;
 
-public class DystopiaBridge : IDystopiaCastle
+public class DystopiaBridge
 {
     private const string PluginFolder =
         @"C:\Users\Juli\Desktop\source\polydystopia\DystopiaMagic\DystopiaMagic\bin\Debug\net6.0";
 
-    public GameState CreateGame(LobbyGameViewModel lobby)
+    public byte[] CreateGame(LobbyGameViewModel lobby)
     {
         string pluginDll = Path.Combine(PluginFolder, "DystopiaMagic.dll");
 
@@ -37,19 +38,12 @@ public class DystopiaBridge : IDystopiaCastle
             "DystopiaMagic.DystopiaBlackCastle",
             throwOnError: true
         );
-        var castle = (object) Activator.CreateInstance(castleType)!;
-        var mi = castleType.GetMethods()[1];
-        if (mi == null)
-            throw new MissingMethodException("DystopiaBlackCastle.CreateGame(LobbyGameViewModel) not found");
+        var castle = (IDystopiaCastle) Activator.CreateInstance(castleType)!;
 
-        var xxx = mi.Invoke(castle, new object[] { "hi du", 6868 });
+        Console.WriteLine(castle.GetVersion());
 
-        var result = mi.Invoke(castle, new object[] { lobby });
-        if (result is not GameState gs)
-            throw new InvalidCastException($"Expected CreateGame to return GameState, got {result?.GetType().FullName}");
+        var gs = castle.CreateGame(lobby);
 
-
-        // 5) (Optional) unload when done
         loadCtx.Unload();
 
         return gs;
@@ -68,11 +62,9 @@ class PluginLoadContext : AssemblyLoadContext
 
     protected override Assembly? Load(AssemblyName name)
     {
-        // If it's the contract assembly, return the host's already‐loaded copy:
-        if (name.Name == "PolytopiaBackendBase.Game")
+        if (name.Name == "DystopiaShared" || name.Name == "PolytopiaBackendBase")
             return Assembly.Load(name);
 
-        // Otherwise, resolve from the plugin folder:
         string? path = _resolver.ResolveAssemblyToPath(name);
         return path != null
             ? LoadFromAssemblyPath(path)

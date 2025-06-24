@@ -32,8 +32,8 @@ public class Patcher
     {
         static bool Prefix(ref int version, ref bool force, ref GameLogicData __result)
         {
-            Plugin.Log.LogInfo($"Dumping game logic datas");
-            Dumper.DumpAll();
+            //Plugin.Log.LogInfo($"Dumping game logic datas");
+            //Dumper.DumpAll();
 
             return true;
         }

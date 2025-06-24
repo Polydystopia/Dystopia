@@ -64,4 +64,8 @@
         </None>
     </ItemGroup>
 
+    <ItemGroup>
+      <ProjectReference Include="..\DystopiaShared\DystopiaShared.csproj" />
+    </ItemGroup>
+
 </Project>
