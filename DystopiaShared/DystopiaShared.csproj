@@ -7,10 +7,7 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <Reference Include="ManagedPolytopiaBackendBase">
-            <HintPath>..\..\..\..\..\..\Steam\steamapps\common\The Battle of Polytopia\BepInEx\interop\PolytopiaBackendBase.dll</HintPath>
-            <Aliases>ManagedPolytopiaBackendBase</Aliases>
-        </Reference>
+      <PackageReference Include="AutoMapper.Extensions.Microsoft.DependencyInjection" Version="12.0.1" />
     </ItemGroup>
 
 </Project>

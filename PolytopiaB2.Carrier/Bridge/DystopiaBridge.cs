@@ -42,9 +42,9 @@ public class DystopiaBridge
 
         Console.WriteLine(castle.GetVersion());
 
-        var gs = castle.CreateGame(lobby);
+        var mappedLobby = LobbyMapping.Map(lobby);
 
-        loadCtx.Unload();
+        var gs = castle.CreateGame(mappedLobby);
 
         return gs;
     }
@@ -62,7 +62,7 @@ class PluginLoadContext : AssemblyLoadContext
 
     protected override Assembly? Load(AssemblyName name)
     {
-        if (name.Name == "DystopiaShared" || name.Name == "PolytopiaBackendBase")
+        if (name.Name == "DystopiaShared")
             return Assembly.Load(name);
 
         string? path = _resolver.ResolveAssemblyToPath(name);
