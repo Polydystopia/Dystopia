@@ -1,52 +1,101 @@
 ﻿using System.Reflection;
 using System.Runtime.Loader;
-using DystopiaMagic;
 using DystopiaShared;
-using PolytopiaBackendBase.Game;
 
 
 namespace PolytopiaB2.Carrier.Bridge;
 
-public class DystopiaBridge
+public class DystopiaBridge : IDystopiaCastle
 {
     private const string PluginFolder =
         @"C:\Users\Juli\Desktop\source\polydystopia\DystopiaMagic\DystopiaMagic\bin\Debug\net6.0";
 
-    public byte[] CreateGame(LobbyGameViewModel lobby)
+    private static bool il2cppLoaded = false;
+
+    private IDystopiaCastle GetFittingCastle(byte[] serializedGameState)
     {
-        string pluginDll = Path.Combine(PluginFolder, "DystopiaMagic.dll");
+        SerializationHelpers.PeekVersion(serializedGameState, out var version);
+        return GetFittingCastle(version);
+    }
 
-        var loadCtx = new PluginLoadContext(pluginDll);
+    private IDystopiaCastle GetFittingCastle(SharedLobbyGameViewModel lobby)
+    {
+        var lowestVersionPlayer = lobby.Participators.Select(p => p.GameVersion.Min(p => p.GameVersion)).Min(p => p);
+        return GetFittingCastle(lowestVersionPlayer);
+    }
 
-        var pluginAsm = loadCtx.LoadFromAssemblyPath(pluginDll);
+    private IDystopiaCastle GetFittingCastle(int version)
+    {
+        if (version <= VersionManager.GameVersion) // MANAGED
+        {
+            return new DystopiaWhiteCastle();
+        }
+        else // NATIVE
+        {
+            string pluginDll = Path.Combine(PluginFolder, "DystopiaMagic.dll");
+
+            var loadCtx = new PluginLoadContext(pluginDll);
+
+            var pluginAsm = loadCtx.LoadFromAssemblyPath(pluginDll);
 
 
-        var loaderType = pluginAsm.GetType(
-            "DystopiaMagic.GameAssemblyLoader",
-            throwOnError: true
-        );
-        var loader = (object) Activator.CreateInstance(loaderType)!;
+            var loaderType = pluginAsm.GetType(
+                "DystopiaMagic.GameAssemblyLoader",
+                throwOnError: true
+            );
+            var loader = (object)Activator.CreateInstance(loaderType)!;
 
-        var m = loaderType.GetMethods();
-        var mi1 = loaderType.GetMethods()[1];
-        mi1.Invoke(loader, new []{"GameAssembly.dll"});
-        var mi2 = loaderType.GetMethods()[2];
-        var vsa = mi2.Invoke(loader, new object[] { @"C:\Users\Juli\Desktop\source\polydystopia\DystopiaMagic\DystopiaMagic\bin\Debug\net6.0\GameLogicData" });
+            if (!il2cppLoaded) //todo hacky better loading it at process start
+            {
+                var m = loaderType.GetMethods();
+                var mi1 = loaderType.GetMethods()[1];
+                mi1.Invoke(loader, new[] { "GameAssembly.dll" });
+                var mi2 = loaderType.GetMethods()[2];
+                var vsa = mi2.Invoke(loader,
+                    new object[]
+                    {
+                        @"C:\Users\Juli\Desktop\source\polydystopia\DystopiaMagic\DystopiaMagic\bin\Debug\net6.0\GameLogicData"
+                    });
 
+                il2cppLoaded = true;
+            }
 
-        var castleType = pluginAsm.GetType(
-            "DystopiaMagic.DystopiaBlackCastle",
-            throwOnError: true
-        );
-        var castle = (IDystopiaCastle) Activator.CreateInstance(castleType)!;
+            var castleType = pluginAsm.GetType(
+                "DystopiaMagic.DystopiaBlackCastle",
+                throwOnError: true
+            );
+            return (IDystopiaCastle)Activator.CreateInstance(castleType)!;
+        }
+    }
+
+    public string GetVersion() //TODO
+    {
+        return "Unsupported";
+    }
+
+    public byte[] CreateGame(SharedLobbyGameViewModel lobby)
+    {
+        var castle = GetFittingCastle(lobby);
 
         Console.WriteLine(castle.GetVersion());
 
-        var mappedLobby = LobbyMapping.Map(lobby);
-
-        var gs = castle.CreateGame(mappedLobby);
+        var gs = castle.CreateGame(lobby);
 
         return gs;
+    }
+
+    public byte[] Update(byte[] serializedGameState)
+    {
+        var castle = GetFittingCastle(serializedGameState);
+
+        return castle.Update(serializedGameState);
+    }
+
+    public string GetGameSettingsJson(byte[] serializedGameState)
+    {
+        var castle = GetFittingCastle(serializedGameState);
+
+        return castle.GetGameSettingsJson(serializedGameState);
     }
 }
 

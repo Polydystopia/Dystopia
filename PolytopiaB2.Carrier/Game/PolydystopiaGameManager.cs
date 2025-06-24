@@ -22,120 +22,10 @@ public static class PolydystopiaGameManager
 
     public static async Task<bool> CreateGame(LobbyGameViewModel lobby, IPolydystopiaGameRepository gameRepository)
     {
-        var t = new DystopiaBridge().CreateGame(lobby);
+        var bridge = new DystopiaBridge();
+        var serializedGameState = bridge.CreateGame(lobby.Map());
 
-        var settings = new GameSettings();
-
-        settings.ApplyLobbySettings(lobby);
-
-        settings.players = new Dictionary<Guid, PlayerData>();
-
-        foreach (var participatorViewModel in lobby.Participators)
-        {
-            if (participatorViewModel.SelectedTribe == 0) participatorViewModel.SelectedTribe = 2; //TODO: Remove later
-
-            var humanPlayer = new PlayerData();
-            humanPlayer.type = PlayerData.Type.Local;
-            humanPlayer.state = PlayerData.State.Accepted;
-            humanPlayer.knownTribe = true;
-            humanPlayer.tribe = (TribeData.Type)participatorViewModel.SelectedTribe;
-            humanPlayer.tribeMix = (TribeData.Type)participatorViewModel.SelectedTribe; //?
-            humanPlayer.skinType = (SkinType)participatorViewModel.SelectedTribeSkin;
-            humanPlayer.defaultName = participatorViewModel.GetNameInternal();
-            humanPlayer.profile.id = participatorViewModel.UserId;
-            humanPlayer.profile.SetName(participatorViewModel.GetNameInternal());
-
-            settings.AddPlayer(humanPlayer);
-        }
-
-        foreach (var botDifficulty in lobby.Bots)
-        {
-            var botGuid = Guid.NewGuid();
-
-            var botPlayer = new PlayerData();
-            botPlayer.type = PlayerData.Type.Bot;
-            botPlayer.state = PlayerData.State.Accepted;
-            botPlayer.knownTribe = true;
-            botPlayer.tribe = Enum.GetValues<TribeData.Type>().Where(t => t != TribeData.Type.None)
-                .OrderBy(x => Guid.NewGuid()).First();
-            ;
-            botPlayer.botDifficulty = (GameSettings.Difficulties)botDifficulty;
-            botPlayer.skinType = SkinType.Default; //TODO
-            botPlayer.defaultName = "Bot" + botGuid;
-            botPlayer.profile.id = botGuid;
-
-            settings.AddPlayer(botPlayer);
-        }
-
-        var unused_player_states = new List<PlayerState>(); //?? Seems unused
-
-
-        GameState gameState = new GameState()
-        {
-            Version = VersionManager.GameVersion,
-            Settings = settings,
-            PlayerStates = new List<PlayerState>()
-        };
-        for (int index = 0; index < settings.Players.Length; ++index)
-        {
-            PlayerData player = settings.Players[index];
-            if (player.type != PlayerData.Type.Bot)
-            {
-                PlayerState playerState = new PlayerState()
-                {
-                    Id = (byte)(index + 1),
-                    AccountId = player.profile.id,
-                    AutoPlay = player.type == PlayerData.Type.Bot,
-                    UserName = player.GetNameInternal(),
-                    tribe = player.tribe,
-                    tribeMix = player.tribeMix,
-                    hasChosenTribe = true,
-                    skinType = player.skinType
-                };
-                gameState.PlayerStates.Add(playerState);
-                Log.Verbose("Created player: {0}", (object)playerState);
-            }
-            else
-            {
-                GameStateUtils.AddAIOpponent(gameState, GameStateUtils.GetRandomPickableTribe(gameState),
-                    GameSettings.HandicapFromDifficulty(player.botDifficulty), player.skinType);
-            }
-        }
-
-        GameStateUtils.SetPlayerColors(gameState);
-        GameStateUtils.AddNaturePlayer(gameState);
-        Log.Verbose("{0} Creating world...", (object)"Verbose");
-        ushort num = (ushort)Math.Max(settings.MapSize,
-            (int)MapDataExtensions.GetMinimumMapSize(gameState.PlayerCount));
-        gameState.Map = new MapData(num, num);
-        MapGeneratorSettings generatorSettings = settings.GetMapGeneratorSettings();
-        new MapGenerator().Generate(gameState, generatorSettings);
-        Log.Verbose("{0} Creating initial state for {1} players...", (object)"Verbose", (object)gameState.PlayerCount);
-
-        foreach (PlayerState playerState3 in gameState.PlayerStates)
-        {
-            foreach (PlayerState playerState4 in gameState.PlayerStates)
-                playerState3.aggressions[playerState4.Id] = 0;
-            if (playerState3.Id != byte.MaxValue)
-            {
-                playerState3.Currency = 5;
-                TribeData data3;
-                UnitData data4;
-                if (gameState.GameLogicData.TryGetData(playerState3.tribe, out data3) &&
-                    gameState.GameLogicData.TryGetData(data3.startingUnit.type, out data4))
-                {
-                    TileData tile = gameState.Map.GetTile(playerState3.startTile);
-                    UnitState unitState = ActionUtils.TrainUnitScored(gameState, playerState3, tile, data4);
-                    unitState.attacked = false;
-                    unitState.moved = false;
-                }
-            }
-        }
-
-        Log.Verbose("{0} Session created successfully", (object)"Verbose");
-        gameState.CommandStack.Add((CommandBase)new StartMatchCommand((byte)1));
-
-        Update(gameState);
+        serializedGameState = bridge.Update(serializedGameState);
 
         var gameViewModel = new GameViewModel();
         gameViewModel.Id = lobby.Id;
@@ -143,12 +33,9 @@ public static class PolydystopiaGameManager
         gameViewModel.DateCreated = DateTime.Now; //?
         gameViewModel.DateLastCommand = DateTime.Now; //?
         gameViewModel.State = GameSessionState.Started;
-        gameViewModel.GameSettingsJson =
-            JsonConvert.SerializeObject(gameState.Settings); //TODO: Check all serialized?
-        gameViewModel.InitialGameStateData =
-            SerializationHelpers.ToByteArray<GameState>(gameState, gameState.Version);
-        gameViewModel.CurrentGameStateData =
-            SerializationHelpers.ToByteArray<GameState>(gameState, gameState.Version);
+        gameViewModel.GameSettingsJson = bridge.GetGameSettingsJson(serializedGameState); //TODO: Check all serialized?
+        gameViewModel.InitialGameStateData = serializedGameState;
+        gameViewModel.CurrentGameStateData = serializedGameState;
         gameViewModel.TimerSettings = new TimerSettings(); //??? Used?
         gameViewModel.DateCurrentTurnDeadline = DateTime.Now.AddDays(1); //TODO: Calc
         gameViewModel.GameContext = new GameContext(); //TODO?
@@ -229,40 +116,6 @@ public static class PolydystopiaGameManager
         }
 
         return false;
-    }
-
-    private static void Update(GameState gameState)
-    {
-        bool pendingCommandTrigger =
-            gameState.TryGetPendingCommandTrigger(gameState.CurrentPlayer, out CommandTrigger _);
-        if (gameState.ActionStack != null && gameState.ActionStack.Count > 0 && !pendingCommandTrigger)
-        {
-            int index = gameState.ActionStack.Count - 1;
-            ActionBase action = gameState.ActionStack[index];
-            if (action.IsValid(gameState))
-            {
-                Log.Spam("{0} Executing action ({2}):\t{1}", (object)"Spam", (object)action, (object)(index + 1));
-                action.Execute(gameState);
-            }
-            else
-                Log.Spam("{0} Action is invalid ({2}):\t{1}", (object)"Spam", (object)action, (object)(index + 1));
-
-            gameState.ActionStack.RemoveAt(index);
-            Update(gameState);
-        }
-        else if ((int)gameState.LastProcessedCommand < gameState.CommandStack.Count)
-        {
-            CommandBase command = gameState.CommandStack[(int)gameState.LastProcessedCommand++];
-            Log.Spam("{0} Executing command ({2}):\t{1}", (object)"Spam", (object)command,
-                (object)(gameState.CommandStack.Count - (int)gameState.LastProcessedCommand + 1));
-            command.Execute(gameState);
-            Update(gameState);
-        }
-        else
-        {
-            Log.Verbose("{0} Finished processing", (object)"Verbose");
-            //this.StopProcessing(); TODO
-        }
     }
 
     private static async Task SendCommandBack(Guid gameId, PolytopiaCommandViewModel command, Guid? senderId = null)
