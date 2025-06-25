@@ -49,26 +49,19 @@ public static class PolydystopiaGameManager
         Guid senderId)
     {
         var game = await gameRepository.GetByIdAsync(model.GameId);
+        if (game == null) return false;
 
-        var succ = SerializationHelpers.FromByteArray<GameState>(game.CurrentGameStateData, out GameState gameState);
+        var bridge = new DystopiaBridge();
 
-        foreach (var player in gameState.PlayerStates)
+        var serializedCommand = bridge.Resign(game.CurrentGameStateData, senderId.ToString());
+
+        var commandModel = new SendCommandBindingModel
         {
-            if (player.AutoPlay) continue;
-            if (player.AccountId != senderId) continue;
+            GameId = model.GameId,
+            Command = new PolytopiaCommandViewModel(serializedCommand)
+        };
 
-            var resignCommand = new ResignCommand(gameState.CurrentPlayer, player.Id, 0, false);
-
-            var commandModel = new SendCommandBindingModel
-            {
-                GameId = model.GameId,
-                Command = new PolytopiaCommandViewModel(CommandBase.ToByteArray(resignCommand, gameState.Version))
-            };
-
-            await SendCommand(commandModel, gameRepository, senderId);
-
-            break;
-        }
+        await SendCommand(commandModel, gameRepository, senderId);
 
         return true;
     }
@@ -80,42 +73,28 @@ public static class PolydystopiaGameManager
 
         if (game == null) return false;
 
-        var succ1 = CommandBase.FromByteArray(commandBindingModel.Command.SerializedData, out var cmd, out var version);
-
-        var succ2 = SerializationHelpers.FromByteArray<GameState>(game.CurrentGameStateData, out GameState gameState);
-
-        var currCommandCount = gameState.CommandStack.Count;
-
-        GameStateUtils.PerformCommands(gameState, new List<CommandBase>() { cmd }, out List<CommandBase> list,
-            out var events);
+        var bridge = new DystopiaBridge();
+        var ended = bridge.SendCommand(commandBindingModel.Command.SerializedData, game.CurrentGameStateData,
+            out var newGameState,
+            out var newCommands);
 
         await SendCommandBack(game.Id, commandBindingModel.Command, senderId);
-
-        var newCommandsCount = gameState.CommandStack.Count - currCommandCount - 1;
-
-        for (int i = 0; i < newCommandsCount; i++)
+        foreach (var command in newCommands)
         {
-            var command = gameState.CommandStack[gameState.CommandStack.Count - newCommandsCount + i];
-
-            await SendCommandBack(game.Id, new PolytopiaCommandViewModel(CommandBase.ToByteArray(command, version)));
+            await SendCommandBack(game.Id, new PolytopiaCommandViewModel(command));
         }
 
-        if (succ1 && succ2)
+        game.CurrentGameStateData = newGameState;
+        game.DateLastCommand = DateTime.Now;
+
+        if (ended)
         {
-            game.CurrentGameStateData = SerializationHelpers.ToByteArray<GameState>(gameState, version);
-            game.DateLastCommand = DateTime.Now;
-
-            if (gameState.CurrentState == GameState.State.Ended)
-            {
-                game.State = GameSessionState.Ended;
-            }
-
-            await gameRepository.UpdateAsync(game);
-
-            return true;
+            game.State = GameSessionState.Ended;
         }
 
-        return false;
+        await gameRepository.UpdateAsync(game);
+
+        return true;
     }
 
     private static async Task SendCommandBack(Guid gameId, PolytopiaCommandViewModel command, Guid? senderId = null)
@@ -149,10 +128,10 @@ public static class PolydystopiaGameManager
 
     public static GameSummaryViewModel GetGameSummaryViewModelByGameViewModel(GameViewModel game)
     {
-        var succ = GameStateSummary.FromGameStateByteArray(game.CurrentGameStateData,
-            out GameStateSummary stateSummary, out var gameState);
+        var bridge = new DystopiaBridge();
+        var serializedSummary = bridge.GetSummary(game.CurrentGameStateData);
 
-        var gameSettings = JsonConvert.DeserializeObject<GameSettings>(game.GameSettingsJson);
+        var gameSettings = JsonConvert.DeserializeObject<GameSettings>(game.GameSettingsJson); // TODO DTO!
 
         var summary = new GameSummaryViewModel();
         summary.GameId = game.Id;
@@ -180,7 +159,7 @@ public static class PolydystopiaGameManager
                 SelectedTribe = 2, //TODO
                 SelectedTribeSkin = 0, //TODO
                 AvatarStateData =
-                    SerializationHelpers.ToByteArray(playerData.profile.avatarState, gameState.Version),
+                    SerializationHelpers.ToByteArray(playerData.profile.avatarState, 19), //TODO correct version
                 InvitationState = PlayerInvitationState.Accepted
             };
 
@@ -189,7 +168,7 @@ public static class PolydystopiaGameManager
 
         summary.Result = null; //?
 
-        summary.GameSummaryData = SerializationHelpers.ToByteArray(stateSummary, gameState.Version);
+        summary.GameSummaryData = serializedSummary;
         summary.GameContext = new GameContext(); //?
 
         return summary;

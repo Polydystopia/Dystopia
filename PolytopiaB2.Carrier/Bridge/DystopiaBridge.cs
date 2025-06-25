@@ -12,7 +12,7 @@ public class DystopiaBridge : IDystopiaCastle
         @"C:\Users\Juli\Desktop\source\polydystopia\DystopiaMagic\DystopiaMagic\bin\Debug\net6.0";
 
     private static bool il2cppLoaded = false;
-    private IDystopiaCastle nativeCastle = null;
+    private static IDystopiaCastle nativeCastle = null;
 
     private IDystopiaCastle GetFittingCastle(byte[] serializedGameState)
     {
@@ -104,6 +104,35 @@ public class DystopiaBridge : IDystopiaCastle
         var castle = GetFittingCastle(serializedGameState);
 
         return castle.GetGameSettingsJson(serializedGameState);
+    }
+
+    public byte[]? Resign(byte[] serializedGameState, string senderId)
+    {
+        var castle = GetFittingCastle(serializedGameState);
+
+        return castle.Resign(serializedGameState, senderId);
+    }
+
+    public bool SendCommand(byte[] serializedCommand, byte[] serializedGameState, out byte[] newGameState,
+        out byte[][] newCommands)
+    {
+        var castle = GetFittingCastle(serializedGameState);
+
+        return castle.SendCommand(serializedCommand, serializedGameState, out newGameState, out newCommands);
+    }
+
+    public bool IsPlayerInGame(string playerId, byte[] serializedGameState)
+    {
+        var castle = GetFittingCastle(serializedGameState);
+
+        return castle.IsPlayerInGame(playerId, serializedGameState);
+    }
+
+    public byte[] GetSummary(byte[] serializedGameState)
+    {
+        var castle = GetFittingCastle(serializedGameState);
+
+        return castle.GetSummary(serializedGameState);
     }
 }
 

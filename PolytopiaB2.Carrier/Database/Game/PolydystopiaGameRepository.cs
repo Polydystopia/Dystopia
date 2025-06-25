@@ -1,4 +1,5 @@
-﻿using PolytopiaBackendBase.Game;
+﻿using PolytopiaB2.Carrier.Bridge;
+using PolytopiaBackendBase.Game;
 
 namespace PolytopiaB2.Carrier.Database.Game;
 
@@ -10,14 +11,14 @@ public class PolydystopiaGameRepository : IPolydystopiaGameRepository
     {
         _dbContext = dbContext;
     }
-    
+
     public async Task<GameViewModel?> GetByIdAsync(Guid id)
     {
         var model = await _dbContext.Games.FindAsync(id) ?? null;
 
         return model;
     }
-    
+
     public async Task<GameViewModel> CreateAsync(GameViewModel gameViewModel)
     {
         await _dbContext.Games.AddAsync(gameViewModel);
@@ -39,18 +40,10 @@ public class PolydystopiaGameRepository : IPolydystopiaGameRepository
 
         foreach (var gameViewModel in _dbContext.Games)
         {
-            var succ = SerializationHelpers.FromByteArray<GameState>(gameViewModel.CurrentGameStateData, out GameState gameState);
-
-            if (succ)
+            var bridge = new DystopiaBridge();
+            if (bridge.IsPlayerInGame(playerId.ToString(), gameViewModel.CurrentGameStateData))
             {
-                foreach (var player in gameState.PlayerStates)
-                {
-                    if (player.AccountId == playerId)
-                    {
-                        playerGames.Add(gameViewModel);
-                        break;
-                    }
-                }
+                playerGames.Add(gameViewModel);
             }
         }
 

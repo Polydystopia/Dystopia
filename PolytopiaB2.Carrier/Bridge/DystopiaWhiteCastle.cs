@@ -3,6 +3,7 @@ using DystopiaShared;
 using DystopiaShared.SharedModels;
 using Newtonsoft.Json;
 using Polytopia.Data;
+using PolytopiaBackendBase.Game;
 
 namespace PolytopiaB2.Carrier.Bridge;
 
@@ -154,7 +155,7 @@ public class DystopiaWhiteCastle : IDystopiaCastle
 
     private GameState Update(GameState gameState)
     {
-        new ProxyActionManager(gameState).Update();
+        new ProxyActionManager(gameState).Update(); //TODO check if this works
         return gameState;
 
         bool pendingCommandTrigger =
@@ -196,5 +197,61 @@ public class DystopiaWhiteCastle : IDystopiaCastle
     {
         var succ = SerializationHelpers.FromByteArray<GameState>(serializedGameState, out var gameState);
         return JsonConvert.SerializeObject(gameState.Settings);
+    }
+
+    public byte[]? Resign(byte[] serializedGameState, string senderId)
+    {
+        var succ = SerializationHelpers.FromByteArray<GameState>(serializedGameState, out GameState gameState);
+
+        foreach (var player in gameState.PlayerStates)
+        {
+            if (player.AutoPlay) continue;
+            if (player.AccountId != new Guid(senderId)) continue;
+
+            var resignCommand = new ResignCommand(gameState.CurrentPlayer, player.Id, 0, false);
+
+            return CommandBase.ToByteArray(resignCommand, gameState.Version);
+        }
+
+        return null;
+    }
+
+    public bool SendCommand(byte[] serializedCommand, byte[] serializedGameState, out byte[] newGameState, out byte[][] newCommands)
+    {
+        var succ1 = CommandBase.FromByteArray(serializedCommand, out var cmd, out var version);
+
+        var succ2 = SerializationHelpers.FromByteArray<GameState>(serializedGameState, out GameState gameState);
+
+        var currCommandCount = gameState.CommandStack.Count;
+
+        GameStateUtils.PerformCommands(gameState, new List<CommandBase>() { cmd }, out List<CommandBase> list,
+            out var events);
+
+        var newCommandsCount = gameState.CommandStack.Count - currCommandCount - 1;
+        newCommands = new byte[][] { };
+        for (int i = 0; i < newCommandsCount; i++)
+        {
+            var command = gameState.CommandStack[gameState.CommandStack.Count - newCommandsCount + i];
+            newCommands[i] = CommandBase.ToByteArray(command, version);
+        }
+
+        newGameState = SerializationHelpers.ToByteArray(gameState, version);
+
+        return gameState.CurrentState == GameState.State.Ended;
+    }
+
+    public bool IsPlayerInGame(string playerId, byte[] serializedGameState)
+    {
+        var succ = SerializationHelpers.FromByteArray<GameState>(serializedGameState, out GameState gameState);
+
+        return gameState.TryGetPlayer(Guid.Parse(playerId), out _ );
+    }
+
+    public byte[] GetSummary(byte[] serializedGameState)
+    {
+        var succ = GameStateSummary.FromGameStateByteArray(serializedGameState,
+            out GameStateSummary stateSummary, out var gameState);
+
+        return SerializationHelpers.ToByteArray(stateSummary, gameState.Version);
     }
 }
