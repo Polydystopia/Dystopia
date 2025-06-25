@@ -1,4 +1,6 @@
-﻿namespace DystopiaShared;
+﻿using DystopiaShared.SharedModels;
+
+namespace DystopiaShared;
 
 public interface IDystopiaCastle
 {

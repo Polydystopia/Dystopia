@@ -1,4 +1,5 @@
 ﻿using DystopiaShared;
+using DystopiaShared.SharedModels;
 using PolytopiaBackendBase.Auth;
 using PolytopiaBackendBase.Common;
 using PolytopiaBackendBase.Game;

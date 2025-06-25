@@ -1,6 +1,7 @@
 ﻿using System.Reflection;
 using System.Runtime.Loader;
 using DystopiaShared;
+using DystopiaShared.SharedModels;
 
 
 namespace PolytopiaB2.Carrier.Bridge;
