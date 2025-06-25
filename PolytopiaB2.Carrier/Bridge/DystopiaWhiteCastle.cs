@@ -3,6 +3,7 @@ using DystopiaShared;
 using DystopiaShared.SharedModels;
 using Newtonsoft.Json;
 using Polytopia.Data;
+using PolytopiaB2.Carrier.Bridge.Mappings;
 using PolytopiaBackendBase.Game;
 
 namespace PolytopiaB2.Carrier.Bridge;
@@ -196,7 +197,7 @@ public class DystopiaWhiteCastle : IDystopiaCastle
     public string GetGameSettingsJson(byte[] serializedGameState)
     {
         var succ = SerializationHelpers.FromByteArray<GameState>(serializedGameState, out var gameState);
-        return JsonConvert.SerializeObject(gameState.Settings);
+        return JsonConvert.SerializeObject(gameState.Settings.MapToShared());
     }
 
     public byte[]? Resign(byte[] serializedGameState, string senderId)

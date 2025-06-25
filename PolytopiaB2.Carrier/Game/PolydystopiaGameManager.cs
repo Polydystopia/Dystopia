@@ -1,4 +1,5 @@
 ﻿using System.Reflection;
+using DystopiaShared.SharedModels;
 using Microsoft.AspNetCore.SignalR;
 using Newtonsoft.Json;
 using Polytopia.Data;
@@ -131,7 +132,7 @@ public static class PolydystopiaGameManager
         var bridge = new DystopiaBridge();
         var serializedSummary = bridge.GetSummary(game.CurrentGameStateData);
 
-        var gameSettings = JsonConvert.DeserializeObject<GameSettings>(game.GameSettingsJson); // TODO DTO!
+        var gameSettings = JsonConvert.DeserializeObject<SharedGameSettings>(game.GameSettingsJson); // TODO DTO!
 
         var summary = new GameSummaryViewModel();
         summary.GameId = game.Id;
@@ -151,15 +152,14 @@ public static class PolydystopiaGameManager
             var participator = new ParticipatorViewModel()
             {
                 UserId = player.Key,
-                Name = playerData.GetNameInternal(), //TODO
-                NumberOfFriends = playerData.profile.numFriends,
-                NumberOfMultiplayerGames = playerData.profile.numMultiplayerGames,
+                Name = playerData.Name, //TODO
+                NumberOfFriends = playerData.Profile.NumFriends,
+                NumberOfMultiplayerGames = playerData.Profile.NumMultiplayerGames,
                 GameVersion = new List<ClientGameVersionViewModel>() { }, //TODO
-                MultiplayerRating = playerData.profile.multiplayerRating,
+                MultiplayerRating = playerData.Profile.MultiplayerRating,
                 SelectedTribe = 2, //TODO
                 SelectedTribeSkin = 0, //TODO
-                AvatarStateData =
-                    SerializationHelpers.ToByteArray(playerData.profile.avatarState, 19), //TODO correct version
+                AvatarStateData = playerData.Profile.SerializedAvatarState,
                 InvitationState = PlayerInvitationState.Accepted
             };
 
