@@ -228,13 +228,13 @@ public class DystopiaWhiteCastle : IDystopiaCastle
         GameStateUtils.PerformCommands(gameState, new List<CommandBase>() { cmd }, out List<CommandBase> list,
             out var events);
 
-        var newCommandsCount = gameState.CommandStack.Count - currCommandCount - 1;
-        newCommands = new byte[][] { };
-        for (int i = 0; i < newCommandsCount; i++)
-        {
-            var command = gameState.CommandStack[gameState.CommandStack.Count - newCommandsCount + i];
-            newCommands[i] = CommandBase.ToByteArray(command, version);
-        }
+            var newCommandsCount = gameState.CommandStack.Count - currCommandCount - 1;
+            newCommands = new byte[newCommandsCount][];
+            for (int i = 0; i < newCommandsCount; i++)
+            {
+                var command = gameState.CommandStack[gameState.CommandStack.Count - newCommandsCount + i];
+                newCommands[i] = CommandBase.ToByteArray(command, version);
+            }
 
         newGameState = SerializationHelpers.ToByteArray(gameState, version);
 
