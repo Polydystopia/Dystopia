@@ -141,7 +141,7 @@ class PluginLoadContext : AssemblyLoadContext
     private readonly AssemblyDependencyResolver _resolver;
 
     public PluginLoadContext(string pluginPath)
-        : base(isCollectible: true)
+        : base(isCollectible: false)
     {
         _resolver = new AssemblyDependencyResolver(pluginPath);
     }
