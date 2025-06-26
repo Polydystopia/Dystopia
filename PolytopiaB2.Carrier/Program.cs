@@ -11,6 +11,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using MonoMod.RuntimeDetour;
 using PolytopiaA10.Carrier.Hubs.ModifiedProtocol;
+using PolytopiaB2.Carrier.Bridge;
 using PolytopiaB2.Carrier.Database;
 using PolytopiaB2.Carrier.Database.Friendship;
 using PolytopiaB2.Carrier.Database.Game;
@@ -133,6 +134,7 @@ using (var scope = app.Services.CreateScope())
 }
 
 PolytopiaDataManager.provider = new MyProvider();
+DystopiaBridge.InitIl2Cpp();
 
 app.Run();
 

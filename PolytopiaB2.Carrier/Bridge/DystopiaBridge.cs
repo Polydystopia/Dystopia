@@ -34,13 +34,13 @@ public class DystopiaBridge : IDystopiaCastle
         }
         else // NATIVE
         {
-            if(!il2cppLoaded) nativeCastle = InitIl2Cpp();
+            if(!il2cppLoaded) throw new Exception("Il2Cpp not loaded");
 
             return nativeCastle;
         }
     }
 
-    private IDystopiaCastle InitIl2Cpp()
+    public static void InitIl2Cpp()
     {
         string pluginDll = Path.Combine(PluginFolder, "DystopiaMagic.dll");
 
@@ -73,7 +73,7 @@ public class DystopiaBridge : IDystopiaCastle
 
         il2cppLoaded = true;
 
-        return (IDystopiaCastle)Activator.CreateInstance(castleType)!;
+        nativeCastle = (IDystopiaCastle) Activator.CreateInstance(castleType)!;
     }
 
     public string GetVersion() //TODO
