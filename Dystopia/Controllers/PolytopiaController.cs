@@ -134,12 +134,6 @@ public class PolytopiaController : ControllerBase
 
         token.User = userFromDb;
 
-        if (isDevEnv) //todo remove this if going public
-        {
-            token.User.UnlockedTribes = Enumerable.Range(0, 1001).ToList();
-            token.User.UnlockedSkins = Enumerable.Range(0, 1001).ToList();
-        }
-
         var json = JsonConvert.SerializeObject(new ServerResponse<PolytopiaToken>(token));
 
         return Content(json, "application/json");
