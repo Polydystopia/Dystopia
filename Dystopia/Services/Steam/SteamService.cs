@@ -1,6 +1,7 @@
 ﻿using System.Collections.Concurrent;
 using System.Text;
 using System.Text.Json;
+using Microsoft.Extensions.Options;
 using SteamKit2;
 using SteamTicketDecrypt.Console;
 
@@ -8,13 +9,13 @@ namespace Dystopia.Services.Steam;
 
 public class SteamService : ISteamService
 {
-    private const string SteamWebApiKey = "3A48395EAE4081FCED0048D368358298"; //TODO remove and revoke
-
+    private readonly string _steamWebApiKey;
     private readonly ILogger<SteamService> _logger;
 
-    public SteamService(ILogger<SteamService> logger)
+    public SteamService(ILogger<SteamService> logger, IOptions<SteamSettings> opts)
     {
         _logger = logger;
+        _steamWebApiKey = opts.Value.ApiKey;
     }
 
     public AppTicketDetails? ParseTicket(byte[] data, string? deviceId = null)
@@ -53,7 +54,7 @@ public class SteamService : ISteamService
             var steamId64 = steamId.ConvertToUInt64();
 
             var url =
-                $"https://api.steampowered.com/ISteamUser/GetPlayerSummaries/v0002/?key={SteamWebApiKey}&steamids={steamId64}";
+                $"https://api.steampowered.com/ISteamUser/GetPlayerSummaries/v0002/?key={_steamWebApiKey}&steamids={steamId64}";
 
             _logger.LogInformation("Requesting Steam Web API for SteamID64: {SteamId64}", steamId64);
 

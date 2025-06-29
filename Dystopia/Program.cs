@@ -112,6 +112,9 @@ builder.Services.AddScoped<IPolydystopiaMatchmakingRepository, PolydystopiaMatch
 builder.Services.AddScoped<INewsRepository, NewsRepository>();
 
 builder.Services.AddScoped<INewsService, NewsService>();
+
+builder.Services.Configure<SteamSettings>(
+    builder.Configuration.GetSection("Steam"));
 builder.Services.AddScoped<ISteamService, SteamService>();
 
 var app = builder.Build();
