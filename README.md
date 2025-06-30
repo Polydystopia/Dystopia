@@ -53,7 +53,7 @@ Legend:
 
 ## Game version support
 Legend:
-🟢 (Supported), 🟢 (Supported, untested), 🔴 (unsupported), 🌉 (IL2CPP interop)
+🟢 (Supported), 🟡 (Supported, untested), 🔴 (unsupported), 🌉 (IL2CPP interop)
 
 | Version | Status |
 |--------|-------|
