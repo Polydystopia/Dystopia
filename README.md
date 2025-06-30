@@ -10,6 +10,34 @@ Looking ahead, we also plan to introduce unofficial enhancements—such as mod s
 # How to build
 Under heavy construction
 
+## Steam
+To fetch a Steam user’s username during your login flow, you must supply a valid Steam Web API key.
+
+---
+
+### 1. Obtain Your Key
+
+1. Go to the Steam Web API portal and sign in with your Steam account:  
+   https://steamcommunity.com/dev
+2. Register your domain and request an API key.
+3. Copy the issued key.
+
+---
+
+### 2. Configure Your .NET App
+
+Add your API key to the ASP.NET application configuration.
+
+#### Example using  `appsettings.json`
+
+```json
+{
+  "Steam": {
+    "ApiKey": "YOUR_STEAM_API_KEY"
+  }
+}
+```
+
 # How to contribute
 We welcome contributions! Just choose an open issue and submit a pull request.
 If you’d like to suggest a new feature, please open a discussion or get in touch with us.
