@@ -79,8 +79,12 @@
         </None>
     </ItemGroup>
 
-
     <ItemGroup>
+        <Content Include="..\lib\Data\**\*">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+            <TargetPath>Data\%(RecursiveDir)%(Filename)%(Extension)</TargetPath>
+        </Content>
+
         <Content Include="..\lib\Native\GameAssembly.*">
             <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
             <TargetPath>Native\%(Filename)%(Extension)</TargetPath>
@@ -91,8 +95,7 @@
         </Content>
         <Content Include="..\lib\Native\Data\**\*">
             <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-            <TargetPath>Data\%(RecursiveDir)%(Filename)%(Extension)</TargetPath>
+            <TargetPath>Native\Data\%(RecursiveDir)%(Filename)%(Extension)</TargetPath>
         </Content>
     </ItemGroup>
-
 </Project>
