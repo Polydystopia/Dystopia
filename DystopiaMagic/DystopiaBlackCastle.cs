@@ -230,8 +230,8 @@ public class DystopiaBlackCastle : IDystopiaCastle
             localCommands = new byte[newCommandsCount][];
             for (int i = 0; i < newCommandsCount; i++)
             {
-                var command = gameState.CommandStack[gameState.CommandStack.Count - newCommandsCount + i];
-                localCommands[i] = CommandBase.ToByteArray(command, version);
+                var command = gameState.CommandStack[(Index)(gameState.CommandStack.Count - newCommandsCount + i)];
+                localCommands[i] = CommandBase.ToByteArray((CommandBase) command, version);
             }
 
             localGameState = SerializationHelpers.ToByteArray(gameState, version);
