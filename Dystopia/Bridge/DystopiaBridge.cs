@@ -1,6 +1,5 @@
 ﻿using System.Reflection;
 using System.Runtime.Loader;
-using DystopiaMagic;
 using DystopiaShared;
 using DystopiaShared.SharedModels;
 
@@ -9,6 +8,15 @@ namespace Dystopia.Bridge;
 
 public class DystopiaBridge : IDystopiaCastle
 {
+    private static readonly string BasePath = AppContext.BaseDirectory;
+
+    private static readonly string DataFolder = Path.Combine(BasePath, "Data");
+    private static readonly string GameLogicDataFolder = Path.Combine(DataFolder, "GameLogicData");
+
+    private static readonly string NativeFolder = Path.Combine(BasePath, "Native");
+    private static readonly string MagicFolder = Path.Combine(NativeFolder, "Magic");
+
+
     private static bool il2cppLoaded = false;
     private static IDystopiaCastle nativeCastle = null;
 
@@ -40,25 +48,38 @@ public class DystopiaBridge : IDystopiaCastle
 
     public static void InitIl2Cpp()
     {
-        // string pluginDll = Path.Combine(PluginFolder, "DystopiaMagic.dll");
-        //
-        // var loadCtx = new PluginLoadContext(pluginDll);
-        //
-        // var pluginAsm = loadCtx.LoadFromAssemblyPath(pluginDll);
-        //
-        // we Dont need this as we just have the project
-        // var loaderType = pluginAsm.GetType(
-        //     "DystopiaMagic.GameAssemblyLoader",
-        //     throwOnError: true
-        // );
-        var loader = new GameAssemblyLoader();
-        
-        loader.Init();
-        loader.LoadGameStates();
+        var pluginDll = Path.Combine(MagicFolder, "DystopiaMagic.dll");
+
+        var loadCtx = new PluginLoadContext(pluginDll);
+
+        var pluginAsm = loadCtx.LoadFromAssemblyPath(pluginDll);
+
+
+        var loaderType = pluginAsm.GetType(
+            "DystopiaMagic.GameAssemblyLoader",
+            throwOnError: true
+        );
+        var loader = (object)Activator.CreateInstance(loaderType)!;
+
+
+        var m = loaderType.GetMethods();
+        var mi1 = loaderType.GetMethods()[1];
+        mi1.Invoke(loader, new[] { Path.Combine(NativeFolder, "GameAssembly.dll") });
+        var mi2 = loaderType.GetMethods()[2];
+        var vsa = mi2.Invoke(loader,
+            new object[]
+            {
+                GameLogicDataFolder
+            });
+
+        var castleType = pluginAsm.GetType(
+            "DystopiaMagic.DystopiaBlackCastle",
+            throwOnError: true
+        );
 
         il2cppLoaded = true;
 
-        nativeCastle = new DystopiaBlackCastle();
+        nativeCastle = (IDystopiaCastle) Activator.CreateInstance(castleType)!;
     }
 
     public string GetVersion() //TODO

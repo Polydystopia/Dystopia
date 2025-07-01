@@ -50,37 +50,26 @@
     </ItemGroup>
 
     <ItemGroup>
+        <Folder Include="Bridge\GameLibs\" />
         <Folder Include="External\Data\AvatarData\"/>
         <Folder Include="External\Data\GameLogicData\"/>
         <Folder Include="Migrations\"/>
     </ItemGroup>
 
     <ItemGroup>
-        <None Update="External\Data\**\*">
-            <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-        </None>
-        <None Remove="lib\**" />
-        <None Remove="logs\**" />
-    </ItemGroup>
-
-    <ItemGroup>
-      <ProjectReference Include="..\DystopiaMagic\DystopiaMagic.csproj" />
       <ProjectReference Include="..\DystopiaShared\DystopiaShared.csproj" />
     </ItemGroup>
 
     <ItemGroup>
       <Compile Remove="lib\**" />
-      <Compile Remove="logs\**" />
     </ItemGroup>
 
     <ItemGroup>
       <EmbeddedResource Remove="lib\**" />
-      <EmbeddedResource Remove="logs\**" />
     </ItemGroup>
 
     <ItemGroup>
       <Content Remove="lib\**" />
-      <Content Remove="logs\**" />
     </ItemGroup>
 
 
@@ -95,6 +84,14 @@
         <Content Include="..\lib\Native\GameAssembly.*">
             <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
             <TargetPath>Native\%(Filename)%(Extension)</TargetPath>
+        </Content>
+        <Content Include="..\lib\Native\baselib.*">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+            <TargetPath>Native\%(Filename)%(Extension)</TargetPath>
+        </Content>
+        <Content Include="..\lib\Native\Data\**\*">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+            <TargetPath>Data\%(RecursiveDir)%(Filename)%(Extension)</TargetPath>
         </Content>
     </ItemGroup>
 
