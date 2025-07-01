@@ -34,7 +34,7 @@ public class DystopiaBridge : IDystopiaCastle
 
     private IDystopiaCastle GetFittingCastle(int version)
     {
-        if (version <= VersionManager.GameVersion) // MANAGED
+        if (version <= VersionManager.GameVersion || true) // MANAGED
         {
             return new DystopiaWhiteCastle();
         }

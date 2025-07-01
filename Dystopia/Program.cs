@@ -24,6 +24,7 @@ using Dystopia.Patches;
 using Dystopia.Services.Cache;
 using Dystopia.Services.News;
 using Dystopia.Services.Steam;
+using Dystopia.Settings;
 using PolytopiaBackendBase;
 using PolytopiaBackendBase.Game;
 using PolytopiaBackendBase.Game.ViewModels;
@@ -112,9 +113,11 @@ builder.Services.AddScoped<IPolydystopiaGameRepository, PolydystopiaGameReposito
 builder.Services.AddScoped<IPolydystopiaMatchmakingRepository, PolydystopiaMatchmakingRepository>();
 builder.Services.AddScoped<INewsRepository, NewsRepository>();
 builder.Services.AddScoped<INewsService, NewsService>();
-
+#region cache
 builder.Services.AddSingleton(typeof(ICacheService<>), typeof(CacheService<>));
-
+builder.Services.AddHostedService<CacheCleaningService>();
+#endregion
+builder.Services.Configure<GameCacheSettings>(builder.Configuration.GetSection("GameCacheSettings"));
 builder.Services.Configure<SteamSettings>(
     builder.Configuration.GetSection("Steam"));
 builder.Services.AddScoped<ISteamService, SteamService>();

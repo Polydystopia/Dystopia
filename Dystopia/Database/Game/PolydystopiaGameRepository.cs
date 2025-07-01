@@ -1,6 +1,8 @@
 ﻿using Dystopia.Bridge;
 using Dystopia.Services.Cache;
+using Dystopia.Settings;
 using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.Options;
 using PolytopiaBackendBase.Game;
 
 namespace Dystopia.Database.Game;
@@ -9,12 +11,13 @@ public class PolydystopiaGameRepository : IPolydystopiaGameRepository
 {
     private readonly PolydystopiaDbContext _dbContext;
     private readonly ICacheService<GameViewModel> _cacheService;
-    private static readonly TimeSpan MaxAccessIntervalForCache = TimeSpan.FromMinutes(5);
+    private readonly TimeSpan _maxAccessIntervalForCache;
 
-    public PolydystopiaGameRepository(PolydystopiaDbContext dbContext, ICacheService<GameViewModel> cacheService)
+    public PolydystopiaGameRepository(PolydystopiaDbContext dbContext, ICacheService<GameViewModel> cacheService, IOptions<GameCacheSettings> settings)
     {
         _dbContext = dbContext;
         _cacheService = cacheService;
+        _maxAccessIntervalForCache = settings.Value.CacheTime;
     }
 
     public async Task<GameViewModel?> GetByIdAsync(Guid id)
@@ -28,14 +31,14 @@ public class PolydystopiaGameRepository : IPolydystopiaGameRepository
         return model;
     }
 
-    private static bool ShouldCache(GameViewModel game)
+    private bool ShouldCache(GameViewModel game)
     {
         if (game.TimerSettings.UseTimebanks)
         {
             return true;
         }
 
-        if (DateTime.Now - game.DateLastCommand < MaxAccessIntervalForCache)
+        if (DateTime.Now - game.DateLastCommand < _maxAccessIntervalForCache)
         {
             return true;
         }
@@ -53,15 +56,18 @@ public class PolydystopiaGameRepository : IPolydystopiaGameRepository
     {
         if (ShouldCache(gameViewModel))
         {
-            _cacheService.Set(gameViewModel.Id, gameViewModel);
+            _cacheService.Set(gameViewModel.Id, gameViewModel, context => context.Games.Update(gameViewModel));
             return gameViewModel; // update is automatic as it is a reference type
+            // _dbContext.Games.Update(gameViewModel);
+            // await _dbContext.SaveChangesAsync();
+            // Add this if it is catastrophic when live games or last few moves of games are deleted on server crash.
         }
         _dbContext.Games.Update(gameViewModel);
         await _dbContext.SaveChangesAsync();
 
         return gameViewModel;
     }
-
+    
     public async Task<List<GameViewModel>> GetAllGamesByPlayer(Guid playerId)
     {
         var playerGames = new List<GameViewModel>();
