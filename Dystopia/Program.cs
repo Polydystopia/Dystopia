@@ -21,6 +21,7 @@ using Dystopia.Database.News;
 using Dystopia.Database.User;
 using Dystopia.Hubs;
 using Dystopia.Patches;
+using Dystopia.Services.Cache;
 using Dystopia.Services.News;
 using Dystopia.Services.Steam;
 using PolytopiaBackendBase;
@@ -110,8 +111,9 @@ builder.Services.AddScoped<IPolydystopiaLobbyRepository, PolydystopiaLobbyReposi
 builder.Services.AddScoped<IPolydystopiaGameRepository, PolydystopiaGameRepository>();
 builder.Services.AddScoped<IPolydystopiaMatchmakingRepository, PolydystopiaMatchmakingRepository>();
 builder.Services.AddScoped<INewsRepository, NewsRepository>();
-
 builder.Services.AddScoped<INewsService, NewsService>();
+
+builder.Services.AddSingleton(typeof(ICacheService<>), typeof(CacheService<>));
 
 builder.Services.Configure<SteamSettings>(
     builder.Configuration.GetSection("Steam"));
@@ -137,7 +139,6 @@ using (var scope = app.Services.CreateScope())
 }
 
 PolytopiaDataManager.provider = new MyProvider();
-DystopiaBridge.InitIl2Cpp();
 
 app.Run();
 
