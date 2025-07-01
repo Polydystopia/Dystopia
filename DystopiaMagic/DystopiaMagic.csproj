@@ -20,45 +20,45 @@
 
     <ItemGroup>
         <Reference Include="0Harmony">
-            <HintPath>..\..\..\..\..\..\..\Steam\steamapps\common\The Battle of Polytopia\BepInEx\core\0Harmony.dll</HintPath>
+            <HintPath>../lib/BepInEx/core/0Harmony.dll</HintPath>
         </Reference>
         <Reference Include="BepInEx.Core">
-            <HintPath>..\..\..\..\..\..\..\Steam\steamapps\common\The Battle of Polytopia\BepInEx\core\BepInEx.Core.dll</HintPath>
+            <HintPath>../lib/BepInEx/core/BepInEx.Core.dll</HintPath>
         </Reference>
         <Reference Include="BepInEx.Unity.IL2CPP">
-            <HintPath>..\..\..\..\..\..\..\Steam\steamapps\common\The Battle of Polytopia\BepInEx\core\BepInEx.Unity.IL2CPP.dll</HintPath>
-        </Reference>
-        <Reference Include="DystopiaShared">
-          <HintPath>..\..\..\Polydystopia\Dystopia\DystopiaShared\bin\Debug\net6.0\DystopiaShared.dll</HintPath>
+            <HintPath>../lib/BepInEx/core/BepInEx.Unity.IL2CPP.dll</HintPath>
         </Reference>
         <Reference Include="GameLogicAssembly">
-            <HintPath>bin\Debug\net6.0\GameLogicAssembly.dll</HintPath>
+            <HintPath>../lib/Native/interop/GameLogicAssembly.dll</HintPath>
         </Reference>
         <Reference Include="Il2CppInterop.Common">
-            <HintPath>..\..\..\..\..\..\..\Steam\steamapps\common\The Battle of Polytopia\BepInEx\core\Il2CppInterop.Common.dll</HintPath>
+            <HintPath>../lib/BepInEx/core/Il2CppInterop.Common.dll</HintPath>
         </Reference>
         <Reference Include="Il2CppInterop.Generator">
-            <HintPath>..\..\..\..\..\..\..\Steam\steamapps\common\The Battle of Polytopia\BepInEx\core\Il2CppInterop.Generator.dll</HintPath>
+            <HintPath>../lib/BepInEx/core/Il2CppInterop.Generator.dll</HintPath>
         </Reference>
         <Reference Include="Il2CppInterop.HarmonySupport">
-            <HintPath>..\..\..\..\..\..\..\Steam\steamapps\common\The Battle of Polytopia\BepInEx\core\Il2CppInterop.HarmonySupport.dll</HintPath>
+            <HintPath>.../lib/BepInEx/core/Il2CppInterop.HarmonySupport.dll</HintPath>
         </Reference>
         <Reference Include="Il2CppInterop.Runtime">
-            <HintPath>..\..\..\..\..\..\..\Steam\steamapps\common\The Battle of Polytopia\BepInEx\core\Il2CppInterop.Runtime.dll</HintPath>
+            <HintPath>../lib/BepInEx/core/Il2CppInterop.Runtime.dll</HintPath>
         </Reference>
         <Reference Include="Il2Cppmscorlib">
-            <HintPath>bin\Debug\net6.0\Il2Cppmscorlib.dll</HintPath>
+            <HintPath>../lib/Native/interop/Il2Cppmscorlib.dll</HintPath>
         </Reference>
         <Reference Include="MonoMod.RuntimeDetour">
-            <HintPath>..\..\..\..\..\..\..\Steam\steamapps\common\The Battle of Polytopia\BepInEx\core\MonoMod.RuntimeDetour.dll</HintPath>
+            <HintPath>../lib/BepInEx/core/MonoMod.RuntimeDetour.dll</HintPath>
         </Reference>
         <Reference Include="PolytopiaAssembly">
-            <HintPath>bin\Debug\net6.0\PolytopiaAssembly.dll</HintPath>
+            <HintPath>../lib/Native/interop/PolytopiaAssembly.dll</HintPath>
         </Reference>
-
         <Reference Include="PolytopiaBackendBase">
-            <HintPath>bin\Debug\net6.0\PolytopiaBackendBase.dll</HintPath>
+            <HintPath>../lib/Native/interop/PolytopiaBackendBase.dll</HintPath>
         </Reference>
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\DystopiaShared\DystopiaShared.csproj" />
     </ItemGroup>
 
 </Project>

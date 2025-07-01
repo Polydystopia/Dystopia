@@ -8,7 +8,9 @@ Our goal is to deliver a complete, 100 % complete reimplementation of every offi
 Looking ahead, we also plan to introduce unofficial enhancements—such as mod support or a web-based UI.
 
 # How to build
-Under heavy construction
+1. Gain access to private repo with libs or recreate libs directory
+2. `git submodule update`
+3. run
 
 # How to contribute
 We welcome contributions! Just choose an open issue and submit a pull request.

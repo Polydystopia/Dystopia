@@ -10,22 +10,22 @@
 
     <ItemGroup>
         <Reference Include="DebugLogger">
-            <HintPath>lib/Managed/DebugLogger.dll</HintPath>
+            <HintPath>../lib/Managed/interop/DebugLogger.dll</HintPath>
         </Reference>
         <Reference Include="GameLogicAssembly">
-            <HintPath>lib/Managed/GameLogicAssembly.dll</HintPath>
+            <HintPath>../lib/Managed/interop/GameLogicAssembly.dll</HintPath>
         </Reference>
         <Reference Include="PolytopiaAssembly">
-            <HintPath>lib/Managed/PolytopiaAssembly.dll</HintPath>
+            <HintPath>../lib/Managed/interop/PolytopiaAssembly.dll</HintPath>
         </Reference>
         <Reference Include="PolytopiaBackendBase">
-            <HintPath>lib/Managed/PolytopiaBackendBase.dll</HintPath>
+            <HintPath>../lib/Managed/interop/PolytopiaBackendBase.dll</HintPath>
         </Reference>
         <Reference Include="Steamworks.NET">
             <HintPath>external\Steam\Steamworks.NET.dll</HintPath>
         </Reference>
         <Reference Include="UnityEngine.CoreModule">
-            <HintPath>lib/Managed/UnityEngine.CoreModule.dll</HintPath>
+            <HintPath>../lib/Managed/interop/UnityEngine.CoreModule.dll</HintPath>
         </Reference>
     </ItemGroup>
 
