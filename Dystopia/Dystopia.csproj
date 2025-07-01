@@ -10,25 +10,22 @@
 
     <ItemGroup>
         <Reference Include="DebugLogger">
-            <HintPath>..\..\..\..\Downloads\DepotDownloader-windows-x64\depots\874393\18293084\Polytopia_Data\Managed\DebugLogger.dll</HintPath>
-        </Reference>
-        <Reference Include="DystopiaMagic">
-          <HintPath>..\..\polydystopia\DystopiaMagic\DystopiaMagic\bin\Debug\net6.0\DystopiaMagic.dll</HintPath>
+            <HintPath>lib/Managed/DebugLogger.dll</HintPath>
         </Reference>
         <Reference Include="GameLogicAssembly">
-            <HintPath>..\..\..\..\Downloads\DepotDownloader-windows-x64\depots\874393\18293084\Polytopia_Data\Managed\GameLogicAssembly.dll</HintPath>
+            <HintPath>lib/Managed/GameLogicAssembly.dll</HintPath>
         </Reference>
         <Reference Include="PolytopiaAssembly">
-            <HintPath>..\..\..\..\Downloads\DepotDownloader-windows-x64\depots\874393\18293084\Polytopia_Data\Managed\PolytopiaAssembly.dll</HintPath>
+            <HintPath>lib/Managed/PolytopiaAssembly.dll</HintPath>
         </Reference>
         <Reference Include="PolytopiaBackendBase">
-            <HintPath>..\..\..\..\Downloads\DepotDownloader-windows-x64\depots\874393\18293084\Polytopia_Data\Managed\PolytopiaBackendBase.dll</HintPath>
+            <HintPath>lib/Managed/PolytopiaBackendBase.dll</HintPath>
         </Reference>
         <Reference Include="Steamworks.NET">
             <HintPath>external\Steam\Steamworks.NET.dll</HintPath>
         </Reference>
         <Reference Include="UnityEngine.CoreModule">
-            <HintPath>..\..\..\..\Downloads\DepotDownloader-windows-x64\depots\874393\18293084\Polytopia_Data\Managed\UnityEngine.CoreModule.dll</HintPath>
+            <HintPath>lib/Managed/UnityEngine.CoreModule.dll</HintPath>
         </Reference>
     </ItemGroup>
 
@@ -63,10 +60,23 @@
         <None Update="External\Data\**\*">
             <CopyToOutputDirectory>Always</CopyToOutputDirectory>
         </None>
+        <None Remove="lib\**" />
     </ItemGroup>
 
     <ItemGroup>
       <ProjectReference Include="..\DystopiaShared\DystopiaShared.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Compile Remove="lib\**" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <EmbeddedResource Remove="lib\**" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Content Remove="lib\**" />
     </ItemGroup>
 
 </Project>
