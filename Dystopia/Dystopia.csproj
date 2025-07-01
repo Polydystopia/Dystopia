@@ -50,7 +50,6 @@
     </ItemGroup>
 
     <ItemGroup>
-        <Folder Include="Bridge\GameLibs\" />
         <Folder Include="External\Data\AvatarData\"/>
         <Folder Include="External\Data\GameLogicData\"/>
         <Folder Include="Migrations\"/>
@@ -61,22 +60,27 @@
             <CopyToOutputDirectory>Always</CopyToOutputDirectory>
         </None>
         <None Remove="lib\**" />
+        <None Remove="logs\**" />
     </ItemGroup>
 
     <ItemGroup>
+      <ProjectReference Include="..\DystopiaMagic\DystopiaMagic.csproj" />
       <ProjectReference Include="..\DystopiaShared\DystopiaShared.csproj" />
     </ItemGroup>
 
     <ItemGroup>
       <Compile Remove="lib\**" />
+      <Compile Remove="logs\**" />
     </ItemGroup>
 
     <ItemGroup>
       <EmbeddedResource Remove="lib\**" />
+      <EmbeddedResource Remove="logs\**" />
     </ItemGroup>
 
     <ItemGroup>
       <Content Remove="lib\**" />
+      <Content Remove="logs\**" />
     </ItemGroup>
 
 </Project>
