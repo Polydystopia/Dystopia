@@ -83,4 +83,19 @@
       <Content Remove="logs\**" />
     </ItemGroup>
 
+
+    <ItemGroup>
+        <None Include="..\lib\**\*">
+            <Link>lib\%(RecursiveDir)%(Filename)%(Extension)</Link>
+        </None>
+    </ItemGroup>
+
+
+    <ItemGroup>
+        <Content Include="..\lib\Native\GameAssembly.*">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+            <TargetPath>Native\%(Filename)%(Extension)</TargetPath>
+        </Content>
+    </ItemGroup>
+
 </Project>
