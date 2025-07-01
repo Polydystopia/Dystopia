@@ -7,17 +7,58 @@ This is a C#–based backend server emulator for The Battle of Polytopia.
 Our goal is to deliver a complete, 100 % complete reimplementation of every official feature.
 Looking ahead, we also plan to introduce unofficial enhancements—such as mod support or a web-based UI.
 
-# How to build
-1. Gain access to private repo with libs or recreate libs directory
-2. `git submodule update`
-3. run
+# How to run
 
-## Steam
+## Build
+You need to put game files into the root/lib/ folder.
+Ensure platform‐specific files are placed in the correct Windows or Linux subfolder.
+
+The structure is the following:
+
+```
+root/
+└── lib/
+    ├── BepInEx/
+    │   └── core/
+    │       ├── windows/ <-- put BepInEx files here (Gameroot/BepInEx/core)
+    │       └── linux/ <-- put BepInEx files here (Gameroot/BepInEx/core)
+    │
+    ├── Data/
+    │   ├── AvatarData/ <-- put dumped avatar data here
+    │   └── GameLogicData/ <-- put dumped game logic here (1.txt .. n.txt)
+    │
+    ├── Managed/
+    │   └── interop/ <-- put managed dlls here (Gameroot/Polytopia_Data/Managed)
+    │
+    └── native/
+        ├── windows/ 
+        │   ├── GameAssembly.dll <-- put native dll here (Gameroot)
+        │   ├── baselib.dll <-- put native dll here (Gameroot)
+        │   ├── Data/
+        │   │   └── Metadata/
+        │   │       └── global-metadata.dat <-- put native one here (Gameroot/Data/Metadata/)
+        │   └── interop/ <-- put native Il2CPPInterop files here (Gameroot/BepInEx/interop)
+        │
+        └── linux/
+            ├── GameAssembly.so <-- put native so here (Gameroot)
+            ├── Data/
+            │   └── Metadata/
+            │       └── global-metadata.dat <-- put native one here (Gameroot/Data/Metadata/)
+            └── interop/ <-- put native Il2CPPInterop files here (Gameroot/BepInEx/interop)
+
+```
+
+## After build
+
+### Magic
+Put all files of DystopiaMagicOutputBin/ in DystopiaOutputBin/Native/Magic/.
+
+### Steam
 To fetch a Steam user’s username during your login flow, you must supply a valid Steam Web API key.
 
 ---
 
-### 1. Obtain Your Key
+#### 1. Obtain Your Key
 
 1. Go to the Steam Web API portal and sign in with your Steam account:  
    https://steamcommunity.com/dev
@@ -26,7 +67,7 @@ To fetch a Steam user’s username during your login flow, you must supply a val
 
 ---
 
-### 2. Configure Your .NET App
+#### 2. Configure Your .NET App
 
 Add your API key to the ASP.NET application configuration.
 
