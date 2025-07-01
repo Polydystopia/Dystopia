@@ -50,28 +50,12 @@
     </ItemGroup>
 
     <ItemGroup>
-        <Folder Include="Bridge\GameLibs\"/>
-        <Folder Include="External\Data\AvatarData\"/>
-        <Folder Include="External\Data\GameLogicData\"/>
         <Folder Include="Migrations\"/>
     </ItemGroup>
 
     <ItemGroup>
         <ProjectReference Include="..\DystopiaShared\DystopiaShared.csproj"/>
     </ItemGroup>
-
-    <ItemGroup>
-        <Compile Remove="lib\**"/>
-    </ItemGroup>
-
-    <ItemGroup>
-        <EmbeddedResource Remove="lib\**"/>
-    </ItemGroup>
-
-    <ItemGroup>
-        <Content Remove="lib\**"/>
-    </ItemGroup>
-
 
     <ItemGroup>
         <None Include="..\lib\**\*">
@@ -97,6 +81,9 @@
             <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
             <TargetPath>Native\Data\%(RecursiveDir)%(Filename)%(Extension)</TargetPath>
         </Content>
+        <Content Remove="..\lib\Data\GameLogicData\**" />
+        <Content Remove="..\lib\Native\windows\Data\Metadata\**" />
+        <Content Remove="..\lib\Data\AvatarData\**" />
     </ItemGroup>
 
     <ItemGroup Condition="'$(OS)' != 'Windows_NT'">
