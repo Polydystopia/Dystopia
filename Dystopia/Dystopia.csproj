@@ -50,26 +50,26 @@
     </ItemGroup>
 
     <ItemGroup>
-        <Folder Include="Bridge\GameLibs\" />
+        <Folder Include="Bridge\GameLibs\"/>
         <Folder Include="External\Data\AvatarData\"/>
         <Folder Include="External\Data\GameLogicData\"/>
         <Folder Include="Migrations\"/>
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\DystopiaShared\DystopiaShared.csproj" />
+        <ProjectReference Include="..\DystopiaShared\DystopiaShared.csproj"/>
     </ItemGroup>
 
     <ItemGroup>
-      <Compile Remove="lib\**" />
+        <Compile Remove="lib\**"/>
     </ItemGroup>
 
     <ItemGroup>
-      <EmbeddedResource Remove="lib\**" />
+        <EmbeddedResource Remove="lib\**"/>
     </ItemGroup>
 
     <ItemGroup>
-      <Content Remove="lib\**" />
+        <Content Remove="lib\**"/>
     </ItemGroup>
 
 
@@ -79,21 +79,41 @@
         </None>
     </ItemGroup>
 
-    <ItemGroup>
+    <ItemGroup Condition="'$(OS)' == 'Windows_NT'">
         <Content Include="..\lib\Data\**\*">
             <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
             <TargetPath>Data\%(RecursiveDir)%(Filename)%(Extension)</TargetPath>
         </Content>
 
-        <Content Include="..\lib\Native\GameAssembly.*">
+        <Content Include="..\lib\Native\windows\GameAssembly.*">
             <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
             <TargetPath>Native\%(Filename)%(Extension)</TargetPath>
         </Content>
-        <Content Include="..\lib\Native\baselib.*">
+        <Content Include="..\lib\Native\windows\baselib.*">
             <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
             <TargetPath>Native\%(Filename)%(Extension)</TargetPath>
         </Content>
-        <Content Include="..\lib\Native\Data\**\*">
+        <Content Include="..\lib\Native\windows\Data\**\*">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+            <TargetPath>Native\Data\%(RecursiveDir)%(Filename)%(Extension)</TargetPath>
+        </Content>
+    </ItemGroup>
+
+    <ItemGroup Condition="'$(OS)' != 'Windows_NT'">
+        <Content Include="..\lib\Data\**\*">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+            <TargetPath>Data\%(RecursiveDir)%(Filename)%(Extension)</TargetPath>
+        </Content>
+
+        <Content Include="..\lib\Native\linux\GameAssembly.*">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+            <TargetPath>Native\%(Filename)%(Extension)</TargetPath>
+        </Content>
+        <Content Include="..\lib\Native\linux\baselib.*">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+            <TargetPath>Native\%(Filename)%(Extension)</TargetPath>
+        </Content>
+        <Content Include="..\lib\Native\linux\Data\**\*">
             <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
             <TargetPath>Native\Data\%(RecursiveDir)%(Filename)%(Extension)</TargetPath>
         </Content>
