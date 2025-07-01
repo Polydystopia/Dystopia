@@ -8,8 +8,14 @@ namespace Dystopia.Bridge;
 
 public class DystopiaBridge : IDystopiaCastle
 {
-    private const string PluginFolder =
-        @"C:\Users\Juli\Desktop\source\polydystopia\DystopiaMagic\DystopiaMagic\bin\Debug\net6.0";
+    private static readonly string BasePath = AppContext.BaseDirectory;
+
+    private static readonly string DataFolder = Path.Combine(BasePath, "Data");
+    private static readonly string GameLogicDataFolder = Path.Combine(DataFolder, "GameLogicData");
+
+    private static readonly string NativeFolder = Path.Combine(BasePath, "Native");
+    private static readonly string MagicFolder = Path.Combine(NativeFolder, "Magic");
+
 
     private static bool il2cppLoaded = false;
     private static IDystopiaCastle nativeCastle = null;
@@ -42,7 +48,7 @@ public class DystopiaBridge : IDystopiaCastle
 
     public static void InitIl2Cpp()
     {
-        string pluginDll = Path.Combine(PluginFolder, "DystopiaMagic.dll");
+        var pluginDll = Path.Combine(MagicFolder, "DystopiaMagic.dll");
 
         var loadCtx = new PluginLoadContext(pluginDll);
 
@@ -58,12 +64,12 @@ public class DystopiaBridge : IDystopiaCastle
 
         var m = loaderType.GetMethods();
         var mi1 = loaderType.GetMethods()[1];
-        mi1.Invoke(loader, new[] { "GameAssembly.dll" });
+        mi1.Invoke(loader, new[] { Path.Combine(NativeFolder, "GameAssembly.dll") });
         var mi2 = loaderType.GetMethods()[2];
         var vsa = mi2.Invoke(loader,
             new object[]
             {
-                @"C:\Users\Juli\Desktop\source\polydystopia\DystopiaMagic\DystopiaMagic\bin\Debug\net6.0\GameLogicData"
+                GameLogicDataFolder
             });
 
         var castleType = pluginAsm.GetType(

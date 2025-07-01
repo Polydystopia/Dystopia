@@ -4,6 +4,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Dystopia", "Dystopia\Dystop
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DystopiaShared", "DystopiaShared\DystopiaShared.csproj", "{8D6B211C-3823-4EA5-8E63-A5693FF7FE61}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DystopiaMagic", "DystopiaMagic\DystopiaMagic.csproj", "{ADC73819-F7B5-42B9-843C-32D577F49B20}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -18,5 +20,9 @@ Global
 		{8D6B211C-3823-4EA5-8E63-A5693FF7FE61}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{8D6B211C-3823-4EA5-8E63-A5693FF7FE61}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{8D6B211C-3823-4EA5-8E63-A5693FF7FE61}.Release|Any CPU.Build.0 = Release|Any CPU
+		{ADC73819-F7B5-42B9-843C-32D577F49B20}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{ADC73819-F7B5-42B9-843C-32D577F49B20}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{ADC73819-F7B5-42B9-843C-32D577F49B20}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{ADC73819-F7B5-42B9-843C-32D577F49B20}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
