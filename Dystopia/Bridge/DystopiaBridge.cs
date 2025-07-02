@@ -49,8 +49,9 @@ public class DystopiaBridge : IDystopiaCastle
 
     public static void InitIl2Cpp(bool shouldAlwaysUseManaged)
     {
+        _shouldAlwaysUseManaged = shouldAlwaysUseManaged;
         // ReSharper disable once AssignmentInConditionalExpression
-        if (_shouldAlwaysUseManaged = shouldAlwaysUseManaged == false)
+        if (shouldAlwaysUseManaged)
         {
             return;
         }
