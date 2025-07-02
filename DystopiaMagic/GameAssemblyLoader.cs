@@ -1,4 +1,4 @@
-using System.Runtime.InteropServices;
+﻿using System.Runtime.InteropServices;
 using BepInEx.Unity.IL2CPP.Hook;
 using Il2CppInterop.Runtime;
 using Il2CppInterop.Runtime.Injection;
@@ -60,7 +60,7 @@ public class GameAssemblyLoader
         for (int i = 1; i <= Directory.GetFiles(gameLogicDataPath).Length; i++)
         {
             var data = new GameLogicData();
-            data.Parse(File.ReadAllText($@"{gameLogicDataPath}\{i}.txt"));
+            data.Parse(File.ReadAllText(Path.Combine(gameLogicDataPath, $"{i}.txt")));
 
             PolytopiaDataManager.gameLogicDatas.Add(i, data);
         }
