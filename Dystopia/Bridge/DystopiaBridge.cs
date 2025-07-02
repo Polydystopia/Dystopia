@@ -8,6 +8,7 @@ namespace Dystopia.Bridge;
 
 public class DystopiaBridge : IDystopiaCastle
 {
+    private static bool _shouldAlwaysUseManaged;
     private static readonly string BasePath = AppContext.BaseDirectory;
 
     private static readonly string DataFolder = Path.Combine(BasePath, "Data");
@@ -34,7 +35,7 @@ public class DystopiaBridge : IDystopiaCastle
 
     private IDystopiaCastle GetFittingCastle(int version)
     {
-        if (version <= VersionManager.GameVersion || true) // MANAGED
+        if (version <= VersionManager.GameVersion || _shouldAlwaysUseManaged) // MANAGED
         {
             return new DystopiaWhiteCastle();
         }
@@ -46,8 +47,13 @@ public class DystopiaBridge : IDystopiaCastle
         }
     }
 
-    public static void InitIl2Cpp()
+    public static void InitIl2Cpp(bool shouldAlwaysUseManaged)
     {
+        // ReSharper disable once AssignmentInConditionalExpression
+        if (_shouldAlwaysUseManaged = shouldAlwaysUseManaged == false)
+        {
+            return;
+        }
         var pluginDll = Path.Combine(MagicFolder, "DystopiaMagic.dll");
 
         var loadCtx = new PluginLoadContext(pluginDll);

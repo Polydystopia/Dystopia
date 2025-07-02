@@ -121,6 +121,9 @@ builder.Services.Configure<GameCacheSettings>(builder.Configuration.GetSection("
 builder.Services.Configure<SteamSettings>(
     builder.Configuration.GetSection("Steam"));
 builder.Services.AddScoped<ISteamService, SteamService>();
+builder.Services.Configure<Il2cppSettings>(builder.Configuration.GetSection("Il2cppSettings"));
+
+DystopiaBridge.InitIl2Cpp(builder.Configuration["Il2cppSettings:Enabled"] != "true");
 
 var app = builder.Build();
 
