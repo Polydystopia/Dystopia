@@ -1,4 +1,4 @@
-﻿using System.Runtime.InteropServices;
+using System.Runtime.InteropServices;
 using BepInEx.Unity.IL2CPP.Hook;
 using Il2CppInterop.Runtime;
 using Il2CppInterop.Runtime.Injection;
@@ -18,6 +18,8 @@ public class GameAssemblyLoader
     public void Init(string assemblyPath = @"GameAssembly.dll")
     {
         if(IsInitialized) return;
+        
+        Console.WriteLine($"loading assembly {assemblyPath} as GameAssembly");
 
         string domainName = "dystopiamagic";
         IntPtr domainNamePtr = Marshal.StringToHGlobalAnsi(domainName);

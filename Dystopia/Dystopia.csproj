@@ -107,7 +107,12 @@
         <Content Include="..\lib\Native\linux\Data\**\*">
             <Visible>false</Visible>
             <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-            <TargetPath>Native\Data\%(RecursiveDir)%(Filename)%(Extension)</TargetPath>
+            <TargetPath>Data\%(RecursiveDir)%(Filename)%(Extension)</TargetPath>
+        </Content>
+        <Content Include="..\lib\Native\linux\Magic\**\*">
+            <Visible>false</Visible>
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+            <TargetPath>Native\Magic\%(RecursiveDir)%(Filename)%(Extension)</TargetPath>
         </Content>
     </ItemGroup>
 </Project>

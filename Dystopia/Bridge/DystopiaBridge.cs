@@ -1,4 +1,5 @@
-﻿using System.Reflection;
+using System.Reflection;
+using System.Runtime.InteropServices;
 using System.Runtime.Loader;
 using DystopiaShared;
 using DystopiaShared.SharedModels;
@@ -16,6 +17,9 @@ public class DystopiaBridge : IDystopiaCastle
     private static readonly string NativeFolder = Path.Combine(BasePath, "Native");
     private static readonly string MagicFolder = Path.Combine(NativeFolder, "Magic");
 
+
+    private static readonly string SharedLibraryExtension =
+        RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? ".dll" : ".so";
 
     private static bool il2cppLoaded = false;
     private static IDystopiaCastle nativeCastle = null;
@@ -64,7 +68,7 @@ public class DystopiaBridge : IDystopiaCastle
 
         var m = loaderType.GetMethods();
         var mi1 = loaderType.GetMethods()[1];
-        mi1.Invoke(loader, new[] { Path.Combine(NativeFolder, "GameAssembly.dll") });
+        mi1.Invoke(loader, new object?[] { Path.Combine(NativeFolder, "GameAssembly" + SharedLibraryExtension) });
         var mi2 = loaderType.GetMethods()[2];
         var vsa = mi2.Invoke(loader,
             new object[]
