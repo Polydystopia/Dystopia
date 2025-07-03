@@ -50,11 +50,11 @@ public class DystopiaBridge : IDystopiaCastle
     public static void InitIl2Cpp(bool shouldAlwaysUseManaged)
     {
         _shouldAlwaysUseManaged = shouldAlwaysUseManaged;
-        // ReSharper disable once AssignmentInConditionalExpression
         if (shouldAlwaysUseManaged)
         {
             return;
         }
+
         var pluginDll = Path.Combine(MagicFolder, "DystopiaMagic.dll");
 
         var loadCtx = new PluginLoadContext(pluginDll);

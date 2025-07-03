@@ -123,7 +123,8 @@ builder.Services.Configure<SteamSettings>(
 builder.Services.AddScoped<ISteamService, SteamService>();
 builder.Services.Configure<Il2cppSettings>(builder.Configuration.GetSection("Il2cppSettings"));
 
-DystopiaBridge.InitIl2Cpp(builder.Configuration["Il2cppSettings:Enabled"] != "true");
+var il2CPPEnabled = builder.Configuration.GetValue<bool>("Il2cppSettings:Enabled");
+DystopiaBridge.InitIl2Cpp(!il2CPPEnabled);
 
 var app = builder.Build();
 
