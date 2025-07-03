@@ -12,13 +12,14 @@ public class CacheCleaningService : BackgroundService
 {
     private readonly ICacheService<GameViewModel> _cacheService;
     private readonly IServiceProvider _provider;
-    private GameCacheSettings _settings;
-    public CacheCleaningService(IOptions<GameCacheSettings> settings, ICacheService<GameViewModel> cacheService, IServiceProvider provider)
+    private readonly CacheSettings _settings;
+
+    public CacheCleaningService(IOptions<CacheSettings> settings, ICacheService<GameViewModel> cacheService, IServiceProvider provider)
     {
         _cacheService = cacheService;
         _provider = provider;
         // TODO make it generic
-        // but for now we only have game view model cahcing so it sok
+        // but for now we only have game view model caching so its ok
         _settings = settings.Value;
     }
 

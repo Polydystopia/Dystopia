@@ -107,22 +107,23 @@ builder.Services.AddAuthorization();
 builder.Services.AddControllers();
 builder.Services.AddSignalR().AddNewtonsoftJsonAotProtocol();
 
+builder.Services.Configure<CacheSettings>(builder.Configuration.GetSection("CacheSettings"));
+builder.Services.Configure<SteamSettings>(builder.Configuration.GetSection("Steam"));
+builder.Services.Configure<Il2cppSettings>(builder.Configuration.GetSection("Il2cppSettings"));
+
 builder.Services.AddScoped<IPolydystopiaUserRepository, PolydystopiaUserRepository>();
 builder.Services.AddScoped<IFriendshipRepository, FriendshipRepository>();
 builder.Services.AddScoped<IPolydystopiaLobbyRepository, PolydystopiaLobbyRepository>();
 builder.Services.AddScoped<IPolydystopiaGameRepository, PolydystopiaGameRepository>();
 builder.Services.AddScoped<IPolydystopiaMatchmakingRepository, PolydystopiaMatchmakingRepository>();
 builder.Services.AddScoped<INewsRepository, NewsRepository>();
+
 builder.Services.AddScoped<INewsService, NewsService>();
 #region cache
 builder.Services.AddSingleton(typeof(ICacheService<>), typeof(CacheService<>));
 builder.Services.AddHostedService<CacheCleaningService>();
 #endregion
-builder.Services.Configure<GameCacheSettings>(builder.Configuration.GetSection("GameCacheSettings"));
-builder.Services.Configure<SteamSettings>(
-    builder.Configuration.GetSection("Steam"));
 builder.Services.AddScoped<ISteamService, SteamService>();
-builder.Services.Configure<Il2cppSettings>(builder.Configuration.GetSection("Il2cppSettings"));
 
 var app = builder.Build();
 

@@ -1,6 +1,6 @@
 namespace Dystopia.Settings;
 
-public class GameCacheSettings
+public class CacheSettings
 {
     public CacheProfile GameViewModel { get; set; }
 }

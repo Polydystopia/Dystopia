@@ -1,6 +1,7 @@
 ﻿using Dystopia.Bridge;
 using Dystopia.Services.Cache;
 using Dystopia.Settings;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Options;
 using PolytopiaBackendBase.Game;
@@ -13,7 +14,7 @@ public class PolydystopiaGameRepository : IPolydystopiaGameRepository
     private readonly ICacheService<GameViewModel> _cacheService;
     private readonly TimeSpan _maxAccessIntervalForCache;
 
-    public PolydystopiaGameRepository(PolydystopiaDbContext dbContext, ICacheService<GameViewModel> cacheService, IOptions<GameCacheSettings> settings)
+    public PolydystopiaGameRepository(PolydystopiaDbContext dbContext, ICacheService<GameViewModel> cacheService, IOptions<CacheSettings> settings)
     {
         _dbContext = dbContext;
         _cacheService = cacheService;
@@ -26,7 +27,12 @@ public class PolydystopiaGameRepository : IPolydystopiaGameRepository
         {
             return model;
         }
+
         model = await _dbContext.Games.FindAsync(id) ?? null;
+        if (model != null && ShouldCache(model))
+        {
+            _cacheService.Set(model.Id, model, context => context.Games.Update(model));
+        }
 
         return model;
     }
@@ -45,6 +51,7 @@ public class PolydystopiaGameRepository : IPolydystopiaGameRepository
 
         return false;
     }
+
     public async Task<GameViewModel> CreateAsync(GameViewModel gameViewModel)
     {
         await _dbContext.Games.AddAsync(gameViewModel);
@@ -67,19 +74,41 @@ public class PolydystopiaGameRepository : IPolydystopiaGameRepository
 
         return gameViewModel;
     }
-    
+
     public async Task<List<GameViewModel>> GetAllGamesByPlayer(Guid playerId)
     {
         var playerGames = new List<GameViewModel>();
+        var bridge = new DystopiaBridge();
 
-        foreach (var gameViewModel in _dbContext.Games)
+        var allIds = await _dbContext.Games
+            .Select(g => g.Id)
+            .ToListAsync();
+
+        foreach (var id in allIds)
         {
-            var bridge = new DystopiaBridge();
-            if (bridge.IsPlayerInGame(playerId.ToString(), gameViewModel.CurrentGameStateData))
+            GameViewModel? game;
+
+            if (_cacheService.TryGet(id, out var cached))
             {
-                playerGames.Add(gameViewModel);
+                game = cached;
             }
-        } // TODO use database for efficient querying
+            else
+            {
+                game = await _dbContext.Games.FindAsync(id);
+
+                if (game == null) continue;
+
+                if (ShouldCache(game))
+                {
+                    _cacheService.Set(game.Id, game, ctx => ctx.Games.Update(game));
+                }
+            }
+
+            if (bridge.IsPlayerInGame(playerId.ToString(), game.CurrentGameStateData))
+            {
+                playerGames.Add(game);
+            }
+        }
 
         return playerGames;
     }
