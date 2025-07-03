@@ -106,6 +106,10 @@ builder.Services.AddAuthentication(options =>
 builder.Services.AddAuthorization();
 
 builder.Services.AddControllers();
+builder.Services.AddRazorPages(options =>
+{
+    options.Conventions.AddPageRoute("/WebPages/AdminConsole", "/admin");
+});
 builder.Services.AddSignalR().AddNewtonsoftJsonAotProtocol();
 
 builder.Services.Configure<CacheSettings>(builder.Configuration.GetSection("CacheSettings"));
@@ -132,15 +136,15 @@ builder.Services.Configure<SteamSettings>(
 builder.Services.AddScoped<ISteamService, SteamService>();
 
 var app = builder.Build();
-
+app.UseStaticFiles(); // before auth and authorization
 app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
 app.MapHub<PolytopiaHub>("/gamehub");
-
-app.MapGet("/", () => "Hello World!");
-
+app.MapHub<AdminHub>("/adminhub");
+app.MapGet("/", () => "Hello World! <a href=\"/admin\">ADMINS ONLY</a>");
+app.MapRazorPages();
 Log.AddLogger(new MyLogger());
 
 using (var scope = app.Services.CreateScope())

@@ -34,10 +34,12 @@ public partial class PolytopiaHub : Hub
     private Guid _userGuid => Guid.Parse(_userId);
 
     private readonly ILogger<PolytopiaHub> _logger;
+    private readonly IHubContext<AdminHub> _adminHubContext;
 
     public PolytopiaHub(IPolydystopiaUserRepository userRepository, IFriendshipRepository friendRepository,
         IPolydystopiaLobbyRepository lobbyRepository, IPolydystopiaGameRepository gameRepository,
-        IPolydystopiaMatchmakingRepository matchmakingRepository, ILogger<PolytopiaHub> logger)
+        IPolydystopiaMatchmakingRepository matchmakingRepository, ILogger<PolytopiaHub> logger,
+        IHubContext<AdminHub> adminHubContext)
     {
         _userRepository = userRepository;
         _friendRepository = friendRepository;
@@ -46,6 +48,7 @@ public partial class PolytopiaHub : Hub
         _matchmakingRepository = matchmakingRepository;
 
         _logger = logger;
+        _adminHubContext = adminHubContext;
     }
 
     public override async Task OnConnectedAsync()
@@ -57,12 +60,13 @@ public partial class PolytopiaHub : Hub
         }
 
         await Groups.AddToGroupAsync(Context.ConnectionId, $"user-{_userId}");
-
+        
         SubscribeToFriends();
         SubscribeToParticipatingGameSummaries();
-
+        
         OnlinePlayers[_userGuid] = Clients.Caller;
-
+        
+        await _adminHubContext.Clients.All.SendAsync("ReceivePlayerCount", OnlinePlayers.Count);
         await base.OnConnectedAsync();
     }
 
@@ -98,7 +102,7 @@ public partial class PolytopiaHub : Hub
         {
             LobbySubscribers.TryRemove(key, out _);
         }
-
+        await _adminHubContext.Clients.All.SendAsync("ReceivePlayerCount", OnlinePlayers.Count);
         await base.OnDisconnectedAsync(exception);
     }
 
