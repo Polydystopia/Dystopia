@@ -92,6 +92,18 @@ Legend:
 | 51-103 | 🟡    |
 | <51    | 🔴    |
 
+## Login
+Legend:
+🟢 (Supported), 🔴 (unsupported)
+
+| Type | Status |
+|--------|---|
+| Stean | 🟢 | 
+| Android | 🔴 |
+| IOS | 🔴 |
+| Switch | 🔴 |
+| Tesla | 🔴 |
+
 # Contact
 [discord.gg/rtwgWTzxWy](discord.gg/rtwgWTzxWy)
 
