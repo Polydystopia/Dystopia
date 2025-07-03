@@ -26,11 +26,11 @@ public class CacheCleaningService : BackgroundService
     {
         while (!token.IsCancellationRequested)
         {
-            await Task.Delay(_settings.CacheCleanupFrequency, token);
+            await Task.Delay(_settings.GameViewModel.CacheCleanupFrequency, token);
             using (var scope = _provider.CreateScope())
             {
                 var dbContext = scope.ServiceProvider.GetRequiredService<PolydystopiaDbContext>();
-                _cacheService.CleanStaleCache(_settings.StaleTime, dbContext);
+                _cacheService.CleanStaleCache(_settings.GameViewModel.StaleTime, dbContext);
                 await dbContext.SaveChangesAsync(token);
             }
         }

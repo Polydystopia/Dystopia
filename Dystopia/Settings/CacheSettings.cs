@@ -2,6 +2,11 @@ namespace Dystopia.Settings;
 
 public class GameCacheSettings
 {
+    public CacheProfile GameViewModel { get; set; }
+}
+
+public class CacheProfile
+{
     /// <summary>
     /// After how long to flush cache to db
     /// </summary>

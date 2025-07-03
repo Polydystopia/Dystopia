@@ -25,6 +25,7 @@ using Dystopia.Services.Cache;
 using Dystopia.Services.News;
 using Dystopia.Services.Steam;
 using Dystopia.Settings;
+using Microsoft.Extensions.Options;
 using PolytopiaBackendBase;
 using PolytopiaBackendBase.Game;
 using PolytopiaBackendBase.Game.ViewModels;
@@ -123,9 +124,6 @@ builder.Services.Configure<SteamSettings>(
 builder.Services.AddScoped<ISteamService, SteamService>();
 builder.Services.Configure<Il2cppSettings>(builder.Configuration.GetSection("Il2cppSettings"));
 
-var il2CPPEnabled = builder.Configuration.GetValue<bool>("Il2cppSettings:Enabled");
-DystopiaBridge.InitIl2Cpp(!il2CPPEnabled);
-
 var app = builder.Build();
 
 app.UseAuthentication();
@@ -144,6 +142,9 @@ using (var scope = app.Services.CreateScope())
 
     dbContext.Database.Migrate();
 }
+
+var il2CPPSettings = app.Services.GetRequiredService<IOptions<Il2cppSettings>>().Value;
+DystopiaBridge.InitIl2Cpp(!il2CPPSettings.Enabled);
 
 PolytopiaDataManager.provider = new MyProvider();
 
