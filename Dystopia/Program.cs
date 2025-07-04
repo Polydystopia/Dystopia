@@ -21,8 +21,11 @@ using Dystopia.Database.News;
 using Dystopia.Database.User;
 using Dystopia.Hubs;
 using Dystopia.Patches;
+using Dystopia.Services.Cache;
 using Dystopia.Services.News;
 using Dystopia.Services.Steam;
+using Dystopia.Settings;
+using Microsoft.Extensions.Options;
 using PolytopiaBackendBase;
 using PolytopiaBackendBase.Game;
 using PolytopiaBackendBase.Game.ViewModels;
@@ -104,6 +107,10 @@ builder.Services.AddAuthorization();
 builder.Services.AddControllers();
 builder.Services.AddSignalR().AddNewtonsoftJsonAotProtocol();
 
+builder.Services.Configure<CacheSettings>(builder.Configuration.GetSection("CacheSettings"));
+builder.Services.Configure<SteamSettings>(builder.Configuration.GetSection("Steam"));
+builder.Services.Configure<Il2cppSettings>(builder.Configuration.GetSection("Il2cppSettings"));
+
 builder.Services.AddScoped<IPolydystopiaUserRepository, PolydystopiaUserRepository>();
 builder.Services.AddScoped<IFriendshipRepository, FriendshipRepository>();
 builder.Services.AddScoped<IPolydystopiaLobbyRepository, PolydystopiaLobbyRepository>();
@@ -112,9 +119,10 @@ builder.Services.AddScoped<IPolydystopiaMatchmakingRepository, PolydystopiaMatch
 builder.Services.AddScoped<INewsRepository, NewsRepository>();
 
 builder.Services.AddScoped<INewsService, NewsService>();
-
-builder.Services.Configure<SteamSettings>(
-    builder.Configuration.GetSection("Steam"));
+#region cache
+builder.Services.AddSingleton(typeof(ICacheService<>), typeof(CacheService<>));
+builder.Services.AddHostedService<CacheCleaningService>();
+#endregion
 builder.Services.AddScoped<ISteamService, SteamService>();
 
 var app = builder.Build();
@@ -136,8 +144,10 @@ using (var scope = app.Services.CreateScope())
     dbContext.Database.Migrate();
 }
 
+var il2CPPSettings = app.Services.GetRequiredService<IOptions<Il2cppSettings>>().Value;
+DystopiaBridge.InitIl2Cpp(!il2CPPSettings.Enabled);
+
 PolytopiaDataManager.provider = new MyProvider();
-DystopiaBridge.InitIl2Cpp();
 
 app.Run();
 
