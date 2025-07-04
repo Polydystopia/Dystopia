@@ -1,4 +1,4 @@
-﻿using Dystopia.Bridge;
+using Dystopia.Bridge;
 using Dystopia.Services.Cache;
 using Dystopia.Settings;
 using Microsoft.EntityFrameworkCore;
@@ -27,12 +27,7 @@ public class PolydystopiaGameRepository : IPolydystopiaGameRepository
         {
             return model;
         }
-
         model = await _dbContext.Games.FindAsync(id) ?? null;
-        if (model != null && ShouldCache(model))
-        {
-            _cacheService.Set(model.Id, model, context => context.Games.Update(model));
-        }
 
         return model;
     }
