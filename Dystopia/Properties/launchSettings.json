@@ -1,4 +1,4 @@
-﻿{
+{
   "iisSettings": {
     "windowsAuthentication": false,
     "anonymousAuthentication": true,
@@ -11,8 +11,8 @@
     "PolytopiaB2.Carrier": {
       "commandName": "Project",
       "dotnetRunMessages": true,
-      "launchBrowser": false,
-      "applicationUrl": "https://localhost:7092;http://+:5051;https://+:443;http://+:8080",
+      "launchBrowser": true,
+      "applicationUrl": "https://localhost:7092;http://+:5051;https://localhost:443",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"
       }
