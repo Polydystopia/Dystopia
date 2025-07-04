@@ -56,5 +56,9 @@ public class CacheService<T> : ICacheService<T>
     public void SaveAllCacheToDisk(PolydystopiaDbContext dbContext)
     {
         _logger.LogDebug($"CacheService<{typeof(T)}>: Saving all cache to disk");
+        foreach (var (id, (v, lastUsed, saveToDisk)) in _cache)
+        {
+            saveToDisk(dbContext);
+        }
     }
 }
