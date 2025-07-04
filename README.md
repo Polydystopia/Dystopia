@@ -4,7 +4,7 @@ You have questions or want to contribute? -> [Join our discord](discord.gg/rtwgW
 
 # Dystopia
 This is a C#–based backend server emulator for The Battle of Polytopia.
-Our goal is to deliver a complete, 100 % complete reimplementation of every official feature.
+Our goal is to deliver a complete, 100 % reimplementation of every official feature.
 Looking ahead, we also plan to introduce unofficial enhancements—such as mod support or a web-based UI.
 
 # How to build
