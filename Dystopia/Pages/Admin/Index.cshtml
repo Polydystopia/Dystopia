@@ -1,0 +1,21 @@
+@page "/Admin"
+@model Dystopia.Pages.Admin.IndexModel
+@{
+    ViewData["Title"] = "Dashboard";
+    Layout = "AdminConsoleLayout";
+}
+
+<h2>Dashboard Overview</h2>
+<hr>
+<h3><span id="playerCount">@Model.InitialPlayerCount</span> Players online</h3>
+@section Scripts
+{
+    <script>
+        connection.on("ReceivePlayerCount", (count) => {
+            const playerCountElement = document.getElementById("playerCount");
+            if (playerCountElement) {
+                playerCountElement.textContent = count;
+            }
+        });
+    </script>
+}
