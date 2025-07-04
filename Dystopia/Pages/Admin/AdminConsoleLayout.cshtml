@@ -1,0 +1,40 @@
+@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
+@using Microsoft.AspNetCore.Mvc.RazorPages
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>@ViewData["Title"] - Admin Console</title>
+</head>
+<body>
+
+<h1>Admin Console</h1>
+
+<div class="admin-panel">
+    <div class="tab-nav">
+        <a class="tab-link"  asp-page="/Admin/Index">Dashboard</a>
+        <a class="tab-link" asp-page="/Admin/News">News</a>
+        <a class="tab-link"  asp-page="/Admin/Users">Users</a>
+        <a class="tab-link" asp-page="/Admin/Friends">Friends</a>
+        <a class="tab-link" asp-page="/Admin/Lobbies">Lobbies</a>
+    </div>
+
+    <div class="tab-content">
+        @RenderBody()
+    </div>
+</div>
+
+<script src="~/lib/microsoft/signalr/dist/browser/signalr.min.js"></script>
+<script>
+    const connection = new signalR.HubConnectionBuilder()
+        .withUrl("/adminhub")
+        .build();
+
+    connection.start()
+        .then(() => console.log("Connected to admin hub"))
+        .catch(err => console.error("adminhub couldn't connect: ", err.toString()));
+</script>
+@await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

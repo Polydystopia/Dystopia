@@ -106,7 +106,11 @@ builder.Services.AddAuthentication(options =>
 builder.Services.AddAuthorization();
 
 builder.Services.AddControllers();
-builder.Services.AddRazorPages();
+var mvcBuilder = builder.Services.AddRazorPages();
+if (builder.Environment.IsDevelopment())
+{
+    mvcBuilder.AddRazorRuntimeCompilation();
+}
 builder.Services.AddSignalR().AddNewtonsoftJsonAotProtocol();
 
 builder.Services.Configure<CacheSettings>(builder.Configuration.GetSection("CacheSettings"));
