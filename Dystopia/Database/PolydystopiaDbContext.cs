@@ -12,12 +12,12 @@ namespace Dystopia.Database;
 
 public class PolydystopiaDbContext : DbContext
 {
-    public DbSet<PolytopiaUserViewModel> Users { get; set; }
-    public DbSet<FriendshipEntity> Friends { get; set; }
-    public DbSet<LobbyGameViewModel> Lobbies { get; set; }
-    public DbSet<GameViewModel> Games { get; set; }
-    public DbSet<MatchmakingEntity> Matchmaking { get; set; }
-    public DbSet<NewsEntity?> News { get; set; }
+    public virtual DbSet<PolytopiaUserViewModel> Users { get; set; }
+    public virtual DbSet<FriendshipEntity> Friends { get; set; }
+    public virtual DbSet<LobbyGameViewModel> Lobbies { get; set; }
+    public virtual DbSet<GameViewModel> Games { get; set; }
+    public virtual DbSet<MatchmakingEntity> Matchmaking { get; set; }
+    public virtual DbSet<NewsEntity?> News { get; set; }
 
     public PolydystopiaDbContext(DbContextOptions<PolydystopiaDbContext> options) : base(options)
     {
