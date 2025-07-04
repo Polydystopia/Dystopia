@@ -42,7 +42,7 @@ public class CacheService<T> : ICacheService<T>
 
     public void CleanStaleCache(TimeSpan staleTime, PolydystopiaDbContext dbContext)
     {
-        _logger.LogDebug("Cleaning stale cache.");
+        _logger.LogDebug($"CacheService<{typeof(T)}>: Cleaning stale cache.");
         foreach (var (id, (v, lastUsed, saveToDisk)) in _cache)
         {
             if (DateTime.Now - lastUsed > staleTime)
@@ -51,5 +51,10 @@ public class CacheService<T> : ICacheService<T>
                 saveToDisk(dbContext);
             }
         }
+    }
+
+    public void SaveAllCacheToDisk(PolydystopiaDbContext dbContext)
+    {
+        _logger.LogDebug($"CacheService<{typeof(T)}>: Saving all cache to disk");
     }
 }

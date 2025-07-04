@@ -9,5 +9,6 @@ namespace Dystopia.Services.Cache
         void Set(Guid key, T value, Action<PolydystopiaDbContext> saveToDisk);
         void TryRemove(Guid key);
         void CleanStaleCache(TimeSpan staleTime, PolydystopiaDbContext dbContext);
+        void SaveAllCacheToDisk(PolydystopiaDbContext dbContext);
     }
 }

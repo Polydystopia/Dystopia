@@ -12,12 +12,14 @@ public class CacheCleaningService : BackgroundService
 {
     private readonly ICacheService<GameViewModel> _cacheService;
     private readonly IServiceProvider _provider;
+    private readonly ILogger _logger;
     private readonly CacheSettings _settings;
 
-    public CacheCleaningService(IOptions<CacheSettings> settings, ICacheService<GameViewModel> cacheService, IServiceProvider provider)
+    public CacheCleaningService(IOptions<CacheSettings> settings, ICacheService<GameViewModel> cacheService, IServiceProvider provider, ILogger<CacheCleaningService> logger)
     {
         _cacheService = cacheService;
         _provider = provider;
+        _logger = logger;
         // TODO make it generic
         // but for now we only have game view model caching so its ok
         _settings = settings.Value;
@@ -27,13 +29,27 @@ public class CacheCleaningService : BackgroundService
     {
         while (!token.IsCancellationRequested)
         {
-            await Task.Delay(_settings.GameViewModel.CacheCleanupFrequency, token);
+            try
+            {
+                await Task.Delay(_settings.GameViewModel.CacheCleanupFrequency, token);
+            }
+            catch (TaskCanceledException)
+            {
+                break;
+            }
             using (var scope = _provider.CreateScope())
             {
                 var dbContext = scope.ServiceProvider.GetRequiredService<PolydystopiaDbContext>();
                 _cacheService.CleanStaleCache(_settings.GameViewModel.StaleTime, dbContext);
                 await dbContext.SaveChangesAsync(token);
             }
+        }
+        _logger.LogInformation("CacheCleaningService shutting down; Saving all cache to disk");
+        using (var scope = _provider.CreateScope())
+        {
+            var dbContext = scope.ServiceProvider.GetRequiredService<PolydystopiaDbContext>();
+            _cacheService.SaveAllCacheToDisk(dbContext);
+            await dbContext.SaveChangesAsync(token);
         }
     }
 }
