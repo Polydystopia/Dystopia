@@ -106,10 +106,7 @@ builder.Services.AddAuthentication(options =>
 builder.Services.AddAuthorization();
 
 builder.Services.AddControllers();
-builder.Services.AddRazorPages(options =>
-{
-    options.Conventions.AddPageRoute("/WebPages/AdminConsole", "/admin");
-});
+builder.Services.AddRazorPages();
 builder.Services.AddSignalR().AddNewtonsoftJsonAotProtocol();
 
 builder.Services.Configure<CacheSettings>(builder.Configuration.GetSection("CacheSettings"));
