@@ -23,7 +23,7 @@ public class GameRepositoryTests
         .Options;
     private readonly Mock<PolydystopiaDbContext> _dbContextMock;
     private readonly Mock<ICacheService<GameViewModel>> _cacheServiceMock = new();
-    private readonly IOptions<GameCacheSettings> _settings = Options.Create(new GameCacheSettings { CacheTime = TimeSpan.FromMinutes(30) });
+    private readonly IOptions<CacheSettings> _settings = Options.Create(new CacheSettings { GameViewModel = new CacheProfile() {CacheTime = TimeSpan.FromMinutes(30)}});
     private readonly Mock<IDystopiaCastle> _bridgeMock = new();
     public GameRepositoryTests()
     {

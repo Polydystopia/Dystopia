@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Dystopia.Tests.Services;
 
@@ -14,7 +15,7 @@ public class CacheServiceTests
     public void TryGet_ExistingKey_ReturnsTrueAndValue()
     {
         // Arrange
-        var service = new CacheService<string>();
+        var service = new CacheService<string>(NullLogger<CacheService<string>>.Instance);
         var key = Guid.NewGuid();
         var expectedValue = "test value";
         service.Set(key, expectedValue, _ => { });
@@ -31,7 +32,7 @@ public class CacheServiceTests
     public void TryGet_NonExistentKey_ReturnsFalse()
     {
         // Arrange
-        var service = new CacheService<string>();
+        var service = new CacheService<string>(NullLogger<CacheService<string>>.Instance);
         
         // Act
         var result = service.TryGet(Guid.NewGuid(), out var value);
@@ -45,7 +46,7 @@ public class CacheServiceTests
     public void Set_AddsItemToCache()
     {
         // Arrange
-        var service = new CacheService<int>();
+        var service = new CacheService<int>(NullLogger<CacheService<int>>.Instance);;
         var key = Guid.NewGuid();
         
         // Act
@@ -60,7 +61,7 @@ public class CacheServiceTests
     public void TryRemove_RemovesExistingItem()
     {
         // Arrange
-        var service = new CacheService<bool>();
+        var service = new CacheService<bool>(NullLogger<CacheService<bool>>.Instance);
         var key = Guid.NewGuid();
         service.Set(key, true, _ => { });
         
@@ -75,7 +76,7 @@ public class CacheServiceTests
     public void CleanStaleCache_RemovesAndSavesStaleItems()
     {
         // Arrange
-        var service = new CacheService<string>();
+        var service = new CacheService<string>(NullLogger<CacheService<string>>.Instance);
         var options =
             new DbContextOptionsBuilder<PolydystopiaDbContext>().UseInMemoryDatabase(
                 databaseName: Guid.NewGuid().ToString()).Options;
@@ -110,7 +111,7 @@ public class CacheServiceTests
     public void CleanStaleCache_CallsSaveToDiskForStaleItems()
     {
         // Arrange
-        var service = new CacheService<string>();
+        var service = new CacheService<string>(NullLogger<CacheService<string>>.Instance);
         var options =
             new DbContextOptionsBuilder<PolydystopiaDbContext>().UseInMemoryDatabase(
                 databaseName: Guid.NewGuid().ToString()).Options;

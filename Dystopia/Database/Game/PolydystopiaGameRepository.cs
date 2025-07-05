@@ -25,7 +25,7 @@ public class PolydystopiaGameRepository : IPolydystopiaGameRepository
         _cacheService = cacheService;
         _maxAccessIntervalForCache = settings.Value.GameViewModel.CacheTime;
         _bridge = bridge;
-        _maxAccessIntervalForCache = settings.Value.CacheTime;
+        _maxAccessIntervalForCache = settings.Value.GameViewModel.CacheTime;
     }
 
     public async Task<GameViewModel?> GetByIdAsync(Guid id)

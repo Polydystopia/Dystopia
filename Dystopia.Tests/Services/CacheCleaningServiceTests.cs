@@ -7,6 +7,7 @@ using Moq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging.Abstractions;
 using PolytopiaBackendBase.Game;
 using Xunit;
 
@@ -18,13 +19,16 @@ public class CacheCleaningServiceTests
     public async Task ExecuteAsync_WhenCalled_CleansCacheAndSavesChanges()
     {
         // Arrange
-        var settings = new GameCacheSettings
+        var settings = new CacheSettings
         {
-            CacheCleanupFrequency = TimeSpan.FromMilliseconds(1),
-            StaleTime = TimeSpan.FromMinutes(30)
+            GameViewModel = new CacheProfile()
+            {
+                CacheCleanupFrequency = TimeSpan.FromMilliseconds(1),
+                StaleTime = TimeSpan.FromMinutes(30)
+            }
         };
 
-        var mockOptions = Moq.Mock.Of<IOptions<GameCacheSettings>>(o => o.Value == settings);
+        var mockOptions = Moq.Mock.Of<IOptions<CacheSettings>>(o => o.Value == settings);
         var mockCacheService = new Mock<ICacheService<GameViewModel>>();
         var options = new DbContextOptionsBuilder<PolydystopiaDbContext>()
             .UseInMemoryDatabase(databaseName: Guid.NewGuid().ToString()).Options;
@@ -33,20 +37,21 @@ public class CacheCleaningServiceTests
         var serviceScope = new Mock<IServiceScope>();
         serviceScope.Setup(x => x.ServiceProvider.GetService(typeof(PolydystopiaDbContext)))
             .Returns(mockDbContext.Object);
-        
+
         var serviceScopeFactory = new Mock<IServiceScopeFactory>();
         serviceScopeFactory.Setup(x => x.CreateScope()).Returns(serviceScope.Object);
 
         var serviceProvider = new Mock<IServiceProvider>();
         serviceProvider.Setup(x => x.GetService(typeof(IServiceScopeFactory)))
             .Returns(serviceScopeFactory.Object);
-        
-        var service = new CacheCleaningService(mockOptions, mockCacheService.Object, serviceProvider.Object);
+
+        var service = new CacheCleaningService(mockOptions, mockCacheService.Object, serviceProvider.Object,
+            NullLogger<CacheCleaningService>.Instance);
         var cts = new CancellationTokenSource();
         var cleanupCalled = new ManualResetEventSlim();
 
-        mockCacheService.Setup(x => x.CleanStaleCache(settings.StaleTime, mockDbContext.Object))
-                      .Callback(() => cleanupCalled.Set());
+        mockCacheService.Setup(x => x.CleanStaleCache(settings.GameViewModel.StaleTime, mockDbContext.Object))
+            .Callback(() => cleanupCalled.Set());
 
         // Act
         var task = service.StartAsync(cts.Token);
@@ -55,7 +60,8 @@ public class CacheCleaningServiceTests
         await task;
 
         // Assert
-        mockCacheService.Verify(x => x.CleanStaleCache(settings.StaleTime, mockDbContext.Object), Times.AtLeastOnce());
+        mockCacheService.Verify(x => x.CleanStaleCache(settings.GameViewModel.StaleTime, mockDbContext.Object),
+            Times.AtLeastOnce());
         mockDbContext.Verify(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.AtLeastOnce());
     }
 
@@ -63,17 +69,20 @@ public class CacheCleaningServiceTests
     public async Task ExecuteAsync_WhenCancelled_StopsCleanupProcess()
     {
         // Arrange
-        var settings = new GameCacheSettings
+        var settings = new CacheSettings
         {
-            CacheCleanupFrequency = TimeSpan.FromMinutes(5),
-            StaleTime = TimeSpan.FromMinutes(30)
+            GameViewModel = new CacheProfile()
+            {
+                CacheCleanupFrequency = TimeSpan.FromMinutes(5),
+                StaleTime = TimeSpan.FromMinutes(30)
+            }
         };
 
-        var mockOptions = Moq.Mock.Of<IOptions<GameCacheSettings>>(o => o.Value == settings);
+        var mockOptions = Moq.Mock.Of<IOptions<CacheSettings>>(o => o.Value == settings);
         var mockCacheService = new Mock<ICacheService<GameViewModel>>();
         var serviceProvider = new Mock<IServiceProvider>();
 
-        var service = new CacheCleaningService(mockOptions, mockCacheService.Object, serviceProvider.Object);
+        var service = new CacheCleaningService(mockOptions, mockCacheService.Object, serviceProvider.Object, NullLogger<CacheCleaningService>.Instance);
         var cts = new CancellationTokenSource();
         cts.Cancel();
 
@@ -81,20 +90,25 @@ public class CacheCleaningServiceTests
         await service.StartAsync(cts.Token);
 
         // Assert
-        mockCacheService.Verify(x => x.CleanStaleCache(It.IsAny<TimeSpan>(), It.IsAny<PolydystopiaDbContext>()), Times.Never());
+        mockCacheService.Verify(x => x.CleanStaleCache(It.IsAny<TimeSpan>(), It.IsAny<PolydystopiaDbContext>()),
+            Times.Never());
     }
 
     [Fact]
     public async Task ExecuteAsync_UsesNewDbContextScopeForEachIteration()
     {
         // Arrange
-        var settings = new GameCacheSettings
+        var settings = new CacheSettings
         {
-            CacheCleanupFrequency = TimeSpan.FromMilliseconds(1),
-            StaleTime = TimeSpan.FromMinutes(30)
+            GameViewModel = new CacheProfile()
+            {
+
+                CacheCleanupFrequency = TimeSpan.FromMilliseconds(1),
+                StaleTime = TimeSpan.FromMinutes(30)
+            }
         };
 
-        var mockOptions = Moq.Mock.Of<IOptions<GameCacheSettings>>(o => o.Value == settings);
+        var mockOptions = Moq.Mock.Of<IOptions<CacheSettings>>(o => o.Value == settings);
         var mockCacheService = new Mock<ICacheService<GameViewModel>>();
         var options = new DbContextOptionsBuilder<PolydystopiaDbContext>()
             .UseInMemoryDatabase(databaseName: Guid.NewGuid().ToString()).Options;
@@ -103,19 +117,19 @@ public class CacheCleaningServiceTests
         var serviceScopeFactory = new Mock<IServiceScopeFactory>();
         var serviceScope = new Mock<IServiceScope>();
         serviceScope.Setup(x => x.ServiceProvider.GetService(typeof(PolydystopiaDbContext)))
-                  .Returns(mockDbContext.Object);
+            .Returns(mockDbContext.Object);
         serviceScopeFactory.Setup(x => x.CreateScope()).Returns(serviceScope.Object);
 
         var serviceProvider = new Mock<IServiceProvider>();
         serviceProvider.Setup(x => x.GetService(typeof(IServiceScopeFactory)))
-                     .Returns(serviceScopeFactory.Object);
+            .Returns(serviceScopeFactory.Object);
 
-        var service = new CacheCleaningService(mockOptions, mockCacheService.Object, serviceProvider.Object);
+        var service = new CacheCleaningService(mockOptions, mockCacheService.Object, serviceProvider.Object, NullLogger<CacheCleaningService>.Instance);;
         var cts = new CancellationTokenSource();
         var cleanupCalled = new ManualResetEventSlim();
 
-        mockCacheService.Setup(x => x.CleanStaleCache(settings.StaleTime, mockDbContext.Object))
-                      .Callback(() => cleanupCalled.Set());
+        mockCacheService.Setup(x => x.CleanStaleCache(settings.GameViewModel.StaleTime, mockDbContext.Object))
+            .Callback(() => cleanupCalled.Set());
 
         // Act
         var task = service.StartAsync(cts.Token);

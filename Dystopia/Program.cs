@@ -126,7 +126,7 @@ builder.Services.AddHostedService<CacheCleaningService>();
 #endregion
 
 builder.Services.AddScoped<IDystopiaCastle, DystopiaBridge>();
-builder.Services.Configure<GameCacheSettings>(builder.Configuration.GetSection("GameCacheSettings"));
+builder.Services.Configure<CacheSettings>(builder.Configuration.GetSection("GameCacheSettings"));
 builder.Services.Configure<SteamSettings>(
     builder.Configuration.GetSection("Steam"));
 builder.Services.AddScoped<ISteamService, SteamService>();
