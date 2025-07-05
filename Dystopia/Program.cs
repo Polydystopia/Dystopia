@@ -137,6 +137,10 @@ builder.Services.Configure<SteamSettings>(
 builder.Services.AddScoped<ISteamService, SteamService>();
 
 var app = builder.Build();
+if (app.Environment.IsDevelopment())
+{
+    app.UseDeveloperExceptionPage();
+}
 app.UseStaticFiles(); // before auth and authorization
 app.UseAuthentication();
 app.UseAuthorization();

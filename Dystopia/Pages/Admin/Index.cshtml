@@ -8,6 +8,14 @@
 <h2>Dashboard Overview</h2>
 <hr>
 <h3><span id="playerCount">@Model.InitialPlayerCount</span> Players online</h3>
+<form method="post">
+    <div class="form-group">
+        <label for="broadcastMessage">Broadcast message</label>
+        <input type="text" name="BroadcastMessage" id="broadcastMessage" class="form-control" required />
+    </div>
+    <button type="submit" class="btn btn-primary">Send to all players</button>
+</form>
+
 @section Scripts
 {
     <script>

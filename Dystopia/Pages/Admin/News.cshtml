@@ -1,9 +1,71 @@
 @page
-@model Dystopia.Pages.Admin.News
+@using Dystopia.Database.News
+@model Dystopia.Pages.Admin.NewsModel
 
 @{
     ViewData["Title"] = "News";
     Layout = "AdminConsoleLayout";
 }
 
-<h2>News placeholder</h2>
+<h2>News Management</h2>
+<form method="post" asp-page-handler="Add">
+    <table class="table">
+        <thead>
+        <tr>
+            <th>#</th>
+            <th>Type</th>
+            <th>Body</th>
+            <th>Link</th>
+            <th>Image</th>
+            <th>Active</th>
+            <th>Actions</th>
+        </tr>
+        <tr>
+                <td></td>
+                <td>
+                    <select name="NewItem.NewsType" class="form-control">
+                        @foreach (var val in Enum.GetValues(typeof(NewsType)))
+                        {
+                            <option value="@val">@val</option>
+                        }
+                    </select>
+                </td>
+                <td><input name="NewItem.Body" class="form-control"/></td>
+                <td><input name="NewItem.Link" class="form-control"/></td>
+                <td><input name="NewItem.Image" class="form-control"/></td>
+                <td><input type="checkbox" name="NewItem.IsActive"/></td>
+                <td><button type="submit" class="btn btn-success">Add</button></td>
+        </tr>
+        </thead>
+        <tbody>
+        @foreach (var item in Model.NewsItems)
+        {
+            <tr>
+                <td>@(item.Id)</td>
+                <td>@item.NewsType</td>
+                <td>@item.Body</td>
+                <td>@item.Link</td>
+                <td>
+                    @if (!string.IsNullOrWhiteSpace(item.Image))
+                    {
+                        <a href="@item.Image" target="_blank">Image</a>
+                    }
+                </td>
+                <td>
+                    <input type="checkbox" disabled="disabled" checked="@item.IsActive" />
+                </td>
+                <td>
+                    <form method="post" asp-page-handler="Edit" style="display:inline;">
+                        <input type="hidden" name="Id" value="@item.Id" />
+                        <button class="btn btn-primary btn-sm">Edit</button>
+                    </form>
+                    <form method="post" asp-page-handler="Delete" style="display:inline;">
+                        <input type="hidden" name="Id" value="@item.Id" />
+                        <button class="btn btn-danger btn-sm">Delete</button>
+                    </form>
+                </td>
+            </tr>
+        }
+        </tbody>
+    </table>
+</form>
