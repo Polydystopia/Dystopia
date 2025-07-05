@@ -18,42 +18,47 @@
         <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
     </ItemGroup>
 
+    <PropertyGroup>
+        <PlatformName Condition="'$(OS)' == 'Windows_NT'">windows</PlatformName>
+        <PlatformName Condition="'$(OS)' != 'Windows_NT'">linux</PlatformName>
+    </PropertyGroup>
+
     <ItemGroup>
         <Reference Include="0Harmony">
-            <HintPath>../lib/BepInEx/core/0Harmony.dll</HintPath>
+            <HintPath>../lib/BepInEx/core/$(PlatformName)/0Harmony.dll</HintPath>
         </Reference>
         <Reference Include="BepInEx.Core">
-            <HintPath>../lib/BepInEx/core/BepInEx.Core.dll</HintPath>
+            <HintPath>../lib/BepInEx/core/$(PlatformName)/BepInEx.Core.dll</HintPath>
         </Reference>
         <Reference Include="BepInEx.Unity.IL2CPP">
-            <HintPath>../lib/BepInEx/core/BepInEx.Unity.IL2CPP.dll</HintPath>
+            <HintPath>../lib/BepInEx/core/$(PlatformName)/BepInEx.Unity.IL2CPP.dll</HintPath>
         </Reference>
         <Reference Include="GameLogicAssembly">
-            <HintPath>../lib/Native/interop/GameLogicAssembly.dll</HintPath>
+            <HintPath>../lib/Native/$(PlatformName)/interop/GameLogicAssembly.dll</HintPath>
         </Reference>
         <Reference Include="Il2CppInterop.Common">
-            <HintPath>../lib/BepInEx/core/Il2CppInterop.Common.dll</HintPath>
+            <HintPath>../lib/BepInEx/core/$(PlatformName)/Il2CppInterop.Common.dll</HintPath>
         </Reference>
         <Reference Include="Il2CppInterop.Generator">
-            <HintPath>../lib/BepInEx/core/Il2CppInterop.Generator.dll</HintPath>
+            <HintPath>../lib/BepInEx/core/$(PlatformName)/Il2CppInterop.Generator.dll</HintPath>
         </Reference>
         <Reference Include="Il2CppInterop.HarmonySupport">
-            <HintPath>.../lib/BepInEx/core/Il2CppInterop.HarmonySupport.dll</HintPath>
+            <HintPath>.../lib/BepInEx/core/$(PlatformName)/Il2CppInterop.HarmonySupport.dll</HintPath>
         </Reference>
         <Reference Include="Il2CppInterop.Runtime">
-            <HintPath>../lib/BepInEx/core/Il2CppInterop.Runtime.dll</HintPath>
+            <HintPath>../lib/BepInEx/core/$(PlatformName)/Il2CppInterop.Runtime.dll</HintPath>
         </Reference>
         <Reference Include="Il2Cppmscorlib">
-            <HintPath>../lib/Native/interop/Il2Cppmscorlib.dll</HintPath>
+            <HintPath>../lib/Native/$(PlatformName)/interop/Il2Cppmscorlib.dll</HintPath>
         </Reference>
         <Reference Include="MonoMod.RuntimeDetour">
-            <HintPath>../lib/BepInEx/core/MonoMod.RuntimeDetour.dll</HintPath>
+            <HintPath>../lib/BepInEx/core/$(PlatformName)/MonoMod.RuntimeDetour.dll</HintPath>
         </Reference>
         <Reference Include="PolytopiaAssembly">
-            <HintPath>../lib/Native/interop/PolytopiaAssembly.dll</HintPath>
+            <HintPath>../lib/Native/$(PlatformName)/interop/PolytopiaAssembly.dll</HintPath>
         </Reference>
         <Reference Include="PolytopiaBackendBase">
-            <HintPath>../lib/Native/interop/PolytopiaBackendBase.dll</HintPath>
+            <HintPath>../lib/Native/$(PlatformName)/interop/PolytopiaBackendBase.dll</HintPath>
         </Reference>
     </ItemGroup>
 

@@ -18,6 +18,8 @@ public class GameAssemblyLoader
     public void Init(string assemblyPath = @"GameAssembly.dll")
     {
         if(IsInitialized) return;
+        
+        Console.WriteLine($"loading assembly {assemblyPath} as GameAssembly");
 
         string domainName = "dystopiamagic";
         IntPtr domainNamePtr = Marshal.StringToHGlobalAnsi(domainName);
@@ -58,7 +60,7 @@ public class GameAssemblyLoader
         for (int i = 1; i <= Directory.GetFiles(gameLogicDataPath).Length; i++)
         {
             var data = new GameLogicData();
-            data.Parse(File.ReadAllText($@"{gameLogicDataPath}\{i}.txt"));
+            data.Parse(File.ReadAllText(Path.Combine(gameLogicDataPath, $"{i}.txt")));
 
             PolytopiaDataManager.gameLogicDatas.Add(i, data);
         }
