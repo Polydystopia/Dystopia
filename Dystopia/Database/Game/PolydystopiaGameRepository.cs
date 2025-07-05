@@ -2,6 +2,7 @@ using Dystopia.Bridge;
 using Dystopia.Services.Cache;
 using Dystopia.Settings;
 using Microsoft.EntityFrameworkCore;
+using DystopiaShared;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Options;
 using PolytopiaBackendBase.Game;
@@ -12,12 +13,18 @@ public class PolydystopiaGameRepository : IPolydystopiaGameRepository
 {
     private readonly PolydystopiaDbContext _dbContext;
     private readonly ICacheService<GameViewModel> _cacheService;
+    private readonly IDystopiaCastle _bridge;
     private readonly TimeSpan _maxAccessIntervalForCache;
 
-    public PolydystopiaGameRepository(PolydystopiaDbContext dbContext, ICacheService<GameViewModel> cacheService, IOptions<CacheSettings> settings)
+    public PolydystopiaGameRepository(PolydystopiaDbContext dbContext,
+        ICacheService<GameViewModel> cacheService,
+        IOptions<CacheSettings> settings,
+        IDystopiaCastle bridge)
     {
         _dbContext = dbContext;
         _cacheService = cacheService;
+        _maxAccessIntervalForCache = settings.Value.GameViewModel.CacheTime;
+        _bridge = bridge;
         _maxAccessIntervalForCache = settings.Value.GameViewModel.CacheTime;
     }
 
@@ -73,7 +80,6 @@ public class PolydystopiaGameRepository : IPolydystopiaGameRepository
     public async Task<List<GameViewModel>> GetAllGamesByPlayer(Guid playerId)
     {
         var playerGames = new List<GameViewModel>();
-        var bridge = new DystopiaBridge();
 
         var allIds = await _dbContext.Games
             .Select(g => g.Id)
@@ -99,7 +105,7 @@ public class PolydystopiaGameRepository : IPolydystopiaGameRepository
                 }
             }
 
-            if (bridge.IsPlayerInGame(playerId.ToString(), game.CurrentGameStateData))
+            if (_bridge.IsPlayerInGame(playerId.ToString(), game.CurrentGameStateData))
             {
                 playerGames.Add(game);
             }

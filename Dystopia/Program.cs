@@ -25,6 +25,7 @@ using Dystopia.Services.Cache;
 using Dystopia.Services.News;
 using Dystopia.Services.Steam;
 using Dystopia.Settings;
+using DystopiaShared;
 using Microsoft.Extensions.Options;
 using PolytopiaBackendBase;
 using PolytopiaBackendBase.Game;
@@ -123,6 +124,11 @@ builder.Services.AddScoped<INewsService, NewsService>();
 builder.Services.AddSingleton(typeof(ICacheService<>), typeof(CacheService<>));
 builder.Services.AddHostedService<CacheCleaningService>();
 #endregion
+
+builder.Services.AddScoped<IDystopiaCastle, DystopiaBridge>();
+builder.Services.Configure<CacheSettings>(builder.Configuration.GetSection("GameCacheSettings"));
+builder.Services.Configure<SteamSettings>(
+    builder.Configuration.GetSection("Steam"));
 builder.Services.AddScoped<ISteamService, SteamService>();
 
 var app = builder.Build();
