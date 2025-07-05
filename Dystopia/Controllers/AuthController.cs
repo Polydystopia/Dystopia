@@ -103,7 +103,42 @@ public class AuthController : ControllerBase
         return Content(json, "application/json");
     }
 
+    public async Task<ServerResponse<PolytopiaToken>> LoginGooglePlay(
+        LoginGooglePlayBindingModel model)
+    {
+        return new ServerResponse<PolytopiaToken>(new PolytopiaToken());
+    }
 
+    public async Task<ServerResponse<PolytopiaToken>> LoginNintendoServiceAccount(
+        LoginNintendoServiceAccountBindingModel model)
+    {
+        return new ServerResponse<PolytopiaToken>(new PolytopiaToken());
+    }
+
+    public async Task<ServerResponse<PolytopiaToken>> LoginTesla(LoginTeslaBindingModel model)
+    {
+        return new ServerResponse<PolytopiaToken>(new PolytopiaToken());
+    }
+
+    public async Task<ServerResponse<PolytopiaToken>> LoginIos(LoginGameCenterBindingModel model)
+    {
+        return new ServerResponse<PolytopiaToken>(new PolytopiaToken());
+    }
+
+    public async Task<ServerResponse<PolytopiaToken>> LoginIosV2(LoginGameCenterV2BindingModel model)
+    {
+        return new ServerResponse<PolytopiaToken>(new PolytopiaToken());
+    }
+
+    public async Task<ServerResponse<PolytopiaToken>> LoginFake(LoginFakeBindingModel model)
+    {
+        return new ServerResponse<PolytopiaToken>(new PolytopiaToken());
+    }
+
+    public async Task<ServerResponse<PolytopiaToken>> LoginDebugLegacyUser(LoginFakeBindingModel model)
+    {
+        return new ServerResponse<PolytopiaToken>(new PolytopiaToken());
+    }
 
     [Route("steam_notifications")]
     public ServerResponse<SteamNotificationsModels.RequestSteamNotificationsResponse> ActivateSteamNotifications(
@@ -116,7 +151,6 @@ public class AuthController : ControllerBase
                 Allow_Notifications = true
             });
     }
-
 
     [Route("whoami")]
     public async Task<ServerResponse<PolytopiaToken>> WhoAmI() //TODO
