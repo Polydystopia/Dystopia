@@ -128,7 +128,8 @@ Legend:
 
 | Version | Status |
 |--------|-------|
-| 105-112 | 🟡🌉  | 
+| 113 (beta) | 🔴 | 
+| 105-112 | 🟡🌉 | 
 | 104    | 🟢    |
 | 51-103 | 🟡    |
 | <51    | 🔴    |
@@ -139,11 +140,21 @@ Legend:
 
 | Type | Status |
 |--------|---|
-| Stean | 🟢 | 
+| Steam | 🟢 | 
 | Android | 🔴 |
 | IOS | 🔴 |
 | Switch | 🔴 |
 | Tesla | 🔴 |
+
+## Server operating system
+Legend:
+🟢 (Supported), 🔴 (unsupported)
+
+| Type | Status |
+|--------|---|
+| Windows | 🟢 | 
+| Linux | 🟢 |
+| MacOS | 🔴 |
 
 # Contact
 [discord.gg/rtwgWTzxWy](discord.gg/rtwgWTzxWy)
