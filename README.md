@@ -7,6 +7,48 @@ This is a C#–based backend server emulator for The Battle of Polytopia.
 Our goal is to deliver a complete, 100 % reimplementation of every official feature.
 Looking ahead, we also plan to introduce unofficial enhancements—such as mod support or a web-based UI.
 
+# How to join
+
+### Supported OSes
+Legend: 🟢 (Fully supported), 🟠 (Urls with exactly 28 characters supported, untested) 🟡 (Urls with exactly 28 characters supported), 🚧 (under progress), 🔴 (Not supported)
+| OS/Platform      | Status |
+|------------------|--------|
+| Windows          | 🟢     |
+| Linux            | 🟡     |
+| MacOS            | 🟠     |
+| Android          | 🚧     |
+| iOS              | 🔴     |
+| Nintendo Switch  | 🔴     |
+| Tesla            | 🔴     |
+
+## Windows:
+1. Download BepInEx from [this link](https://builds.bepinex.dev/projects/bepinex_be/738/BepInEx-Unity.IL2CPP-win-x64-6.0.0-be.738%2Baf0cba7.zip) or download the latest BepInEx, Il2cpp, Windows, x64 from [BepInBuilds](https://builds.bepinex.dev/projects/bepinex_be) and extract it into your game folder. (usually at `C:\Program Files (x86)\Steam\steamapps\common\The Battle of Polytopia\`)
+2. Start the game once. This will open a console, and it can take around 5 minutes on the first launch.
+3. Download the latest release of [DystopiaBepInEx](https://github.com/Polydystopia/DystopiaBepInEx/releases/tag/v0.1) and extract it anywhere.
+4. Place the dll inside of BepInEx\Plugins in your game folder.
+5. Start the game again.
+6. There will be a file `polydistopia_server_config.json` in the game folder. Edit this to have the server address you want.
+
+## Linux
+1. Find the game folder. This can be at:
+    - `~/.steam/steam/steamapps/common/The Battle of Polytopia/`, if you installed the official deb
+    - Somewhere under `/snap/` if you installed the snap
+    - Under `~/.var/run/` if you installed the flatpak
+    - Anywhere else, use `find / -type d -path "*/steamapps/common" 2>/dev/null` to find it.
+2. Patch `global-metadata.dat`, remeber to replace `<PLACE ADRESS HERE>` with your chosen server adress. Note: this server address must be **exactly** 28 characters. Run this in a terminal at the game folder:
+```sh
+server_adress="<PLACE ADRESS HERE>"
+if [ ${#server_adress -eq 28 ]; then
+    sed -i "s#https://polytopia-prod.net/#$server_adress" ./Polytopia_Data/il2cpp_data/Metadata/global-metadata.dat && echo "Patched successfully!" || echo "Failed to patch, does the file exist and is it not already patched?"
+else
+    echo "Server url must be EXACTLY 28 characters
+fi
+```
+3. Run the game. You will not notice anything. For verification Dystopia is installed, look at the news.
+
+## MacOS
+Similar to Linux. instructions TODO
+
 # How to run
 
 ## Build
