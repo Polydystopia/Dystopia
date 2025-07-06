@@ -30,7 +30,7 @@ public class AuthController : ControllerBase
     }
 
     [Route("login_steam")]
-    public async Task<IActionResult> LoginSteam([FromBody] SteamLoginBindingModel? model)
+    public async Task<ActionResult<ServerResponse<PolytopiaToken>>> LoginSteam([FromBody] SteamLoginBindingModel? model)
     {
         if (model?.SteamAuthTicket?.Data == null)
         {
@@ -103,41 +103,102 @@ public class AuthController : ControllerBase
         return Content(json, "application/json");
     }
 
-    public async Task<ServerResponse<PolytopiaToken>> LoginGooglePlay(
+    [Route("login_google_play")]
+    public async Task<ActionResult<ServerResponse<PolytopiaToken>>> LoginGooglePlay(
         LoginGooglePlayBindingModel model)
     {
         return new ServerResponse<PolytopiaToken>(new PolytopiaToken());
     }
 
-    public async Task<ServerResponse<PolytopiaToken>> LoginNintendoServiceAccount(
+    [Route("login_nintendo_service_account")]
+    public async Task<ActionResult<ServerResponse<PolytopiaToken>>> LoginNintendoServiceAccount(
         LoginNintendoServiceAccountBindingModel model)
     {
-        return new ServerResponse<PolytopiaToken>(new PolytopiaToken());
+        var body = new ServerResponse<PolytopiaToken>(
+            errorCode: ErrorCode.LoginFailed,
+            errorMessage: "This login method is not implemented yet. Please use another.",
+            innerMessage: null
+        );
+
+        return StatusCode(
+            StatusCodes.Status501NotImplemented,
+            body
+        );
     }
 
-    public async Task<ServerResponse<PolytopiaToken>> LoginTesla(LoginTeslaBindingModel model)
+    [Route("login_tesla")]
+    public async Task<ActionResult<ServerResponse<PolytopiaToken>>> LoginTesla(LoginTeslaBindingModel model)
     {
-        return new ServerResponse<PolytopiaToken>(new PolytopiaToken());
+        var body = new ServerResponse<PolytopiaToken>(
+            errorCode: ErrorCode.LoginFailed,
+            errorMessage: "This login method is not implemented yet. Please use another.",
+            innerMessage: null
+        );
+
+        return StatusCode(
+            StatusCodes.Status501NotImplemented,
+            body
+        );
     }
 
-    public async Task<ServerResponse<PolytopiaToken>> LoginIos(LoginGameCenterBindingModel model)
+    [Route("login_ios")]
+    public async Task<ActionResult<ServerResponse<PolytopiaToken>>> LoginIos(LoginGameCenterBindingModel model)
     {
-        return new ServerResponse<PolytopiaToken>(new PolytopiaToken());
+        var body = new ServerResponse<PolytopiaToken>(
+            errorCode: ErrorCode.LoginFailed,
+            errorMessage: "This login method is not implemented yet. Please use another.",
+            innerMessage: null
+        );
+
+        return StatusCode(
+            StatusCodes.Status501NotImplemented,
+            body
+        );
     }
 
-    public async Task<ServerResponse<PolytopiaToken>> LoginIosV2(LoginGameCenterV2BindingModel model)
+    [Route("login_ios_v2")]
+    public async Task<ActionResult<ServerResponse<PolytopiaToken>>> LoginIosV2(LoginGameCenterV2BindingModel model)
     {
-        return new ServerResponse<PolytopiaToken>(new PolytopiaToken());
+        var body = new ServerResponse<PolytopiaToken>(
+            errorCode: ErrorCode.LoginFailed,
+            errorMessage: "This login method is disabled. Please use another.",
+            innerMessage: null
+        );
+
+        return StatusCode(
+            StatusCodes.Status405MethodNotAllowed,
+            body
+        );
     }
 
-    public async Task<ServerResponse<PolytopiaToken>> LoginFake(LoginFakeBindingModel model)
+    [Route("login_fake")]
+    public async Task<ActionResult<ServerResponse<PolytopiaToken>>> LoginFake(LoginFakeBindingModel model)
     {
-        return new ServerResponse<PolytopiaToken>(new PolytopiaToken());
+        var body = new ServerResponse<PolytopiaToken>(
+            errorCode: ErrorCode.LoginFailed,
+            errorMessage: "This login method is disabled. Please use another.",
+            innerMessage: null
+        );
+
+        return StatusCode(
+            StatusCodes.Status405MethodNotAllowed,
+            body
+        );
     }
 
-    public async Task<ServerResponse<PolytopiaToken>> LoginDebugLegacyUser(LoginFakeBindingModel model)
+    [Route("login_debug_legacy")]
+    public async Task<ActionResult<ServerResponse<PolytopiaToken>>> LoginDebugLegacyUser(LoginFakeBindingModel model)
     {
-        return new ServerResponse<PolytopiaToken>(new PolytopiaToken());
+        var body = new ServerResponse<PolytopiaToken>(
+            errorCode: ErrorCode.LoginFailed,
+            errorMessage: "This login method is disabled. Please use another.",
+            innerMessage: null
+        );
+
+        return StatusCode(
+            StatusCodes.Status405MethodNotAllowed,
+            body
+        );
     }
 
     [Route("steam_notifications")]

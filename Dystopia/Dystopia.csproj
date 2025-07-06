@@ -62,6 +62,9 @@
         <None Include="..\lib\**\*">
             <Link>lib\%(RecursiveDir)%(Filename)%(Extension)</Link>
         </None>
+        <None Update="dystopia_cert.pfx">
+          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
     </ItemGroup>
 
     <ItemGroup Condition="'$(OS)' == 'Windows_NT'">
