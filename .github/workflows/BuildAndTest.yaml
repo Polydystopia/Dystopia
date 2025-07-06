@@ -18,7 +18,7 @@ jobs:
           #TODO please make this a repository secret and reset the key in the libs repo. I dont have perms to create secrets.
           ssh_private_key: SHA256:AV+t3LGwX55tkQWTjOsbLmRk6pIx3Ng6nDjvH0Li3EQ 
           module_link: Polydistopia/DystopiaLibs
-          module_path: lib/
+          module_path: lib
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
         with:
