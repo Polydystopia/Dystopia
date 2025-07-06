@@ -29,38 +29,8 @@ public class AuthController : ControllerBase
         _logger = logger;
     }
 
-    [Route("login_steam")]
-    public async Task<ActionResult<ServerResponse<PolytopiaToken>>> LoginSteam([FromBody] SteamLoginBindingModel? model)
+    private PolytopiaToken CreateToken(PolytopiaUserViewModel userFromDb)
     {
-        if (model?.SteamAuthTicket?.Data == null)
-        {
-            _logger.LogInformation(
-                "Steam login attempt from IP address {RemoteIpAddress} failed. Invalid auth ticket data",
-                HttpContext.Connection.RemoteIpAddress?.ToString() ?? "Unknown");
-            return BadRequest("Invalid auth ticket data");
-        }
-
-        var parsedSteamTicket = _steamService.ParseTicket(model.SteamAuthTicket.Data, model.DeviceId);
-        if (parsedSteamTicket == null)
-        {
-            _logger.LogInformation(
-                "Steam login attempt from IP address {RemoteIpAddress} failed. Invalid auth ticket data",
-                HttpContext.Connection.RemoteIpAddress?.ToString() ?? "Unknown");
-            return Forbid("Invalid auth ticket data");
-        }
-
-        var env = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT"); //TODO: Hack use DI later
-        var isDevEnv = string.Equals(env, Environments.Development, StringComparison.OrdinalIgnoreCase);
-
-        var username = !isDevEnv ? await _steamService.GetSteamUsernameAsync(parsedSteamTicket.SteamID) : model.DeviceId;
-        if (string.IsNullOrEmpty(username))
-        {
-            _logger.LogWarning("Could not get steam username for steamId {steamId}", parsedSteamTicket.SteamID);;
-            return BadRequest("Username parse error.");
-        }
-
-        var userFromDb = await _userRepository.GetBySteamIdAsync(parsedSteamTicket.SteamID, username);
-
         _logger.LogInformation("Steam login attempt from IP address {RemoteIpAddress}. User {UserName}",
             HttpContext.Connection.RemoteIpAddress?.ToString() ?? "Unknown",
             userFromDb.GetUniqueNameInternal() ?? "Unknown");
@@ -98,6 +68,43 @@ public class AuthController : ControllerBase
 
         token.User = userFromDb;
 
+        return token;
+    }
+
+    [Route("login_steam")]
+    public async Task<ActionResult<ServerResponse<PolytopiaToken>>> LoginSteam([FromBody] SteamLoginBindingModel? model)
+    {
+        if (model?.SteamAuthTicket?.Data == null)
+        {
+            _logger.LogInformation(
+                "Steam login attempt from IP address {RemoteIpAddress} failed. Invalid auth ticket data",
+                HttpContext.Connection.RemoteIpAddress?.ToString() ?? "Unknown");
+            return BadRequest("Invalid auth ticket data");
+        }
+
+        var parsedSteamTicket = _steamService.ParseTicket(model.SteamAuthTicket.Data, model.DeviceId);
+        if (parsedSteamTicket == null)
+        {
+            _logger.LogInformation(
+                "Steam login attempt from IP address {RemoteIpAddress} failed. Invalid auth ticket data",
+                HttpContext.Connection.RemoteIpAddress?.ToString() ?? "Unknown");
+            return Forbid("Invalid auth ticket data");
+        }
+
+        var env = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT"); //TODO: Hack use DI later
+        var isDevEnv = string.Equals(env, Environments.Development, StringComparison.OrdinalIgnoreCase);
+
+        var username = !isDevEnv ? await _steamService.GetSteamUsernameAsync(parsedSteamTicket.SteamID) : model.DeviceId;
+        if (string.IsNullOrEmpty(username))
+        {
+            _logger.LogWarning("Could not get steam username for steamId {steamId}", parsedSteamTicket.SteamID);;
+            return BadRequest("Username parse error.");
+        }
+
+        var userFromDb = await _userRepository.GetBySteamIdAsync(parsedSteamTicket.SteamID, username);
+
+        var token = CreateToken(userFromDb);
+
         var json = JsonConvert.SerializeObject(new ServerResponse<PolytopiaToken>(token));
 
         return Content(json, "application/json");
@@ -107,7 +114,16 @@ public class AuthController : ControllerBase
     public async Task<ActionResult<ServerResponse<PolytopiaToken>>> LoginGooglePlay(
         LoginGooglePlayBindingModel model)
     {
-        return new ServerResponse<PolytopiaToken>(new PolytopiaToken());
+        //TODO we need to find a way to properly handle model.AuthCode. Maybe it will not be possible to use the original one and we have to patch the game app. For now we will use the deviceId as username.
+        var fakeGooglePlaySteamAppTicket = _steamService.ParseTicket(new []{Byte.MaxValue, }, model.DeviceId);
+
+        var userFromDb = await _userRepository.GetBySteamIdAsync(fakeGooglePlaySteamAppTicket.SteamID, model.DeviceId);
+
+        var token = CreateToken(userFromDb);
+
+        var json = JsonConvert.SerializeObject(new ServerResponse<PolytopiaToken>(token));
+
+        return Content(json, "application/json");
     }
 
     [Route("login_nintendo_service_account")]
