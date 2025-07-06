@@ -11,9 +11,14 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+        
+      - name: Clone private github submodule
+        uses: pietrobolcato/action-clone-private-submodule@v1.0.2
         with:
-          submodules: recursive
-          ssh-key: ${{ secrets.SSH_PRIVATE_KEY }}
+          #TODO please make this a repository secret and reset the key in the libs repo. I dont have perms to create secrets.
+          ssh_private_key: SHA256:AV+t3LGwX55tkQWTjOsbLmRk6pIx3Ng6nDjvH0Li3EQ 
+          module_link: Polydistopia/DystopiaLibs
+          module_path: lib/
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
         with:
