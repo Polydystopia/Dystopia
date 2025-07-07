@@ -7,6 +7,7 @@
         <ImplicitUsings>enable</ImplicitUsings>
         <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
         <UserSecretsId>PolydystopiaSettings</UserSecretsId>
+        <RuntimeIdentifier>linux-x64</RuntimeIdentifier>
     </PropertyGroup>
 
     <ItemGroup>
