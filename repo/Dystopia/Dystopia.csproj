@@ -2,6 +2,7 @@
 
     <PropertyGroup>
         <TargetFramework>net6.0</TargetFramework>
+	<RuntimeIdentifier>linux-x64</RuntimeIdentifier>
         <PublishAot>true</PublishAot>
         <Nullable>enable</Nullable>
         <ImplicitUsings>enable</ImplicitUsings>
@@ -118,4 +119,13 @@
             <TargetPath>Native\Magic\%(RecursiveDir)%(Filename)%(Extension)</TargetPath>
         </Content>
     </ItemGroup>
+    <Target Name="PostBuild_CopyMagic" AfterTargets="Build">
+	<PropertyGroup>
+		<MagicSourceDir>$(MSBuildProjectDirectory)/../DystopiaMagic/bin/linux/Release/net6.0/linux-x64</MagicSourceDir>
+		<MagicTargetDir>$(PublishDir)/Native/Magic</MagicTargetDir>
+	</PropertyGroup>
+
+	<Exec Command="mkdir -p '$(MagicTargetDir)'" />
+	<Exec Command="cp -r '$(MagicSourceDir)/'* '$(MagicTargetDir)/'" />
+    </Target>
 </Project>
