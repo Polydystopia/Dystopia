@@ -31,10 +31,6 @@ public class AuthController : ControllerBase
 
     private PolytopiaToken CreateToken(PolytopiaUserViewModel userFromDb)
     {
-        _logger.LogInformation("Steam login attempt from IP address {RemoteIpAddress}. User {UserName}",
-            HttpContext.Connection.RemoteIpAddress?.ToString() ?? "Unknown",
-            userFromDb.GetUniqueNameInternal() ?? "Unknown");
-
         var token = new PolytopiaToken();
 
         var claims = new List<Claim>
@@ -77,8 +73,7 @@ public class AuthController : ControllerBase
         if (model?.SteamAuthTicket?.Data == null)
         {
             _logger.LogInformation(
-                "Steam login attempt from IP address {RemoteIpAddress} failed. Invalid auth ticket data",
-                HttpContext.Connection.RemoteIpAddress?.ToString() ?? "Unknown");
+                "Steam login attempt failed. Invalid auth ticket data");
             return BadRequest("Invalid auth ticket data");
         }
 
@@ -86,8 +81,7 @@ public class AuthController : ControllerBase
         if (parsedSteamTicket == null)
         {
             _logger.LogInformation(
-                "Steam login attempt from IP address {RemoteIpAddress} failed. Invalid auth ticket data",
-                HttpContext.Connection.RemoteIpAddress?.ToString() ?? "Unknown");
+                "Steam login attempt failed. Invalid auth ticket data");
             return Forbid("Invalid auth ticket data");
         }
 
