@@ -34,6 +34,11 @@ public partial class PolytopiaHub
     {
         var res = await PolydystopiaGameManager.Resign(model, _gameRepository, _userGuid);
 
+        if (!res)
+        {
+            _logger.LogWarning("Resign by {playerId} in game {gameId} failed", _userId, model.GameId);
+        }
+
         return res ? new ServerResponse<ResponseViewModel>(new ResponseViewModel()) : new ServerResponse<ResponseViewModel>();
     }
 
