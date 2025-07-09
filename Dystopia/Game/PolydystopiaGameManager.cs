@@ -56,6 +56,11 @@ public static class PolydystopiaGameManager
 
         var serializedCommand = bridge.Resign(game.CurrentGameStateData, senderId.ToString());
 
+        if (serializedCommand == null)
+        {
+            return false;
+        }
+
         var commandModel = new SendCommandBindingModel
         {
             GameId = model.GameId,

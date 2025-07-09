@@ -1,4 +1,5 @@
-﻿using DystopiaShared;
+﻿using System.Text.RegularExpressions;
+using DystopiaShared;
 using DystopiaShared.SharedModels;
 using Il2CppInterop.Runtime;
 using Newtonsoft.Json;
@@ -198,7 +199,10 @@ public class DystopiaBlackCastle : IDystopiaCastle
             foreach (var player in gameState.PlayerStates)
             {
                 if (player.AutoPlay) continue;
-                if (player.AccountId != new Il2CppSystem.Nullable<Guid>(new Guid(senderId))) continue;
+
+                var playerId = Regex.Match(player.ToString(), @"\((?<guid>[0-9A-Fa-f]{8}(?:-[0-9A-Fa-f]{4}){3}-[0-9A-Fa-f]{12})\)\s*$"); //TODO hack bc of weird behaviour see https://github.com/Polydystopia/Dystopia/issues/26
+
+                if (playerId.Groups["guid"].Value != senderId) continue;
 
                 var resignCommand = new ResignCommand(gameState.CurrentPlayer, player.Id, 0, false);
 
