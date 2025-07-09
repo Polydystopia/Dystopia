@@ -28,9 +28,6 @@ public partial class PolytopiaHub : Hub
     private readonly IPolydystopiaMatchmakingRepository _matchmakingRepository;
 
     private string _userId => Context.User?.FindFirst("nameid")?.Value ?? string.Empty;
-    private string _username => Context.User?.FindFirst("unique_name")?.Value ?? string.Empty;
-    private string _steamId => Context.User?.FindFirst("steam")?.Value ?? string.Empty;
-
     private Guid _userGuid => Guid.Parse(_userId);
 
     private readonly ILogger<PolytopiaHub> _logger;

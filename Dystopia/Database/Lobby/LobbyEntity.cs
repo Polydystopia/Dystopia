@@ -53,7 +53,7 @@ public class LobbyEntity
             IsSharable = true,
             TimeLimit = TimeLimit,
             ScoreLimit = ScoreLimit,
-            InviteLink = "https://virus.info", //TODO,
+            InviteLink = "https://dystopia.xyz/inviteLinksHaventBeenImplementedYet.html", //TODO,
             MatchmakingGameId = 0, // TODO,
             ChallengermodeGameId = null,
             StartTime = StartTime,

@@ -11,10 +11,8 @@ public partial class PolytopiaHub
     public async Task<ServerResponse<PlayersStatusesResponse>> GetFriendsStatuses()
     {
         var statuses = new Dictionary<string, PlayerStatus>();
-
-        var myFriends = await _friendRepository.GetFriendsForUserAsync(Guid.Parse(_userId));
-
-        foreach (var friend in myFriends)
+        
+        foreach (var friend in await _friendRepository.GetFriendsForUserAsync(_userGuid))
         {
             bool foundInGame = false;
 
@@ -22,25 +20,23 @@ public partial class PolytopiaHub
             {
                 foreach (var playerInGame in game.Value)
                 {
-                    if (playerInGame.id == friend.User.PolytopiaId)
-                    {
-                        statuses[friend.User.PolytopiaId.ToString()] = new PlayerStatus()
-                            { GameId = game.Key, PlayerOnlineStatus = PlayerOnlineStatus.PlayingGame };
-                        foundInGame = true;
-                        break;
-                    }
+                    if (playerInGame.id != friend.UserId1) continue;
+                    statuses[friend.UserId1.ToString()] = new PlayerStatus()
+                        { GameId = game.Key, PlayerOnlineStatus = PlayerOnlineStatus.PlayingGame };
+                    foundInGame = true;
+                    break;
                 }
                 if (foundInGame) break;
             }
 
-            if (OnlinePlayers.ContainsKey(friend.User.PolytopiaId))
+            if (OnlinePlayers.ContainsKey(friend.UserId1))
             {
-                statuses[friend.User.PolytopiaId.ToString()] = new PlayerStatus()
+                statuses[friend.UserId1.ToString()] = new PlayerStatus()
                     { PlayerOnlineStatus = PlayerOnlineStatus.Online };
             }
             else
             {
-                statuses[friend.User.PolytopiaId.ToString()] = new PlayerStatus()
+                statuses[friend.UserId1.ToString()] = new PlayerStatus()
                     { PlayerOnlineStatus = PlayerOnlineStatus.Offline };
             }
         }
@@ -52,7 +48,7 @@ public partial class PolytopiaHub
     {
         var myFriends = await _friendRepository.GetFriendsForUserAsync(Guid.Parse(_userId));
 
-        return new ServerResponseList<PolytopiaFriendViewModel>(myFriends);
+        return new ServerResponseList<PolytopiaFriendViewModel>(myFriends.Select(f => (PolytopiaFriendViewModel) f));
     }
 
     public async Task<ServerResponse<ResponseViewModel>> AcceptFriendRequest(

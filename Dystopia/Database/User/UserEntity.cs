@@ -22,7 +22,7 @@ public class UserEntity
     [NotMapped]
     public string UserName => Alias + Discriminator;
 
-    public required SteamID SteamId { get; init; } // TODO owns-a
+    public required string SteamId { get; init; } // TODO owns-a
     // idk why you would use friendCode
     public required bool AllowsFriendRequests { get; init; }
     public required int Elo { get; init; }

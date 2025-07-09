@@ -28,7 +28,7 @@ public static class PolydystopiaGameManager
 
         serializedGameState = bridge.Update(serializedGameState);
 
-        var gameViewModel = new GameEntity(){
+        var gameEntity = new GameEntity(){
             Id = lobby.Id,
             OwnerId = lobby.OwnerId,
             DateCreated = DateTime.Now, //?
@@ -39,7 +39,7 @@ public static class PolydystopiaGameManager
             TimerSettings = new TimerSettings(), //??? Used?
             DateCurrentTurnDeadline = DateTime.Now.AddDays(1), //TODO: Calc
         };
-        await gameRepository.CreateAsync(gameViewModel);
+        await gameRepository.CreateAsync(gameEntity);
 
         return true;
     }

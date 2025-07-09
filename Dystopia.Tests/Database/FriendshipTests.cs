@@ -119,7 +119,7 @@ public class FriendshipTests
         var result = await _repository.GetFriendsForUserAsync(userId);
 
         // Assert
-        Assert.Equal(2, result.Count);
+        Assert.Equal(2, result.Count());
         // Assert.Contains(result, f => f.User.UserName == "Friend1");
         // Assert.Contains(result, f => f.User.UserName == "Friend2"); TODO use reflection
     }

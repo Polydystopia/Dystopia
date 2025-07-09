@@ -11,13 +11,13 @@ namespace Dystopia.Game.Matchmaking;
 
 public static class PolydystopiaMatchmakingManager
 {
-    public static async Task<MatchmakingSubmissionViewModel?> QueuePlayer(Guid playerId,
+    public static async Task<MatchmakingSubmissionViewModel> QueuePlayer(Guid playerId,
         SubmitMatchmakingBindingModel model,
         IClientProxy ownProxy,
         IPolydystopiaMatchmakingRepository _matchmakingRepository,
         IPolydystopiaUserRepository _userRepository,
         IPolydystopiaLobbyRepository _lobbyRepository)
-    {
+    { // TODO make service instead of static method
         var fittingLobbies = await _matchmakingRepository.GetAllFittingLobbies(playerId, model.Version, model.MapSize,
             model.MapPreset, model.GameMode, model.ScoreLimit, model.TimeLimit, model.Platform, model.AllowCrossPlay);
 
@@ -62,7 +62,7 @@ public static class PolydystopiaMatchmakingManager
                 GameMode = model.GameMode,
                 ScoreLimit = model.ScoreLimit,
                 TimeLimit = model.TimeLimit,
-                Platform = model.Platform, // as who cares
+                Platform = model.Platform,
                 AllowCrossPlay = true,
                 MaxPlayers = maxPlayers,
                 PlayerIds = lobbyGameViewModel.Participators.Select(p => p.UserId).ToList(),

@@ -7,7 +7,7 @@ public interface IPolydystopiaUserRepository
 {
     Task<UserEntity> GetBySteamIdAsync(SteamID steamId, string username);
     Task<UserEntity?> GetByIdAsync(Guid polytopiaId);
-    Task<bool> UpdateAsync(UserEntity userViewModel);
+    Task<bool> UpdateAsync(UserEntity userEntity);
     Task<UserEntity> CreateAsync(SteamID steamId, string username);
     Task<List<UserEntity>> GetAllByNameStartsWith(string name);
 }

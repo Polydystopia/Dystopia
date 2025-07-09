@@ -55,27 +55,24 @@ public class PolydystopiaGameRepository : IPolydystopiaGameRepository
         return false;
     }
 
-    public async Task<GameEntity> CreateAsync(GameEntity gameViewModel)
+    public async Task<GameEntity> CreateAsync(GameEntity gameEntity)
     {
-        await _dbContext.Games.AddAsync(gameViewModel);
+        await _dbContext.Games.AddAsync(gameEntity);
         await _dbContext.SaveChangesAsync();
-        return gameViewModel;
+        return gameEntity;
     }
 
-    public async Task<GameEntity> UpdateAsync(GameEntity gameViewModel)
+    public async Task<GameEntity> UpdateAsync(GameEntity gameEntity)
     {
-        if (ShouldCache(gameViewModel))
+        if (ShouldCache(gameEntity))
         {
-            _cacheService.Set(gameViewModel.Id, gameViewModel, context => context.Games.Update(gameViewModel));
-            return gameViewModel; // update is automatic as it is a reference type
-            // _dbContext.Games.Update(gameViewModel);
-            // await _dbContext.SaveChangesAsync();
-            // Add this if it is catastrophic when live games or last few moves of games are deleted on server crash.
+            _cacheService.Set(gameEntity.Id, gameEntity, context => context.Games.Update(gameEntity));
+            return gameEntity;
         }
-        _dbContext.Games.Update(gameViewModel);
+        _dbContext.Games.Update(gameEntity);
         await _dbContext.SaveChangesAsync();
 
-        return gameViewModel;
+        return gameEntity;
     }
 
     public async Task<List<GameEntity>> GetAllGamesByPlayer(Guid playerId)

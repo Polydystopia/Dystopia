@@ -1,4 +1,4 @@
-﻿using System.IdentityModel.Tokens.Jwt;
+using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 using Dystopia.Database.User;
@@ -40,7 +40,7 @@ public class AuthController : ControllerBase
             new("nameid", userFromDb.PolytopiaId.ToString()),
             new("unique_name", userFromDb.UserName),
             new("AspNet.Identity.SecurityStamp", "PCSD6HQ3RTGJDIWAT4BBJY3IFW5ARY3J"), //TODO: what is this?
-            new("steam", userFromDb.SteamId.ToString())
+            new("steam", userFromDb.SteamId)
         };
 
         var key = new SymmetricSecurityKey(

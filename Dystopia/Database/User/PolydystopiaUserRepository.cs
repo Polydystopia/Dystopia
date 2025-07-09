@@ -36,9 +36,9 @@ public class PolydystopiaUserRepository : IPolydystopiaUserRepository
         return model;
     }
 
-    public async Task<bool> UpdateAsync(UserEntity userViewModel)
+    public async Task<bool> UpdateAsync(UserEntity userEntity)
     {
-        _dbContext.Users.Update(userViewModel);
+        _dbContext.Users.Update(userEntity);
         await _dbContext.SaveChangesAsync();
 
         return true;
@@ -67,7 +67,7 @@ public class PolydystopiaUserRepository : IPolydystopiaUserRepository
             PolytopiaId = Guid.NewGuid(),
             Alias = username,
             Discriminator = await FindDiscriminator(username),
-            SteamId = steamId,
+            SteamId = steamId.ToString(),
             AllowsFriendRequests = true,
             Elo = 1000,
             Games = null,
