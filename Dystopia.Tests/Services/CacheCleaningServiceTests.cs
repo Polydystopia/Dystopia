@@ -6,6 +6,7 @@ using Microsoft.Extensions.Options;
 using Moq;
 using System.Threading;
 using System.Threading.Tasks;
+using Dystopia.Database.Game;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging.Abstractions;
 using PolytopiaBackendBase.Game;

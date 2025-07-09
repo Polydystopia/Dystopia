@@ -15,7 +15,7 @@ public class FriendshipRepository : IFriendshipRepository
     }
 
     public async Task<FriendshipStatus> GetFriendshipStatusAsync(Guid user1Id, Guid user2Id)
-    {
+    { // TODO inspect usages
         var friendship = await _dbContext.Friends
             .FirstOrDefaultAsync(f =>
                 (f.UserId1 == user1Id && f.UserId2 == user2Id) || (f.UserId1 == user2Id && f.UserId2 == user1Id));
@@ -81,7 +81,7 @@ public class FriendshipRepository : IFriendshipRepository
         foreach (var user in friendUsers)
         {
             var friend = new PolytopiaFriendViewModel();
-            friend.User = user;
+            friend.User = (PolytopiaUserViewModel)user;
             friend.FriendshipStatus = await GetFriendshipStatusAsync(userId, user.PolytopiaId);
 
             friendViewModels.Add(friend);

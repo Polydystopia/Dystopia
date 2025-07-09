@@ -31,16 +31,16 @@ public class AuthController : ControllerBase
         _logger = logger;
     }
 
-    private PolytopiaToken CreateToken(PolytopiaUserViewModel userFromDb)
+    private PolytopiaToken CreateToken(UserEntity userFromDb)
     {
         var token = new PolytopiaToken();
 
         var claims = new List<Claim>
         {
             new("nameid", userFromDb.PolytopiaId.ToString()),
-            new("unique_name", userFromDb.GetUniqueNameInternal()),
+            new("unique_name", userFromDb.UserName),
             new("AspNet.Identity.SecurityStamp", "PCSD6HQ3RTGJDIWAT4BBJY3IFW5ARY3J"), //TODO: what is this?
-            new("steam", userFromDb.SteamId)
+            new("steam", userFromDb.SteamId.ToString())
         };
 
         var key = new SymmetricSecurityKey(
@@ -64,7 +64,7 @@ public class AuthController : ControllerBase
         token.JwtToken = tokenHandler.WriteToken(jwtToken);
         token.ExpiresAt = expiryDate;
 
-        token.User = userFromDb;
+        token.User = (PolytopiaUserViewModel)userFromDb;
 
         return token;
     }

@@ -1,4 +1,6 @@
-﻿using Dystopia.Game;
+﻿using Dystopia.Database.Lobby;
+using Dystopia.Database.User;
+using Dystopia.Game;
 using Dystopia.Game.Lobby;
 using Microsoft.AspNetCore.SignalR;
 using Newtonsoft.Json;
@@ -15,7 +17,7 @@ public partial class PolytopiaHub
 {
     public async Task<ServerResponse<GetLobbyInvitationsViewModel>> GetLobbiesInvitations()
     {
-        var myLobbies = await _lobbyRepository.GetAllLobbiesByPlayer(_userGuid);
+        List<LobbyGameViewModel> myLobbies = (await _lobbyRepository.GetAllLobbiesByPlayer(_userGuid)).Select(l => l.ToLobbyGameViewModel(LobbyUpdatedReason.Created)).ToList();
 
         //TODO: HACK!! Since I do not want to use two devices all the time. Change later.
         //foreach (var lobbyGameViewModel in myLobbies)
@@ -37,9 +39,9 @@ public partial class PolytopiaHub
             return new ServerResponse<LobbyGameViewModel>()
                 { Success = false, ErrorCode = ErrorCode.UserNotFound, ErrorMessage = "Own user not found." };
 
-        var response = PolydystopiaLobbyManager.CreateLobby(model, ownUser);
+        var response = PolydystopiaLobbyManager.CreateLobby(model, (PolytopiaUserViewModel) ownUser);
 
-        await _lobbyRepository.CreateAsync(response);
+        await _lobbyRepository.CreateAsync(response.ToLobbyEntity());
 
         return new ServerResponse<LobbyGameViewModel>(response);
     }
@@ -78,18 +80,18 @@ public partial class PolytopiaHub
                 var participator = new ParticipatorViewModel()
                 {
                     UserId = invitedPlayerGuid,
-                    Name = invitePlayer.GetUniqueNameInternal(),
-                    NumberOfFriends = invitePlayer.NumFriends ?? 0,
-                    NumberOfMultiplayerGames = invitePlayer.NumMultiplayergames ?? 0,
-                    GameVersion = invitePlayer.GameVersions,
-                    MultiplayerRating = invitePlayer.MultiplayerRating ?? 0,
+                    Name = invitePlayer.Alias,
+                    NumberOfFriends = invitePlayer.NumFriends,
+                    NumberOfMultiplayerGames = invitePlayer.NumGames,
+                    GameVersion = new (),
+                    MultiplayerRating = invitePlayer.Elo,
                     SelectedTribe = 0, //?
                     SelectedTribeSkin = 0, //?
                     AvatarStateData = invitePlayer.AvatarStateData,
                     InvitationState = PlayerInvitationState.Invited
                 };
 
-                lobby.Participators.Add(participator);
+                lobby.Participators.Add((LobbyPlayerEntity)participator);
 
                 if (OnlinePlayers.TryGetValue(invitedPlayerGuid, out var onlineFriendProxy))
                 {
@@ -114,7 +116,7 @@ public partial class PolytopiaHub
 
         if (lobby != null && lobby.OwnerId == _userGuid)
         {
-            if (lobby.MatchmakingGameId != null && lobby.Participators.Count > 1)
+            if (lobby is { MatchmakingGameId: not null, Participators.Count: > 1 })
             {
                 lobby.OwnerId = lobby.Participators.FirstOrDefault(p => p.UserId != _userGuid)!.UserId;
             }
@@ -166,7 +168,7 @@ public partial class PolytopiaHub
             return new ServerResponse<LobbyGameViewModel>()
                 { Success = false, ErrorCode = ErrorCode.UserNotFound, ErrorMessage = "User is not invited to game." };
 
-        var status = lobby.GetInvitationStateForPlayer(_userGuid);
+        var status = lobby.Participators.First(p => p.UserId == _userGuid).InvitationState;
 
         if (status != PlayerInvitationState.Invited)
             return new ServerResponse<LobbyGameViewModel>()
@@ -195,10 +197,10 @@ public partial class PolytopiaHub
 
         foreach (var lobbySubscribers in LobbySubscribers[lobby.Id])
         {
-            await lobbySubscribers.proxy.SendAsync("OnLobbyUpdated", lobby);
+            await lobbySubscribers.proxy.SendAsync("OnLobbyUpdated", lobby.ToLobbyGameViewModel(LobbyUpdatedReason.PlayerRespondedToInvitation));
         }
 
-        return new ServerResponse<LobbyGameViewModel>(lobby);
+        return new ServerResponse<LobbyGameViewModel>(lobby.ToLobbyGameViewModel(LobbyUpdatedReason.PlayerRespondedToInvitation));
     }
 
     public async Task<ServerResponse<LobbyGameViewModel>> StartLobbyGame(StartLobbyBindingModel model)
@@ -212,7 +214,7 @@ public partial class PolytopiaHub
         }
 
         _logger.LogInformation("Starting game {lobbyId}", lobby.Id);
-        var result = await PolydystopiaGameManager.CreateGame(lobby, _gameRepository);
+        var result = await PolydystopiaGameManager.CreateGame(lobby.ToLobbyGameViewModel(LobbyUpdatedReason.Unknown/*TODO*/), _gameRepository);
 
         lobby.StartTime = DateTime.Now;
         lobby.StartedGameId = lobby.Id;
@@ -238,10 +240,10 @@ public partial class PolytopiaHub
                     PolydystopiaGameManager.GetGameSummaryViewModelByGameViewModel(game), StateUpdateReason.ValidStartGame);
             }
 
-            return new ServerResponse<LobbyGameViewModel>(lobby) { Success = lobbyDeleted };
+            return new ServerResponse<LobbyGameViewModel>(lobby.ToLobbyGameViewModel(LobbyUpdatedReason.Unknown)) { Success = lobbyDeleted };
         }
 
-        return new ServerResponse<LobbyGameViewModel>(lobby)
+        return new ServerResponse<LobbyGameViewModel>(lobby.ToLobbyGameViewModel(LobbyUpdatedReason.Unknown))
             { Success = false, ErrorCode = ErrorCode.StartGameFailed, ErrorMessage = "Could not create game" };
     }
 }

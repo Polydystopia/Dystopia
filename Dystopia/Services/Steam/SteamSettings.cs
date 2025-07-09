@@ -2,5 +2,5 @@
 
 public class SteamSettings
 {
-    public string ApiKey { get; set; } = null!;
+    public string ApiKey { get; init; } = null!;
 }

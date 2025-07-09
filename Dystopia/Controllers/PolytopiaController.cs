@@ -109,7 +109,7 @@ public class PolytopiaController : ControllerBase
             return new ServerResponse<GameViewModel>() { Success = false };
         }
 
-        return new ServerResponse<GameViewModel>(gameViewModel);
+        return new ServerResponse<GameViewModel>((GameViewModel)gameViewModel);
     }
 
     [Route("api/cm/list_matchmaking ")]

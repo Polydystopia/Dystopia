@@ -12,25 +12,23 @@ public class PolydystopiaLobbyRepository : IPolydystopiaLobbyRepository
         _dbContext = dbContext;
     }
 
-    public async Task<LobbyGameViewModel?> GetByIdAsync(Guid id)
+    public async Task<LobbyEntity?> GetByIdAsync(Guid id)
     {
         var model = await _dbContext.Lobbies.FindAsync(id) ?? null;
 
         return model;
     }
 
-    public async Task<LobbyGameViewModel> CreateAsync(LobbyGameViewModel lobbyGameViewModel)
+    public async Task<LobbyEntity> CreateAsync(LobbyEntity lobbyGameViewModel)
     {
         await _dbContext.Lobbies.AddAsync(lobbyGameViewModel);
         await _dbContext.SaveChangesAsync();
         return lobbyGameViewModel;
     }
 
-    public async Task<LobbyGameViewModel> UpdateAsync(LobbyGameViewModel lobbyGameViewModel, LobbyUpdatedReason reason)
+    public async Task<LobbyEntity> UpdateAsync(LobbyEntity lobbyGameViewModel, LobbyUpdatedReason reason)
     {
-        lobbyGameViewModel.DateModified = DateTime.UtcNow;
-        lobbyGameViewModel.UpdatedReason = reason;
-        
+        // TODO send update to clients
         _dbContext.Lobbies.Update(lobbyGameViewModel);
         await _dbContext.SaveChangesAsync();
         return lobbyGameViewModel;
@@ -51,9 +49,9 @@ public class PolydystopiaLobbyRepository : IPolydystopiaLobbyRepository
         return true;
     }
 
-    public async Task<List<LobbyGameViewModel>> GetAllLobbiesByPlayer(Guid playerId)
+    public async Task<List<LobbyEntity>> GetAllLobbiesByPlayer(Guid playerId)
     {
-        var playerLobbies = new List<LobbyGameViewModel>();
+        var playerLobbies = new List<LobbyEntity>();
         
         foreach (var lobbyGameViewModel in _dbContext.Lobbies)
         {

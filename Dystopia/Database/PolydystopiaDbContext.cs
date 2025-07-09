@@ -1,6 +1,9 @@
 ﻿using Dystopia.Database.Friendship;
+using Dystopia.Database.Game;
+using Dystopia.Database.Lobby;
 using Dystopia.Database.Matchmaking;
 using Dystopia.Database.News;
+using Dystopia.Database.User;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
 using PolytopiaBackendBase.Auth;
@@ -12,12 +15,12 @@ namespace Dystopia.Database;
 
 public class PolydystopiaDbContext : DbContext
 {
-    public virtual DbSet<PolytopiaUserViewModel> Users { get; set; }
-    public virtual DbSet<FriendshipEntity> Friends { get; set; }
-    public virtual DbSet<LobbyGameViewModel> Lobbies { get; set; }
-    public virtual DbSet<GameViewModel> Games { get; set; }
-    public virtual DbSet<MatchmakingEntity> Matchmaking { get; set; }
-    public virtual DbSet<NewsEntity?> News { get; set; }
+    public virtual DbSet<UserEntity> Users { get; init; }
+    public virtual DbSet<FriendshipEntity> Friends { get; init; }
+    public virtual DbSet<LobbyEntity> Lobbies { get; init; }
+    public virtual DbSet<GameEntity> Games { get; init; }
+    public virtual DbSet<MatchmakingEntity> Matchmaking { get; init; }
+    public virtual DbSet<NewsEntity> News { get; init; }
 
     public PolydystopiaDbContext(DbContextOptions<PolydystopiaDbContext> options) : base(options)
     {
@@ -33,103 +36,69 @@ public class PolydystopiaDbContext : DbContext
             ConstructorHandling = ConstructorHandling.AllowNonPublicDefaultConstructor,
             ObjectCreationHandling = ObjectCreationHandling.Replace
         };
-
-
-        var polytopiaUserViewModelEntity = modelBuilder.Entity<PolytopiaUserViewModel>();
-
-        polytopiaUserViewModelEntity.HasKey(e => e.PolytopiaId);
-
-        polytopiaUserViewModelEntity.Property<string>("UserName");
-        polytopiaUserViewModelEntity.Property<string>("Alias");
-
-        polytopiaUserViewModelEntity.Property(e => e.Victories).HasConversion(
-            v => JsonConvert.SerializeObject
-                (v, jsonSettings),
-            v => JsonConvert.DeserializeObject
-                <Dictionary<string, int>>(v, jsonSettings));
-
-        polytopiaUserViewModelEntity.Property(e => e.Defeats).HasConversion(
-            v => JsonConvert.SerializeObject
-                (v, jsonSettings),
-            v => JsonConvert.DeserializeObject
-                <Dictionary<string, int>>(v, jsonSettings));
-
-        polytopiaUserViewModelEntity.Property(e => e.GameVersions).HasConversion(
-            v => JsonConvert.SerializeObject
-                (v, jsonSettings),
-            v => JsonConvert.DeserializeObject
-                <List<ClientGameVersionViewModel>>(v, jsonSettings));
-
-        polytopiaUserViewModelEntity.Property(e => e.UnlockedTribes).HasConversion(
-            v => JsonConvert.SerializeObject
-                (v, jsonSettings),
-            v => JsonConvert.DeserializeObject
-                <List<int>>(v, jsonSettings));
-
-        polytopiaUserViewModelEntity.Property(e => e.UnlockedSkins).HasConversion(
-            v => JsonConvert.SerializeObject
-                (v, jsonSettings),
-            v => JsonConvert.DeserializeObject
-                <List<int>>(v, jsonSettings));
-
-        polytopiaUserViewModelEntity.Property(e => e.CmUserData).HasConversion(
-            v => JsonConvert.SerializeObject
-                (v, jsonSettings),
-            v => JsonConvert.DeserializeObject
-                <UserViewModel>(v, jsonSettings));
-
-
+        
+        #region userEntity
+        var userEntity = modelBuilder.Entity<UserEntity>();
+        userEntity
+            .HasMany(u => u.Friends1)
+            .WithOne(f => f.User1)
+            .HasForeignKey(f => f.UserId1)
+            .OnDelete(DeleteBehavior.Restrict);
+        userEntity
+            .HasMany(u => u.Friends2)
+            .WithOne(f => f.User2)
+            .HasForeignKey(f => f.UserId2)
+            .OnDelete(DeleteBehavior.Restrict);
+        #endregion
+        
+        #region friendshipEntity
         var friendshipEntity = modelBuilder.Entity<FriendshipEntity>();
-
-        friendshipEntity.HasKey(e => new { e.UserId1, e.UserId2 });
-
-        friendshipEntity
-            .HasOne(f => f.User1)
-            .WithMany()
-            .HasForeignKey(f => f.UserId1);
-
-        friendshipEntity
-            .HasOne(f => f.User2)
-            .WithMany()
-            .HasForeignKey(f => f.UserId2);
-
-
-        var lobbyEntity = modelBuilder.Entity<LobbyGameViewModel>();
-
-        lobbyEntity.HasKey(e => e.Id);
-
-        lobbyEntity.Property(e => e.GameContext).HasConversion(
-            v => v != null ? JsonConvert.SerializeObject(v, jsonSettings) : null,
-            v => !string.IsNullOrEmpty(v) ? JsonConvert.DeserializeObject<GameContext>(v, jsonSettings) : null);
-
-        lobbyEntity.Property(e => e.DisabledTribes).HasConversion(
-            v => JsonConvert.SerializeObject(v, jsonSettings),
-            v => JsonConvert.DeserializeObject<List<int>>(v, jsonSettings));
-
-        lobbyEntity.Property(e => e.Participators).HasConversion(
-            v => JsonConvert.SerializeObject(v, jsonSettings),
-            v => JsonConvert.DeserializeObject<List<ParticipatorViewModel>>(v, jsonSettings));
-
+        
+        #endregion
+        
+        #region UserLobbyEntity
+        modelBuilder.Entity<LobbyPlayerEntity>()
+            .HasOne(lp => lp.User)
+            .WithMany(u => u.Games)
+            .HasForeignKey(ul => ul.UserId);
+        modelBuilder.Entity<LobbyPlayerEntity>()
+            .HasOne(ul => ul.Lobby)
+            .WithMany(l => l.Participators)
+            .HasForeignKey(ul => ul.LobbyId);
+        #endregion
+        #region lobbyEntity
+        var lobbyEntity = modelBuilder.Entity<LobbyEntity>();
+        
+        lobbyEntity
+            .HasOne(l => l.StartedGame)
+            .WithOne(g => g.Lobby)
+            .HasForeignKey<LobbyEntity>(g => g.StartedGameId);
+        
+        lobbyEntity
+            .HasOne(l => l.MatchmakingGame)
+            .WithOne(m => m.LobbyGameViewModel)
+            .HasForeignKey<LobbyEntity>(l => l.MatchmakingGameId);
+        
         lobbyEntity.Property(e => e.Bots).HasConversion(
             v => JsonConvert.SerializeObject(v, jsonSettings),
-            v => JsonConvert.DeserializeObject<List<int>>(v, jsonSettings));
+            v => JsonConvert.DeserializeObject<List<int>>(v, jsonSettings)!);
+        #endregion
         
+        #region gameEntity
+        var gameEntity = modelBuilder.Entity<GameEntity>();
+
+        gameEntity
+            .HasOne(g => g.Owner)
+            .WithMany() // Assuming no collection of owned games on UserEntity
+            .HasForeignKey(g => g.OwnerId);
         
-        
-        var gameEntity = modelBuilder.Entity<GameViewModel>();
-
-        gameEntity.HasKey(e => e.Id);
-
-        gameEntity.Property(e => e.GameContext).HasConversion(
-            v => v != null ? JsonConvert.SerializeObject(v, jsonSettings) : null,
-            v => !string.IsNullOrEmpty(v) ? JsonConvert.DeserializeObject<GameContext>(v, jsonSettings) : null);
-
+        //TODO
         gameEntity.Property(e => e.TimerSettings).HasConversion(
             v => v != null ? JsonConvert.SerializeObject(v, jsonSettings) : null,
-            v => !string.IsNullOrEmpty(v) ? JsonConvert.DeserializeObject<PolytopiaBackendBase.Timers.TimerSettings>(v, jsonSettings) : null);
+            v => !string.IsNullOrEmpty(v) ? JsonConvert.DeserializeObject<PolytopiaBackendBase.Timers.TimerSettings>(v, jsonSettings) : null!);
+        #endregion
 
-
-
+        #region matchmakingEntity
         var matchmakingEntity = modelBuilder.Entity<MatchmakingEntity>();
 
         matchmakingEntity.HasKey(e => e.Id);
@@ -143,5 +112,6 @@ public class PolydystopiaDbContext : DbContext
         matchmakingEntity.Property(e => e.PlayerIds).HasConversion(
             v => JsonConvert.SerializeObject(v, jsonSettings),
             v => JsonConvert.DeserializeObject<List<Guid>>(v, jsonSettings));
+        #endregion
     }
 }

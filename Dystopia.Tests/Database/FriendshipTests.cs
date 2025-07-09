@@ -103,8 +103,8 @@ public class FriendshipTests
     {
         // Arrange
         var userId = Guid.NewGuid();
-        var friend1 = new PolytopiaUserViewModel { PolytopiaId = Guid.NewGuid(), UserName = "Friend1" };
-        var friend2 = new PolytopiaUserViewModel { PolytopiaId = Guid.NewGuid(), UserName = "Friend2" };
+        var friend1 = new UserEntity { PolytopiaId = Guid.NewGuid(), Alias = "Friend1" };
+        var friend2 = new UserEntity { PolytopiaId = Guid.NewGuid(), Alias = "Friend2" };
 
         var friends = new List<FriendshipEntity>
         {

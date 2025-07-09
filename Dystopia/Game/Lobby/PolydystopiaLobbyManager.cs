@@ -29,7 +29,7 @@ public static class PolydystopiaLobbyManager
         lobby.IsSharable = true; //?
         lobby.TimeLimit = model.TimeLimit;
         lobby.ScoreLimit = model.ScoreLimit;
-        lobby.InviteLink = "https://play.polytopia.io/lobby/4114-281c-464c-a8e7-6a79f4496360"; //TODO ?
+        lobby.InviteLink = ""; //TODO ?
         //response.MatchmakingGameId = response.Id.GetHashCode(); //?
         //response.ChallengermodeGameId = response.Id; //?
         //response.StartTime = DateTime.Now; //?

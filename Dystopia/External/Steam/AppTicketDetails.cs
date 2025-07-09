@@ -5,7 +5,7 @@ namespace SteamTicketDecrypt.Console;
 
 public class AppTicketDetails
 {
-    public byte[] AuthTicket { get; set; }
+    public byte[] AuthTicket { get; init; }
     public string GcToken { get; set; }
     public DateTime TokenGenerated { get; set; }
     public IPAddress SessionExternalIP { get; set; }
@@ -23,6 +23,6 @@ public class AppTicketDetails
     public List<DlcDetails> Dlc { get; set; }
     public byte[] Signature { get; set; }
     public bool IsExpired { get; set; }
-    public bool HasValidSignature { get; set; }
-    public bool IsValid { get; set; }
+    public bool HasValidSignature { get; init; }
+    public bool IsValid { get; init; }
 }

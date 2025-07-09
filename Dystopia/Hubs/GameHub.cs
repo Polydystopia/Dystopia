@@ -20,8 +20,6 @@ public partial class PolytopiaHub
         var myGames = await _gameRepository.GetAllGamesByPlayer(_userGuid);
         foreach (var game in myGames)
         {
-            if (game.State != GameSessionState.Started) continue;
-
             response.gameSummaries.Add(PolydystopiaGameManager.GetGameSummaryViewModelByGameViewModel(game));
         }
 

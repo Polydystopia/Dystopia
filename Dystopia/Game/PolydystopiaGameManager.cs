@@ -28,19 +28,17 @@ public static class PolydystopiaGameManager
 
         serializedGameState = bridge.Update(serializedGameState);
 
-        var gameViewModel = new GameViewModel();
-        gameViewModel.Id = lobby.Id;
-        gameViewModel.OwnerId = lobby.OwnerId;
-        gameViewModel.DateCreated = DateTime.Now; //?
-        gameViewModel.DateLastCommand = DateTime.Now; //?
-        gameViewModel.State = GameSessionState.Started;
-        gameViewModel.GameSettingsJson = gameSettingsJson;
-        gameViewModel.InitialGameStateData = serializedGameState;
-        gameViewModel.CurrentGameStateData = serializedGameState;
-        gameViewModel.TimerSettings = new TimerSettings(); //??? Used?
-        gameViewModel.DateCurrentTurnDeadline = DateTime.Now.AddDays(1); //TODO: Calc
-        gameViewModel.GameContext = new GameContext(); //TODO?
-
+        var gameViewModel = new GameEntity(){
+            Id = lobby.Id,
+            OwnerId = lobby.OwnerId,
+            DateCreated = DateTime.Now, //?
+            DateLastCommand = DateTime.Now, //?
+            GameSettings = bridge.GetGameSettingsJson(serializedGameState), //TODO: Check all serialized?
+            InitialGameStateData = serializedGameState,
+            CurrentGameStateData = serializedGameState,
+            TimerSettings = new TimerSettings(), //??? Used?
+            DateCurrentTurnDeadline = DateTime.Now.AddDays(1), //TODO: Calc
+        };
         await gameRepository.CreateAsync(gameViewModel);
 
         return true;
@@ -95,7 +93,7 @@ public static class PolydystopiaGameManager
 
         if (ended)
         {
-            game.State = GameSessionState.Ended;
+            _ = GameSessionState.Ended; // TODO
         }
 
         await gameRepository.UpdateAsync(game);
@@ -132,12 +130,12 @@ public static class PolydystopiaGameManager
         }
     }
 
-    public static GameSummaryViewModel GetGameSummaryViewModelByGameViewModel(GameViewModel game)
+    public static GameSummaryViewModel GetGameSummaryViewModelByGameViewModel(GameEntity game)
     {
         var bridge = new DystopiaBridge();
         var serializedSummary = bridge.GetSummary(game.CurrentGameStateData);
 
-        var gameSettings = JsonConvert.DeserializeObject<SharedGameSettings>(game.GameSettingsJson); // TODO DTO!
+        var gameSettings = JsonConvert.DeserializeObject<SharedGameSettings>(game.GameSettings); // TODO DTO!
 
         var summary = new GameSummaryViewModel();
         summary.GameId = game.Id;
@@ -148,7 +146,7 @@ public static class PolydystopiaGameManager
         summary.DateLastEndTurn = DateTime.Now.Subtract(TimeSpan.FromMinutes(10)); //TODO
         summary.DateEnded = null; //TODO
         summary.TimeLimit = 3600; //gameSettings.TimeLimit TODO
-        summary.State = game.State;
+        summary.State = GameSessionState.Started; // TODO
         summary.Participators = new List<ParticipatorViewModel>();
         foreach (var player in gameSettings.players)
         {

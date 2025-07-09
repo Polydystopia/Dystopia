@@ -4,8 +4,8 @@ namespace Dystopia.Database.Game;
 
 public interface IPolydystopiaGameRepository
 {
-    public Task<GameViewModel?> GetByIdAsync(Guid id);
-    public Task<GameViewModel> CreateAsync(GameViewModel gameViewModel);
-    Task<GameViewModel> UpdateAsync(GameViewModel gameViewModel);
-    Task<List<GameViewModel>> GetAllGamesByPlayer(Guid playerId);
+    public Task<GameEntity?> GetByIdAsync(Guid id);
+    public Task<GameEntity> CreateAsync(GameEntity gameViewModel);
+    Task<GameEntity> UpdateAsync(GameEntity gameViewModel);
+    Task<List<GameEntity>> GetAllGamesByPlayer(Guid playerId);
 }

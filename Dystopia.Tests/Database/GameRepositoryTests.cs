@@ -23,7 +23,7 @@ public class GameRepositoryTests
         .UseInMemoryDatabase(databaseName: Guid.NewGuid().ToString())
         .Options;
     private readonly Mock<PolydystopiaDbContext> _dbContextMock;
-    private readonly Mock<ICacheService<GameViewModel>> _cacheServiceMock = new();
+    private readonly Mock<ICacheService<GameEntity>> _cacheServiceMock = new();
     private readonly IOptions<CacheSettings> _settings = Options.Create(new CacheSettings { GameViewModel = new CacheProfile() {CacheTime = TimeSpan.FromMinutes(30)}});
     private readonly Mock<IDystopiaCastle> _bridgeMock = new();
     public GameRepositoryTests()
@@ -43,7 +43,7 @@ public class GameRepositoryTests
     {
         // Arrange
         var testId = Guid.NewGuid();
-        var expectedGame = new GameViewModel { Id = testId };
+        var expectedGame = new GameEntity { Id = testId };
         _cacheServiceMock.Setup(c => c.TryGet(testId, out expectedGame)).Returns(true);
 
         // Act
@@ -59,9 +59,9 @@ public class GameRepositoryTests
     {
         // Arrange
         var testId = Guid.NewGuid();
-        var expectedGame = new GameViewModel { Id = testId };
+        var expectedGame = new GameEntity { Id = testId };
         _cacheServiceMock.Setup(c => c.TryGet(testId, out expectedGame)).Returns(false);
-        _dbContextMock.Setup(db => db.Games.FindAsync(testId)).ReturnsAsync(expectedGame);
+        _dbContextMock.Setup(db => db.Games.FindAsync(testId)).ReturnsAsync((GameEntity?)expectedGame);
 
         // Act
         var result = await CreateRepository().GetByIdAsync(testId);
@@ -75,8 +75,8 @@ public class GameRepositoryTests
     public async Task CreateAsync_AddsToDatabase()
     {
         // Arrange
-        var testGame = new GameViewModel();
-        var mockDbSet = new Mock<DbSet<GameViewModel>>();
+        var testGame = new GameEntity();
+        var mockDbSet = new Mock<DbSet<GameEntity>>();
         _dbContextMock.Setup(db => db.Games).Returns(mockDbSet.Object);
 
         // Act
@@ -92,7 +92,7 @@ public class GameRepositoryTests
     public async Task UpdateAsync_UsesCache_WhenShouldCache()
     {
         // Arrange
-        var testGame = new GameViewModel { 
+        var testGame = new GameEntity { 
             Id = Guid.NewGuid(),
             TimerSettings = new TimerSettings { UseTimebanks = true },
             DateLastCommand = DateTime.UtcNow
@@ -114,17 +114,17 @@ public class GameRepositoryTests
     public async Task UpdateAsync_SavesDirectly_WhenNotCaching()
     {
         // Arrange
-        var testGame = new GameViewModel { 
+        var testGame = new GameEntity { 
             Id = Guid.NewGuid(),
             TimerSettings = new TimerSettings { UseTimebanks = false },
             DateLastCommand = DateTime.UtcNow.AddHours(-10)
         };
-        _dbContextMock.Setup(db => db.Games).Returns(new Mock<DbSet<GameViewModel>>().Object);
+        _dbContextMock.Setup(db => db.Games).Returns(new Mock<DbSet<GameEntity>>().Object);
         // Act
         var result = await CreateRepository().UpdateAsync(testGame);
 
         // Assert
-        _cacheServiceMock.Verify(c => c.Set(It.IsAny<Guid>(), It.IsAny<GameViewModel>(), It.IsAny<Action<PolydystopiaDbContext>>()), Times.Never);
+        _cacheServiceMock.Verify(c => c.Set(It.IsAny<Guid>(), It.IsAny<GameEntity>(), It.IsAny<Action<PolydystopiaDbContext>>()), Times.Never);
         _dbContextMock.Verify(db => db.SaveChangesAsync(default), Times.Once);
     }
 
@@ -133,7 +133,7 @@ public class GameRepositoryTests
     {
         // Arrange
         var playerId = Guid.NewGuid();
-        var games = new List<GameViewModel>
+        var games = new List<GameEntity>
         {
             new() { Id = Guid.NewGuid(), CurrentGameStateData = new byte[] { 1 } },
             new() { Id = Guid.NewGuid(), CurrentGameStateData = new byte[] { 2 } }

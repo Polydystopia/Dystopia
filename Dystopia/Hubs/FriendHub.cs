@@ -145,7 +145,7 @@ public partial class PolytopiaHub
             if (foundUser.PolytopiaId.ToString() == _userId) continue;
 
             var friendViewModel = new PolytopiaFriendViewModel();
-            friendViewModel.User = foundUser;
+            friendViewModel.User = (PolytopiaUserViewModel)foundUser;
 
             friendViewModel.FriendshipStatus = await _friendRepository
                 .GetFriendshipStatusAsync(Guid.Parse(_userId), foundUser.PolytopiaId);

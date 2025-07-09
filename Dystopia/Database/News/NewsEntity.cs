@@ -5,16 +5,16 @@ namespace Dystopia.Database.News;
 public class NewsEntity
 {
     [Key]
-    public int Id { get; set; }
+    public int Id { get; init; }
 
-    public NewsType NewsType { get; set; }
+    public NewsType NewsType { get; init; }
 
     [Required]
-    public string Body { get; set; }
+    public string Body { get; init; }
 
-    public string? Link { get; set; }
+    public string? Link { get; init; }
 
-    public string? Image { get; set; }
+    public string? Image { get; init; }
 
     [Required]
     public DateTime CreatedAt { get; set; }
