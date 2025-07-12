@@ -79,9 +79,12 @@ public class DystopiaBlackCastle : IDystopiaCastle
                 botPlayer.type = PlayerData.Type.Bot;
                 botPlayer.state = PlayerData.State.Accepted;
                 botPlayer.knownTribe = true;
-                botPlayer.tribe = Enum.GetValues<TribeData.Type>().Where(t => t != TribeData.Type.None)
-                    .OrderBy(x => Guid.NewGuid()).First();
-                ;
+
+                var tribesEnumValues = Enum.GetValues<TribeData.Type>()
+                    .Where(t => t != TribeData.Type.None && t != TribeData.Type.Nature)
+                    .ToArray();
+                botPlayer.tribe = tribesEnumValues[Random.Shared.Next(tribesEnumValues.Length)];
+
                 botPlayer.botDifficulty = (BotDifficulty)botDifficulty;
                 botPlayer.skinType = SkinType.Default; //TODO
                 botPlayer.defaultName = "Bot" + botGuid;
@@ -200,7 +203,8 @@ public class DystopiaBlackCastle : IDystopiaCastle
             {
                 if (player.AutoPlay) continue;
 
-                var playerId = Regex.Match(player.ToString(), @"\((?<guid>[0-9A-Fa-f]{8}(?:-[0-9A-Fa-f]{4}){3}-[0-9A-Fa-f]{12})\)\s*$"); //TODO hack bc of weird behaviour see https://github.com/Polydystopia/Dystopia/issues/26
+                var playerId = Regex.Match(player.ToString(),
+                    @"\((?<guid>[0-9A-Fa-f]{8}(?:-[0-9A-Fa-f]{4}){3}-[0-9A-Fa-f]{12})\)\s*$"); //TODO hack bc of weird behaviour see https://github.com/Polydystopia/Dystopia/issues/26
 
                 if (playerId.Groups["guid"].Value != senderId) continue;
 
@@ -213,7 +217,8 @@ public class DystopiaBlackCastle : IDystopiaCastle
         });
     }
 
-    public bool SendCommand(byte[] serializedCommand, byte[] serializedGameState, out byte[] newGameState, out byte[][] newCommands)
+    public bool SendCommand(byte[] serializedCommand, byte[] serializedGameState, out byte[] newGameState,
+        out byte[][] newCommands)
     {
         byte[] localGameState = null!;
         byte[][] localCommands = null!;
@@ -235,7 +240,7 @@ public class DystopiaBlackCastle : IDystopiaCastle
             for (int i = 0; i < newCommandsCount; i++)
             {
                 var command = gameState.CommandStack[(Index)(gameState.CommandStack.Count - newCommandsCount + i)];
-                localCommands[i] = CommandBase.ToByteArray((CommandBase) command, version);
+                localCommands[i] = CommandBase.ToByteArray((CommandBase)command, version);
             }
 
             localGameState = SerializationHelpers.ToByteArray(gameState, version);
