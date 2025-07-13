@@ -22,7 +22,7 @@ jobs:
         uses: pietrobolcato/action-clone-private-submodule@v1.0.2
         with:
           ssh_private_key: ${{ secrets.LIB_SUBMODULE_SSH_KEY }}
-          module_link: Polydistopia/DystopiaLibs
+          module_link: Polydystopia/DystopiaLibs
           module_path: lib
 
       - name: Setup .NET
