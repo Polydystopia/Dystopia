@@ -7,7 +7,8 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-
+    outputs:
+      artifact-path: ${{ steps.upload.outputs.artifact-path }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -21,20 +22,41 @@ jobs:
       - name: Clone private submodule
         uses: pietrobolcato/action-clone-private-submodule@v1.0.2
         with:
-          ssh_private_key: ${{ secrets.LIB_SUBMODULE_SSH_KEY }}
           module_link: Polydystopia/DystopiaLibs
           module_path: lib
 
-      - name: Setup .NET
+      - name: Setup .NET SDK
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: 6.0.x
 
-      - name: Restore dependencies
-        run: dotnet restore
+      - name: Restore & Build
+        run: |
+          dotnet restore
+          dotnet build --configuration Release --no-restore
 
-      - name: Build
-        run: dotnet build --no-restore
+      - name: Upload build outputs
+        id: upload
+        uses: actions/upload-artifact@v3
+        with:
+          name: build-output
+          path: |
+            **/bin/Release/**
 
-      - name: Test
+  test:
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: Download build outputs
+        uses: actions/download-artifact@v3
+        with:
+          name: build-output
+          path: ./build
+
+      - name: Setup .NET SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 6.0.x
+
+      - name: Run Tests
         run: dotnet test --no-build --verbosity normal
