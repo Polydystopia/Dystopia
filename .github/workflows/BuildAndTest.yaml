@@ -6,26 +6,35 @@ on:
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
 
     steps:
       - uses: actions/checkout@v4
-        
-      - name: Clone private github submodule
+        with:
+          submodules: false
+
+      - name: Set up SSH key for submodule
+        uses: webfactory/ssh-agent@v0.5.4
+        with:
+          ssh-private-key: ${{ secrets.LIB_SUBMODULE_SSH_KEY }}
+
+      - name: Clone private submodule
         uses: pietrobolcato/action-clone-private-submodule@v1.0.2
         with:
-          #TODO please make this a repository secret and reset the key in the libs repo. I dont have perms to create secrets.
-          ssh_private_key: SHA256:AV+t3LGwX55tkQWTjOsbLmRk6pIx3Ng6nDjvH0Li3EQ 
+          ssh_private_key: ${{ secrets.LIB_SUBMODULE_SSH_KEY }}
           module_link: Polydistopia/DystopiaLibs
           module_path: lib
+
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: 6.0.x
+
       - name: Restore dependencies
         run: dotnet restore
+
       - name: Build
         run: dotnet build --no-restore
+
       - name: Test
         run: dotnet test --no-build --verbosity normal
