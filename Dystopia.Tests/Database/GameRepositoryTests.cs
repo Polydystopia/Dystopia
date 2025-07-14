@@ -1,5 +1,6 @@
 using Dystopia.Database;
 using DystopiaShared;
+using MockQueryable.Moq;
 using PolytopiaBackendBase.Game;
 using PolytopiaBackendBase.Timers;
 
@@ -134,8 +135,8 @@ public class GameRepositoryTests
         var playerId = Guid.NewGuid();
         var games = new List<GameViewModel>
         {
-            new() { CurrentGameStateData = new byte[] { 1 } },
-            new() { CurrentGameStateData = new byte[] { 2 } }
+            new() { Id = Guid.NewGuid(), CurrentGameStateData = new byte[] { 1 } },
+            new() { Id = Guid.NewGuid(), CurrentGameStateData = new byte[] { 2 } }
         };
 
         var mockDbSet = games.AsQueryable().BuildMockDbSet();
@@ -150,18 +151,5 @@ public class GameRepositoryTests
 
         // Assert
         Assert.Single(result);
-    }
-}
-
-public static class QueryableExtensions
-{
-    public static Mock<DbSet<T>> BuildMockDbSet<T>(this IQueryable<T> data) where T : class
-    {
-        var mockSet = new Mock<DbSet<T>>();
-        mockSet.As<IQueryable<T>>().Setup(m => m.Provider).Returns(data.Provider);
-        mockSet.As<IQueryable<T>>().Setup(m => m.Expression).Returns(data.Expression);
-        mockSet.As<IQueryable<T>>().Setup(m => m.ElementType).Returns(data.ElementType);
-        mockSet.As<IQueryable<T>>().Setup(m => m.GetEnumerator()).Returns(data.GetEnumerator());
-        return mockSet;
     }
 }
