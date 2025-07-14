@@ -39,9 +39,9 @@ public static class PolydystopiaMatchmakingManager
 
             lobbyGameViewModel.Participators.Add(participator);
 
-            var maxPlayers = model.OpponentCount != 0 ? model.OpponentCount : (short)Random.Shared.Next(2, 9);
+            var maxPlayers = model.OpponentCount != 0 ? model.OpponentCount+1 : (short)Random.Shared.Next(2, 9);
 
-            selectedLobby = new MatchmakingEntity(lobbyGameViewModel, model.Version, model.MapSize, model.MapPreset, model.GameMode, model.ScoreLimit, model.TimeLimit, model.Platform, model.AllowCrossPlay, maxPlayers);
+            selectedLobby = new MatchmakingEntity(lobbyGameViewModel, model.Version, lobbyGameViewModel.MapSize, lobbyGameViewModel.MapPreset, lobbyGameViewModel.GameMode, lobbyGameViewModel.ScoreLimit, lobbyGameViewModel.TimeLimit, model.Platform, model.AllowCrossPlay, maxPlayers);
             await _lobbyRepository.CreateAsync(lobbyGameViewModel);
             await _matchmakingRepository.CreateAsync(selectedLobby);
         }

@@ -30,16 +30,35 @@ public class PolydystopiaMatchmakingRepository : IPolydystopiaMatchmakingReposit
     public async Task<List<MatchmakingEntity>> GetAllFittingLobbies(Guid playerId, int version, int mapSize, MapPreset mapPreset, GameMode gameMode, int scoreLimit,
         int timeLimit, Platform platform, bool allowCrossPlay)
     {
-        var matchingLobbies = await _dbContext.Matchmaking
+        var query = _dbContext.Matchmaking
             .Include(m => m.LobbyGameViewModel)
-            .Where(m => m.Version == version &&
-                        m.MapSize == mapSize &&
-                        m.MapPreset == mapPreset &&
-                        m.GameMode == gameMode &&
-                        m.ScoreLimit == scoreLimit &&
-                        m.TimeLimit == timeLimit &&
-                        (m.Platform == platform || (m.AllowCrossPlay && allowCrossPlay)))
-            .ToListAsync();
+            .Where(m =>
+                m.Version   == version &&
+                m.TimeLimit == timeLimit &&
+                (m.Platform == platform || (m.AllowCrossPlay && allowCrossPlay))
+            );
+
+        if (mapSize != 0)
+        {
+            query = query.Where(m => m.MapSize == mapSize);
+        }
+
+        if (mapPreset != MapPreset.None)
+        {
+            query = query.Where(m => m.MapPreset == mapPreset);
+        }
+
+        if (gameMode != GameMode.None)
+        {
+            query = query.Where(m => m.GameMode == gameMode);
+        }
+
+        if (scoreLimit != 0)
+        {
+            query = query.Where(m => m.ScoreLimit == scoreLimit);
+        }
+
+        var matchingLobbies = await query.ToListAsync();
 
         return matchingLobbies
             .Where(m => m.PlayerIds.Count < m.MaxPlayers &&
