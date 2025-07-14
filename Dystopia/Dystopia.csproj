@@ -63,7 +63,7 @@
             <Link>lib\%(RecursiveDir)%(Filename)%(Extension)</Link>
         </None>
         <None Update="dystopia_cert.pfx">
-          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
         </None>
     </ItemGroup>
 
@@ -119,4 +119,16 @@
             <TargetPath>Native\Magic\%(RecursiveDir)%(Filename)%(Extension)</TargetPath>
         </Content>
     </ItemGroup>
+
+    <Target Name="CopyMagicBinaries" AfterTargets="Build">
+        <ItemGroup>
+            <MagicFiles
+                    Include="$(SolutionDir)DystopiaMagic\bin\$(Configuration)\net6.0\**\*.*" />
+        </ItemGroup>
+
+        <Copy
+                SourceFiles="@(MagicFiles)"
+                DestinationFiles="@(MagicFiles->'$(OutputPath)Native\Magic\%(RecursiveDir)%(Filename)%(Extension)')"
+                SkipUnchangedFiles="true" />
+    </Target>
 </Project>
