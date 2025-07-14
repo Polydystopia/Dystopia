@@ -23,6 +23,14 @@
         <PlatformName Condition="'$(OS)' != 'Windows_NT'">linux</PlatformName>
     </PropertyGroup>
 
+    <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
+      <OutputPath>bin\Debug\</OutputPath>
+    </PropertyGroup>
+
+    <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
+      <OutputPath>bin\Release\</OutputPath>
+    </PropertyGroup>
+
     <ItemGroup>
         <Reference Include="0Harmony">
             <HintPath>../lib/BepInEx/core/$(PlatformName)/0Harmony.dll</HintPath>
