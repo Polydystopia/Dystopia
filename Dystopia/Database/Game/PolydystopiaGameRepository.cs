@@ -1,4 +1,5 @@
 using Dystopia.Bridge;
+using Dystopia.Patches;
 using Dystopia.Services.Cache;
 using Dystopia.Settings;
 using Microsoft.EntityFrameworkCore;
@@ -79,38 +80,9 @@ public class PolydystopiaGameRepository : IPolydystopiaGameRepository
 
     public async Task<List<GameViewModel>> GetAllGamesByPlayer(Guid playerId)
     {
-        var playerGames = new List<GameViewModel>();
-
-        var allIds = await _dbContext.Games
-            .Select(g => g.Id)
-            .ToListAsync();
-
-        foreach (var id in allIds)
-        {
-            GameViewModel? game;
-
-            if (_cacheService.TryGet(id, out var cached))
-            {
-                game = cached;
-            }
-            else
-            {
-                game = await _dbContext.Games.FindAsync(id);
-
-                if (game == null) continue;
-
-                if (ShouldCache(game))
-                {
-                    _cacheService.Set(game.Id, game, ctx => ctx.Games.Update(game));
-                }
-            }
-
-            if (_bridge.IsPlayerInGame(playerId.ToString(), game.CurrentGameStateData))
-            {
-                playerGames.Add(game);
-            }
-        }
-
-        return playerGames;
+        // no need to cache as it is usually not relevant. TODO fix when custom entities are implemented(just have a list of playerid in game)
+        var allGames = await _dbContext.Games.ToListAsync();
+        return allGames
+            .Where(game => _bridge.IsPlayerInGame(playerId.ToString(), game.CurrentGameStateData)).ToList();
     }
 }
