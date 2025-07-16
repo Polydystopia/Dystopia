@@ -9,6 +9,7 @@ using Microsoft.IdentityModel.Tokens;
 using Newtonsoft.Json;
 using PolytopiaBackendBase;
 using PolytopiaBackendBase.Auth;
+using PolytopiaBackendBase.Common;
 using PolytopiaBackendBase.Notifications;
 
 namespace Dystopia.Controllers;
@@ -90,7 +91,7 @@ public class AuthController : ControllerBase
         
         var isDevEnv = string.Equals(env, Environments.Development, StringComparison.OrdinalIgnoreCase);
 
-        var username = !isDevEnv ? await _steamService.GetSteamUsernameAsync(parsedSteamTicket.SteamID) : PlayerNameGenerator.GenerateName(model.DeviceId);
+        var username = !isDevEnv ? await _steamService.GetSteamUsernameAsync(parsedSteamTicket.SteamID) : PolyUsernameGenerator.GetGeneratedUsername(model.DeviceId);
         if (string.IsNullOrEmpty(username))
         {
             _logger.LogWarning("Could not get steam username for steamId {steamId}", parsedSteamTicket.SteamID);;
@@ -114,7 +115,7 @@ public class AuthController : ControllerBase
         //TODO we need to find a way to properly handle model.AuthCode. Maybe it will not be possible to use the original one and we have to patch the game app. For now we will use the deviceId as username.
         var fakeGooglePlaySteamAppTicket = _steamService.ParseTicket(new []{Byte.MaxValue, }, model.DeviceId);
 
-        var userFromDb = await _userRepository.GetBySteamIdAsync(fakeGooglePlaySteamAppTicket.SteamID, PlayerNameGenerator.GenerateName(model.DeviceId));
+        var userFromDb = await _userRepository.GetBySteamIdAsync(fakeGooglePlaySteamAppTicket.SteamID, PolyUsernameGenerator.GetGeneratedUsername(model.DeviceId));
 
         var token = CreateToken(userFromDb);
 
