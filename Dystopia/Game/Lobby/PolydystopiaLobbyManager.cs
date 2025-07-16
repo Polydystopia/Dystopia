@@ -1,4 +1,5 @@
 ﻿using Dystopia.Database.User;
+using Dystopia.Game.Names;
 using PolytopiaBackendBase;
 using PolytopiaBackendBase.Auth;
 using PolytopiaBackendBase.Game;
@@ -79,7 +80,7 @@ public static class PolydystopiaLobbyManager
         lobby.UpdatedReason = LobbyUpdatedReason.Created;
         lobby.DateCreated = DateTime.Now;
         lobby.DateModified = DateTime.Now;
-        lobby.Name = "Love you " + Guid.NewGuid(); //TODO: Cooler names
+        lobby.Name = LobbyNameGenerator.GenerateName(gameId.ToString());
         lobby.MapPreset = model.MapPreset == MapPreset.None
             ? Enum.GetValues<MapPreset>().Where(x => x != MapPreset.None).OrderBy(x => Random.Shared.Next()).First()
             : model.MapPreset;

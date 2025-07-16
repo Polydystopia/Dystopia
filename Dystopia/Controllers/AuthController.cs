@@ -2,6 +2,7 @@
 using System.Security.Claims;
 using System.Text;
 using Dystopia.Database.User;
+using Dystopia.Game.Names;
 using Dystopia.Services.Steam;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
@@ -86,13 +87,15 @@ public class AuthController : ControllerBase
         }
 
         var env = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT"); //TODO: Hack use DI later
+        
         var isDevEnv = string.Equals(env, Environments.Development, StringComparison.OrdinalIgnoreCase);
 
-        var username = !isDevEnv ? await _steamService.GetSteamUsernameAsync(parsedSteamTicket.SteamID) : model.DeviceId;
+        var username = !isDevEnv ? await _steamService.GetSteamUsernameAsync(parsedSteamTicket.SteamID) : PlayerNameGenerator.GenerateName(model.DeviceId);
         if (string.IsNullOrEmpty(username))
         {
             _logger.LogWarning("Could not get steam username for steamId {steamId}", parsedSteamTicket.SteamID);;
             return BadRequest("Username parse error.");
+            // shouldn't we generate a random username in this case?
         }
 
         var userFromDb = await _userRepository.GetBySteamIdAsync(parsedSteamTicket.SteamID, username);
@@ -111,7 +114,7 @@ public class AuthController : ControllerBase
         //TODO we need to find a way to properly handle model.AuthCode. Maybe it will not be possible to use the original one and we have to patch the game app. For now we will use the deviceId as username.
         var fakeGooglePlaySteamAppTicket = _steamService.ParseTicket(new []{Byte.MaxValue, }, model.DeviceId);
 
-        var userFromDb = await _userRepository.GetBySteamIdAsync(fakeGooglePlaySteamAppTicket.SteamID, model.DeviceId);
+        var userFromDb = await _userRepository.GetBySteamIdAsync(fakeGooglePlaySteamAppTicket.SteamID, PlayerNameGenerator.GenerateName(model.DeviceId));
 
         var token = CreateToken(userFromDb);
 
