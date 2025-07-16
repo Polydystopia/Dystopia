@@ -196,12 +196,6 @@ public class DystopiaWhiteCastle : IDystopiaCastle
         return gameState;
     }
 
-    public string GetGameSettingsJson(byte[] serializedGameState)
-    {
-        var succ = SerializationHelpers.FromByteArray<GameState>(serializedGameState, out var gameState);
-        return JsonConvert.SerializeObject(gameState.Settings.MapToShared());
-    }
-
     public byte[]? Resign(byte[] serializedGameState, string senderId)
     {
         var succ = SerializationHelpers.FromByteArray<GameState>(serializedGameState, out GameState gameState);

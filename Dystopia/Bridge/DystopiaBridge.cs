@@ -112,13 +112,6 @@ public class DystopiaBridge : IDystopiaCastle
         return castle.Update(serializedGameState);
     }
 
-    public string GetGameSettingsJson(byte[] serializedGameState)
-    {
-        var castle = GetFittingCastle(serializedGameState);
-
-        return castle.GetGameSettingsJson(serializedGameState);
-    }
-
     public byte[]? Resign(byte[] serializedGameState, string senderId)
     {
         var castle = GetFittingCastle(serializedGameState);
