@@ -24,7 +24,7 @@ public static class PolydystopiaGameManager
     public static async Task<bool> CreateGame(LobbyGameViewModel lobby, IPolydystopiaGameRepository gameRepository)
     {
         var bridge = new DystopiaBridge();
-        var serializedGameState = bridge.CreateGame(lobby.Map());
+        var (serializedGameState, gameSettingsJson) = bridge.CreateGame(lobby.Map());
 
         serializedGameState = bridge.Update(serializedGameState);
 
@@ -34,7 +34,7 @@ public static class PolydystopiaGameManager
         gameViewModel.DateCreated = DateTime.Now; //?
         gameViewModel.DateLastCommand = DateTime.Now; //?
         gameViewModel.State = GameSessionState.Started;
-        gameViewModel.GameSettingsJson = bridge.GetGameSettingsJson(serializedGameState); //TODO: Check all serialized?
+        gameViewModel.GameSettingsJson = gameSettingsJson;
         gameViewModel.InitialGameStateData = serializedGameState;
         gameViewModel.CurrentGameStateData = serializedGameState;
         gameViewModel.TimerSettings = new TimerSettings(); //??? Used?

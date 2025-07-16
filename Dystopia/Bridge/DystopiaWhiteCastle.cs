@@ -15,7 +15,7 @@ public class DystopiaWhiteCastle : IDystopiaCastle
         return VersionManager.GameVersion.ToString();
     }
 
-    public byte[] CreateGame(SharedLobbyGameViewModel lobby)
+    public (byte[] serializedGamestate, string gameSettingsJson) CreateGame(SharedLobbyGameViewModel lobby)
     {
         var managedLobby = lobby.Map();
 
@@ -39,6 +39,8 @@ public class DystopiaWhiteCastle : IDystopiaCastle
             humanPlayer.defaultName = participatorViewModel.GetNameInternal();
             humanPlayer.profile.id = participatorViewModel.UserId;
             humanPlayer.profile.SetName(participatorViewModel.GetNameInternal());
+            SerializationHelpers.FromByteArray<AvatarState>(participatorViewModel.AvatarStateData, out var avatarState);
+            humanPlayer.profile.avatarState = avatarState;
 
             settings.AddPlayer(humanPlayer);
         }
@@ -130,7 +132,7 @@ public class DystopiaWhiteCastle : IDystopiaCastle
         Log.Verbose("{0} Session created successfully", (object)"Verbose");
         gameState.CommandStack.Add((CommandBase)new StartMatchCommand((byte)1));
 
-        return SerializationHelpers.ToByteArray(gameState, gameState.Version);
+        return (SerializationHelpers.ToByteArray(gameState, gameState.Version), JsonConvert.SerializeObject(gameState.Settings.MapToShared()));
     }
 
     public byte[] Update(byte[] serializedGameState)
