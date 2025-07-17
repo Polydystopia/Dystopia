@@ -17,7 +17,7 @@ public partial class PolytopiaHub
 {
     public async Task<ServerResponse<GetLobbyInvitationsViewModel>> GetLobbiesInvitations()
     {
-        List<LobbyGameViewModel> myLobbies = (await _lobbyRepository.GetAllLobbiesByPlayer(_userGuid)).Select(l => l.ToLobbyGameViewModel(LobbyUpdatedReason.Created)).ToList();
+        List<LobbyGameViewModel> myLobbies = (await _lobbyRepository.GetAllLobbiesByPlayer(UserGuid)).Select(l => l.ToLobbyGameViewModel(LobbyUpdatedReason.Created)).ToList();
 
         //TODO: HACK!! Since I do not want to use two devices all the time. Change later.
         //foreach (var lobbyGameViewModel in myLobbies)
@@ -34,16 +34,16 @@ public partial class PolytopiaHub
 
     public async Task<ServerResponse<LobbyGameViewModel>> CreateLobby(CreateLobbyBindingModel model)
     {
-        var ownUser = await _userRepository.GetByIdAsync(_userGuid);
+        var ownUser = await _userRepository.GetByIdAsync(UserGuid);
         if (ownUser == null)
             return new ServerResponse<LobbyGameViewModel>()
-                { Success = false, ErrorCode = ErrorCode.UserNotFound, ErrorMessage = "Own user not found." };
+                { Success = false, ErrorCode = ErrorCode.UserNotFound, ErrorMessage = "User not found." };
 
-        var response = PolydystopiaLobbyManager.CreateLobby(model, (PolytopiaUserViewModel) ownUser);
+        var response = PolydystopiaLobbyManager.CreateLobby(model, ownUser);
 
-        await _lobbyRepository.CreateAsync(response.ToLobbyEntity());
+        await _lobbyRepository.CreateAsync(response);
 
-        return new ServerResponse<LobbyGameViewModel>(response);
+        return new ServerResponse<LobbyGameViewModel>(response.ToLobbyGameViewModel(LobbyUpdatedReason.Created));
     }
 
     public async Task<ServerResponse<BoolResponseViewModel>> ModifyPlayersInLobby(
@@ -114,15 +114,15 @@ public partial class PolytopiaHub
     {
         var lobby = await _lobbyRepository.GetByIdAsync(lobbyId);
 
-        if (lobby != null && lobby.OwnerId == _userGuid)
+        if (lobby != null && lobby.OwnerId == UserGuid)
         {
             if (lobby is { MatchmakingGameId: not null, Participators.Count: > 1 })
             {
-                lobby.OwnerId = lobby.Participators.FirstOrDefault(p => p.UserId != _userGuid)!.UserId;
+                lobby.OwnerId = lobby.Participators.FirstOrDefault(p => p.UserId != UserGuid)!.UserId;
             }
             else
             {
-                _logger.LogInformation("User {ownUserId} left lobby {lobbyId}", _userGuid, lobbyId);
+                _logger.LogInformation("User {ownUserId} left lobby {lobbyId}", UserGuid, lobbyId);
                 _logger.LogInformation("Deleting lobby {lobbyId} since no remaining players", lobbyId);
 
                 await _lobbyRepository.DeleteAsync(lobbyId);
@@ -137,11 +137,11 @@ public partial class PolytopiaHub
             }
         }
 
-        if (lobby != null && lobby.Participators.Any(p => p.UserId == _userGuid))
+        if (lobby != null && lobby.Participators.Any(p => p.UserId == UserGuid))
         {
-            _logger.LogInformation("User {ownUserId} left lobby {lobbyId}", _userGuid, lobbyId);
+            _logger.LogInformation("User {ownUserId} left lobby {lobbyId}", UserGuid, lobbyId);
 
-            lobby.Participators.RemoveAll(p => p.UserId == _userGuid);
+            lobby.Participators.RemoveAll(p => p.UserId == UserGuid);
 
             await _lobbyRepository.UpdateAsync(lobby, LobbyUpdatedReason.PlayerLeftByRequest);
 
@@ -153,7 +153,7 @@ public partial class PolytopiaHub
             return new ServerResponse<BoolResponseViewModel>(new BoolResponseViewModel() { Result = true });
         }
 
-        _logger.LogWarning("User {ownUserId} wanted to leave lobby {lobbyId} where he is no member", _userGuid,
+        _logger.LogWarning("User {ownUserId} wanted to leave lobby {lobbyId} where he is no member", UserGuid,
             lobbyId);
 
         return new ServerResponse<BoolResponseViewModel>(new BoolResponseViewModel() { Result = false })
@@ -168,7 +168,7 @@ public partial class PolytopiaHub
             return new ServerResponse<LobbyGameViewModel>()
                 { Success = false, ErrorCode = ErrorCode.UserNotFound, ErrorMessage = "User is not invited to game." };
 
-        var status = lobby.Participators.First(p => p.UserId == _userGuid).InvitationState;
+        var status = lobby.Participators.First(p => p.UserId == UserGuid).InvitationState;
 
         if (status != PlayerInvitationState.Invited)
             return new ServerResponse<LobbyGameViewModel>()
@@ -176,7 +176,7 @@ public partial class PolytopiaHub
 
         foreach (var participatorViewModel in lobby.Participators)
         {
-            if (participatorViewModel.UserId == _userGuid)
+            if (participatorViewModel.UserId == UserGuid)
             {
                 if (model.Accepted)
                 {

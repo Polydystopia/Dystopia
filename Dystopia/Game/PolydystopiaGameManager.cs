@@ -33,7 +33,7 @@ public static class PolydystopiaGameManager
             OwnerId = lobby.OwnerId,
             DateCreated = DateTime.Now, //?
             DateLastCommand = DateTime.Now, //?
-            GameSettings = bridge.GetGameSettingsJson(serializedGameState), //TODO: Check all serialized?
+            GameSettings = gameSettingsJson,
             InitialGameStateData = serializedGameState,
             CurrentGameStateData = serializedGameState,
             TimerSettings = new TimerSettings(), //??? Used?

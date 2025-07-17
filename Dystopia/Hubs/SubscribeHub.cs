@@ -19,7 +19,7 @@ public partial class PolytopiaHub
 
     private void Subscribe(ConcurrentDictionary<Guid, List<(Guid id, IClientProxy proxy)>> subList, Guid gameId)
     {
-        var myId = _userGuid;
+        var myId = UserGuid;
         var myProxy = Clients.Caller;
 
         var el = subList.GetOrAdd(gameId, _ => new List<(Guid id, IClientProxy proxy)>());
@@ -45,7 +45,7 @@ public partial class PolytopiaHub
 
     public ServerResponse<ResponseViewModel> SubscribeToFriends()
     {
-        var myId = _userGuid;
+        var myId = UserGuid;
         var myProxy = Clients.Caller;
 
         FriendSubscribers[myId] = myProxy;
@@ -81,7 +81,7 @@ public partial class PolytopiaHub
     {
         if (GameSubscribers.TryGetValue(model.GameId, out var subscribers))
         {
-            subscribers.RemoveAll(x => x.id == _userGuid);
+            subscribers.RemoveAll(x => x.id == UserGuid);
         }
 
         return new ServerResponse<ResponseViewModel>(new ResponseViewModel());

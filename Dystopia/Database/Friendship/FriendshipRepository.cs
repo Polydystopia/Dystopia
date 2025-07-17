@@ -88,7 +88,7 @@ public class FriendshipRepository : IFriendshipRepository
             .Include(u => u.Friends1)
             .Include(u => u.Friends2)
             .FirstAsync()
-            .Then(u => u.Friends1.Concat(u.Friends2.Select(ReverseFriendship)));
+            .Then(u => u.Friends1.Concat(u.Friends2.Select(entity => ReverseFriendship(entity))));
     }
 
     public async Task<bool> DeleteFriendshipAsync(Guid user1Id, Guid user2Id)

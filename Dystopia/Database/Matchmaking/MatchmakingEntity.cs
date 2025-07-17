@@ -1,4 +1,5 @@
 ﻿using Dystopia.Database.Lobby;
+using Dystopia.Database.User;
 using PolytopiaBackendBase.Common;
 using PolytopiaBackendBase.Game;
 
@@ -8,7 +9,7 @@ public class MatchmakingEntity
 {
     public Guid Id { get; init; }
 
-    public required Guid? LobbyGameViewModelId { get; init; }
+    public required Guid LobbyGameViewModelId { get; init; }
     public LobbyEntity? LobbyGameViewModel { get; init; } = null!;
 
     public required int Version { get; init; }
@@ -22,5 +23,5 @@ public class MatchmakingEntity
 
     public required int MaxPlayers { get; init; }
 
-    public required List<Guid> PlayerIds { get; init; }
+    public required List<UserEntity> Players { get; init; } // TODO relationship
 }

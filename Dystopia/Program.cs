@@ -22,6 +22,7 @@ using Dystopia.Database.User;
 using Dystopia.Hubs;
 using Dystopia.Patches;
 using Dystopia.Services.Cache;
+using Dystopia.Services.Game;
 using Dystopia.Services.News;
 using Dystopia.Services.Steam;
 using Dystopia.Settings;
@@ -118,7 +119,7 @@ builder.Services.AddScoped<IPolydystopiaLobbyRepository, PolydystopiaLobbyReposi
 builder.Services.AddScoped<IPolydystopiaGameRepository, PolydystopiaGameRepository>();
 builder.Services.AddScoped<IPolydystopiaMatchmakingRepository, PolydystopiaMatchmakingRepository>();
 builder.Services.AddScoped<INewsRepository, NewsRepository>();
-
+builder.Services.AddScoped<IMatchmakingManager, MatchmakingManager>();
 builder.Services.AddScoped<INewsService, NewsService>();
 #region cache
 builder.Services.AddSingleton(typeof(ICacheService<>), typeof(CacheService<>));

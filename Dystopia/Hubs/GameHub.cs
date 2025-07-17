@@ -17,7 +17,7 @@ public partial class PolytopiaHub
         response.gameSummaries = new List<GameSummaryViewModel>();
         response.matchmakingGameSummaries = new List<MatchmakingGameSummaryViewModel>(); //TODO
 
-        var myGames = await _gameRepository.GetAllGamesByPlayer(_userGuid);
+        var myGames = await _gameRepository.GetAllGamesByPlayer(UserGuid);
         foreach (var game in myGames)
         {
             response.gameSummaries.Add(PolydystopiaGameManager.GetGameSummaryViewModelByGameViewModel(game));
@@ -28,11 +28,11 @@ public partial class PolytopiaHub
 
     public async Task<ServerResponse<ResponseViewModel>> Resign(ResignBindingModel model)
     {
-        var res = await PolydystopiaGameManager.Resign(model, _gameRepository, _userGuid);
+        var res = await PolydystopiaGameManager.Resign(model, _gameRepository, UserGuid);
 
         if (!res)
         {
-            _logger.LogWarning("Resign by {playerId} in game {gameId} failed", _userId, model.GameId);
+            _logger.LogWarning("Resign by {playerId} in game {gameId} failed", UserId, model.GameId);
         }
 
         return res ? new ServerResponse<ResponseViewModel>(new ResponseViewModel()) : new ServerResponse<ResponseViewModel>();
@@ -40,7 +40,7 @@ public partial class PolytopiaHub
 
     public async Task<ServerResponse<ResponseViewModel>> SendCommand(SendCommandBindingModel model)
     {
-        var res = await PolydystopiaGameManager.SendCommand(model, _gameRepository, _userGuid);
+        var res = await PolydystopiaGameManager.SendCommand(model, _gameRepository, UserGuid);
 
         return res ? new ServerResponse<ResponseViewModel>(new ResponseViewModel()) : new ServerResponse<ResponseViewModel>();
     }

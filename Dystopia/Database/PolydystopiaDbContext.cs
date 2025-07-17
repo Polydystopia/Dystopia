@@ -109,9 +109,7 @@ public class PolydystopiaDbContext : DbContext
             .HasForeignKey(m => m.LobbyGameViewModelId)
             .OnDelete(DeleteBehavior.Cascade);
 
-        matchmakingEntity.Property(e => e.PlayerIds).HasConversion(
-            v => JsonConvert.SerializeObject(v, jsonSettings),
-            v => JsonConvert.DeserializeObject<List<Guid>>(v, jsonSettings));
+        
         #endregion
     }
 }

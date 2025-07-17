@@ -10,6 +10,7 @@ using Dystopia.Controllers;
 using Dystopia.Database;
 using Dystopia.Game;
 using Dystopia.Patches;
+using Dystopia.Services.Game;
 using PolytopiaBackendBase;
 using PolytopiaBackendBase.Auth;
 using PolytopiaBackendBase.Common;
@@ -27,14 +28,15 @@ public partial class PolytopiaHub : Hub
     private readonly IPolydystopiaGameRepository _gameRepository;
     private readonly IPolydystopiaMatchmakingRepository _matchmakingRepository;
 
-    private string _userId => Context.User?.FindFirst("nameid")?.Value ?? string.Empty;
-    private Guid _userGuid => Guid.Parse(_userId);
+    private string UserId => Context.User?.FindFirst("nameid")?.Value ?? string.Empty;
+    private Guid UserGuid => Guid.Parse(UserId);
 
     private readonly ILogger<PolytopiaHub> _logger;
+    private readonly IMatchmakingManager _matchMaking;
 
     public PolytopiaHub(IPolydystopiaUserRepository userRepository, IFriendshipRepository friendRepository,
         IPolydystopiaLobbyRepository lobbyRepository, IPolydystopiaGameRepository gameRepository,
-        IPolydystopiaMatchmakingRepository matchmakingRepository, ILogger<PolytopiaHub> logger)
+        IPolydystopiaMatchmakingRepository matchmakingRepository, ILogger<PolytopiaHub> logger, IMatchmakingManager matchMaking)
     {
         _userRepository = userRepository;
         _friendRepository = friendRepository;
@@ -43,36 +45,37 @@ public partial class PolytopiaHub : Hub
         _matchmakingRepository = matchmakingRepository;
 
         _logger = logger;
+        _matchMaking = matchMaking;
     }
 
     public override async Task OnConnectedAsync()
     {
-        if (string.IsNullOrEmpty(_userId))
+        if (string.IsNullOrEmpty(UserId))
         {
             Context.Abort();
             return;
         }
 
-        await Groups.AddToGroupAsync(Context.ConnectionId, $"user-{_userId}");
+        await Groups.AddToGroupAsync(Context.ConnectionId, $"user-{UserId}");
 
         SubscribeToFriends();
         SubscribeToParticipatingGameSummaries();
 
-        OnlinePlayers[_userGuid] = Clients.Caller;
+        OnlinePlayers[UserGuid] = Clients.Caller;
 
         await base.OnConnectedAsync();
     }
 
     public override async Task OnDisconnectedAsync(Exception? exception)
     {
-        OnlinePlayers.TryRemove(_userGuid, out _);
-        FriendSubscribers.TryRemove(_userGuid, out _);
+        OnlinePlayers.TryRemove(UserGuid, out _);
+        FriendSubscribers.TryRemove(UserGuid, out _);
 
         foreach (var gameSubscription in GameSubscribers.Values)
         {
             lock (gameSubscription)
             {
-                gameSubscription.RemoveAll(x => x.id == _userGuid);
+                gameSubscription.RemoveAll(x => x.id == UserGuid);
             }
         }
 
@@ -80,7 +83,7 @@ public partial class PolytopiaHub : Hub
         {
             lock (lobbySubscription)
             {
-                lobbySubscription.RemoveAll(x => x.id == _userGuid);
+                lobbySubscription.RemoveAll(x => x.id == UserGuid);
             }
         }
 
@@ -102,7 +105,7 @@ public partial class PolytopiaHub : Hub
     public ServerResponse<TribeRatingsViewModel> GetTribeRatings() //TODO
     {
         var response = new TribeRatingsViewModel();
-        response.PolytopiaUserId = Guid.Parse(_userId);
+        response.PolytopiaUserId = Guid.Parse(UserId);
         response.Ratings = new Dictionary<int, TribeRatingViewModel>();
         return new ServerResponse<TribeRatingsViewModel>(response);
     }

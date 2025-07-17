@@ -27,43 +27,58 @@ public class PolydystopiaMatchmakingRepository : IPolydystopiaMatchmakingReposit
         return matchmakingEntity;
     }
 
-    public async Task<List<MatchmakingEntity>> GetAllFittingLobbies(Guid playerId, int version, int mapSize, MapPreset mapPreset, GameMode gameMode, int scoreLimit,
-        int timeLimit, Platform platform, bool allowCrossPlay)
+    private IQueryable<MatchmakingEntity> GetAllFittingLobbiesCommon(MatchMakingFilter filter)
     {
         var query = _dbContext.Matchmaking
             .Include(m => m.LobbyGameViewModel)
             .Where(m =>
-                m.Version   == version &&
-                m.TimeLimit == timeLimit &&
-                (m.Platform == platform || (m.AllowCrossPlay && allowCrossPlay))
-            );
+                m.Version == filter.Version &&
+                m.TimeLimit == filter.TimeLimit &&
+                (m.Platform == filter.Platform || 
+                 (m.AllowCrossPlay && filter.AllowCrossPlay)) &&
+                m.Players.Count < m.MaxPlayers &&
+                m.Players.All(u => u.PolytopiaId != filter.PlayerId));
 
-        if (mapSize != 0)
+        if (filter.MapSize != 0)
         {
-            query = query.Where(m => m.MapSize == mapSize);
+            query = query.Where(m => m.MapSize == filter.MapSize);
         }
 
-        if (mapPreset != MapPreset.None)
+        if (filter.MapPreset != MapPreset.None)
         {
-            query = query.Where(m => m.MapPreset == mapPreset);
+            query = query.Where(m => m.MapPreset == filter.MapPreset);
         }
 
-        if (gameMode != GameMode.None)
+        if (filter.GameMode != GameMode.None)
         {
-            query = query.Where(m => m.GameMode == gameMode);
+            query = query.Where(m => m.GameMode == filter.GameMode);
         }
 
-        if (scoreLimit != 0)
+        if (filter.ScoreLimit != 0)
         {
-            query = query.Where(m => m.ScoreLimit == scoreLimit);
+            query = query.Where(m => m.ScoreLimit == filter.ScoreLimit);
         }
 
-        var matchingLobbies = await query.ToListAsync();
+        return query;
+    }
 
-        return matchingLobbies
-            .Where(m => m.PlayerIds.Count < m.MaxPlayers &&
-                        !m.PlayerIds.Contains(playerId))
-            .ToList();
+    public Task<List<MatchmakingEntity>> GetAllFittingLobbies(MatchMakingFilter matchMakingFilter)
+    {
+        return GetAllFittingLobbiesCommon(matchMakingFilter).ToListAsync();
+    }
+    
+    public Task<List<MatchmakingEntity>> GetAllFittingLobbiesOrderedByAmountOfPlayers(
+        MatchMakingFilter matchMakingFilter)
+    {
+        return GetAllFittingLobbiesCommon(matchMakingFilter)
+            .OrderByDescending(m => m.Players.Count)
+            .ToListAsync();
+    }
+    public Task<MatchmakingEntity?> GetMostFittingLobbyOrDefault(MatchMakingFilter matchMakingFilter)
+    {
+        return GetAllFittingLobbiesCommon(matchMakingFilter)
+            .OrderByDescending(m => m.Players.Count)
+            .FirstOrDefaultAsync();
     }
 
     public async Task<bool> DeleteByIdAsync(Guid lobbyId)

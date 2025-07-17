@@ -17,4 +17,13 @@ public class FriendshipEntity
     public required FriendshipStatus Status { get; set; }
     public required DateTime CreatedAt { get; init; }
     public required DateTime UpdatedAt { get; set; }
+
+    public static explicit operator PolytopiaFriendViewModel(FriendshipEntity v)
+    {
+        return new PolytopiaFriendViewModel
+        {
+            User = (PolytopiaUserViewModel)v.User1,
+            FriendshipStatus = FriendshipStatus.None
+        };
+    }
 }

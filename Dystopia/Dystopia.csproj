@@ -53,6 +53,7 @@
     </ItemGroup>
 
     <ItemGroup>
+        <Folder Include="Game\Matchmaking\" />
         <Folder Include="Migrations\" />
     </ItemGroup>
 
@@ -120,6 +121,12 @@
             <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
             <TargetPath>Native\Magic\%(RecursiveDir)%(Filename)%(Extension)</TargetPath>
         </Content>
+    </ItemGroup>
+
+    <ItemGroup>
+      <Compile Update="Services\Game\MatchmakingManager.cs">
+        <DependentUpon>IMatchmakingManager.cs</DependentUpon>
+      </Compile>
     </ItemGroup>
 
     <Target Name="CopyMagicBinaries" AfterTargets="Build">

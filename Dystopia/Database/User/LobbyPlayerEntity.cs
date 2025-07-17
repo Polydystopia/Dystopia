@@ -10,9 +10,9 @@ public class LobbyPlayerEntity
     // ParticipatorViewModel ripoff but it doesn't duplicate user fields
     [Key]
     public required Guid UserId { get; init; }
-    public UserEntity User { get; init; } = null!;
+    public UserEntity? User { get; init; } = null!;
     public required Guid LobbyId { get; init; }
-    public LobbyEntity Lobby { get; init; } = null!;
+    public LobbyEntity? Lobby { get; init; } = null!;
     public required DateTime? DateLastCommand { get; init; }
     public required DateTime? DateLastStartTurn { get; init; }
 
