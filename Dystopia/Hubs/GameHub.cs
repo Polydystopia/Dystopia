@@ -13,8 +13,6 @@ public partial class PolytopiaHub
 {
     public async Task<ServerResponse<GameListingViewModel>> GetGameListingsV3()
     {
-        PolytopiaDataManager.provider = new MyProvider(); //?
-
         var response = new GameListingViewModel();
         response.gameSummaries = new List<GameSummaryViewModel>();
         response.matchmakingGameSummaries = new List<MatchmakingGameSummaryViewModel>(); //TODO
