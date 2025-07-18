@@ -1,3 +1,5 @@
+using Microsoft.Extensions.DependencyInjection;
+
 namespace Dystopia.Tests.Services;
 
 using Moq;
@@ -15,7 +17,11 @@ public class NewsServiceTests
     public NewsServiceTests()
     {
         _mockRepo = new Mock<INewsRepository>();
-        _newsService = new NewsService(_mockRepo.Object);
+        var services = new ServiceCollection();
+        services.AddScoped<INewsRepository>(x => _mockRepo.Object);
+        var serviceProvider = services.BuildServiceProvider();
+        
+        _newsService = new NewsService(serviceProvider.GetRequiredService<IServiceScopeFactory>());
     }
 
     [Fact]
@@ -35,10 +41,10 @@ public class NewsServiceTests
 
         // Assert
         Assert.Equal(2, result.Count);
-        Assert.Equal(1, result[0].Id);
-        Assert.Equal("Test1", result[0].Body);
-        Assert.Equal("link1", result[0].Link);
-        Assert.Equal("image1", result[0].Image);
+        Assert.Equal(1, result.First().Id);
+        Assert.Equal("Test1", result.First().Body);
+        Assert.Equal("link1", result.First().Link);
+        Assert.Equal("image1", result.First().Image);
     }
 
     [Fact]
@@ -58,14 +64,13 @@ public class NewsServiceTests
     public async Task GetSystemMessage_WhenMessageExists_ReturnsMessageWithGuid()
     {
         // Arrange
-        var testMessage = new NewsEntity { Body = "System Message" };
-        _mockRepo.Setup(r => r.GetSystemMessageAsync()).ReturnsAsync(testMessage);
+        _mockRepo.Setup(r => r.GetSystemMessageAsync()).ReturnsAsync("test");
 
         // Act
         var result = await _newsService.GetSystemMessage();
 
         // Assert
-        Assert.StartsWith("System Message\n", result);
+        Assert.StartsWith("test\n", result);
         Assert.True(Guid.TryParse(result.Split('\n')[1], out _));
     }
 
@@ -73,7 +78,7 @@ public class NewsServiceTests
     public async Task GetSystemMessage_WhenMessageIsEmpty_ReturnsEmptyString()
     {
         // Arrange
-        _mockRepo.Setup(r => r.GetSystemMessageAsync()).ReturnsAsync(new NewsEntity { Body = "" });
+        _mockRepo.Setup(r => r.GetSystemMessageAsync()).ReturnsAsync("");
 
         // Act
         var result = await _newsService.GetSystemMessage();
@@ -86,7 +91,7 @@ public class NewsServiceTests
     public async Task GetSystemMessage_WhenMessageIsNull_ReturnsEmptyString()
     {
         // Arrange
-        _mockRepo.Setup(r => r.GetSystemMessageAsync()).ReturnsAsync((NewsEntity?)null);
+        _mockRepo.Setup(r => r.GetSystemMessageAsync()).ReturnsAsync((string?) null);
 
         // Act
         var result = await _newsService.GetSystemMessage();
@@ -117,6 +122,6 @@ public class NewsServiceTests
 
         // Assert
         var expectedTimestamp = ((DateTimeOffset)testEntity.CreatedAt).ToUnixTimeSeconds();
-        Assert.Equal(expectedTimestamp, result[0].Date);
+        Assert.Equal(expectedTimestamp, result.First().Date);
     }
 }
