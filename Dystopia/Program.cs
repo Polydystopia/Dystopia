@@ -35,7 +35,8 @@ using UnityEngine;
 
 var builder = WebApplication.CreateBuilder(args);
 
-var dbPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "polytopia.db");
+Directory.CreateDirectory(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "db"));
+var dbPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "db", "polytopia.db");
 builder.Services.AddDbContext<PolydystopiaDbContext>(options =>
     options.UseSqlite($"Data Source={dbPath}"));
 
