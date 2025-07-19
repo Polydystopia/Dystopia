@@ -6,7 +6,6 @@ namespace Dystopia.Database.News;
 public class NewsRepository : INewsRepository
 {
     private readonly PolydystopiaDbContext _dbContext;
-    private List<NewsEntity> _cachedNews = new();
     public NewsRepository(PolydystopiaDbContext dbContext)
     {
         _dbContext = dbContext;
