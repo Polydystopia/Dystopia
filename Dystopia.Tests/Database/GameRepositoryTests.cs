@@ -19,13 +19,19 @@ using Dystopia.Bridge;
 
 public class GameRepositoryTests
 {
-    private readonly DbContextOptions<PolydystopiaDbContext> _options = new DbContextOptionsBuilder<PolydystopiaDbContext>()
-        .UseInMemoryDatabase(databaseName: Guid.NewGuid().ToString())
-        .Options;
+    private readonly DbContextOptions<PolydystopiaDbContext> _options =
+        new DbContextOptionsBuilder<PolydystopiaDbContext>()
+            .UseInMemoryDatabase(databaseName: Guid.NewGuid().ToString())
+            .Options;
+
     private readonly Mock<PolydystopiaDbContext> _dbContextMock;
     private readonly Mock<ICacheService<GameViewModel>> _cacheServiceMock = new();
-    private readonly IOptions<CacheSettings> _settings = Options.Create(new CacheSettings { GameViewModel = new CacheProfile() {CacheTime = TimeSpan.FromMinutes(30)}});
+
+    private readonly IOptions<CacheSettings> _settings = Options.Create(new CacheSettings
+        { GameViewModel = new CacheProfile() { CacheTime = TimeSpan.FromMinutes(30) } });
+
     private readonly Mock<IDystopiaCastle> _bridgeMock = new();
+
     public GameRepositoryTests()
     {
         _dbContextMock = new Mock<PolydystopiaDbContext>(_options);
@@ -92,7 +98,8 @@ public class GameRepositoryTests
     public async Task UpdateAsync_UsesCache_WhenShouldCache()
     {
         // Arrange
-        var testGame = new GameViewModel { 
+        var testGame = new GameViewModel
+        {
             Id = Guid.NewGuid(),
             TimerSettings = new TimerSettings { UseTimebanks = true },
             DateLastCommand = DateTime.UtcNow
@@ -100,12 +107,12 @@ public class GameRepositoryTests
 
         // Act
         var result = await CreateRepository().UpdateAsync(testGame);
-        
+
         // Assert
         _cacheServiceMock.Verify(c => c.Set(
-            testGame.Id, 
-            testGame, 
-            It.IsAny<Action<PolydystopiaDbContext>>()), 
+                testGame.Id,
+                testGame,
+                It.IsAny<Action<PolydystopiaDbContext>>()),
             Times.Once);
         _dbContextMock.Verify(db => db.SaveChangesAsync(default), Times.Never);
     }
@@ -114,7 +121,8 @@ public class GameRepositoryTests
     public async Task UpdateAsync_SavesDirectly_WhenNotCaching()
     {
         // Arrange
-        var testGame = new GameViewModel { 
+        var testGame = new GameViewModel
+        {
             Id = Guid.NewGuid(),
             TimerSettings = new TimerSettings { UseTimebanks = false },
             DateLastCommand = DateTime.UtcNow.AddHours(-10)
@@ -124,32 +132,47 @@ public class GameRepositoryTests
         var result = await CreateRepository().UpdateAsync(testGame);
 
         // Assert
-        _cacheServiceMock.Verify(c => c.Set(It.IsAny<Guid>(), It.IsAny<GameViewModel>(), It.IsAny<Action<PolydystopiaDbContext>>()), Times.Never);
+        _cacheServiceMock.Verify(
+            c => c.Set(It.IsAny<Guid>(), It.IsAny<GameViewModel>(), It.IsAny<Action<PolydystopiaDbContext>>()),
+            Times.Never);
         _dbContextMock.Verify(db => db.SaveChangesAsync(default), Times.Once);
     }
 
     [Fact]
-    public async Task GetAllGamesByPlayer_ReturnsFilteredResults()
+    public async Task GetAllGamesByPlayer_OnlyDatabaseHits_ReturnsFilteredResults()
     {
         // Arrange
         var playerId = Guid.NewGuid();
-        var games = new List<GameViewModel>
+        var dbGames = new List<GameViewModel>
         {
             new() { Id = Guid.NewGuid(), CurrentGameStateData = new byte[] { 1 } },
-            new() { Id = Guid.NewGuid(), CurrentGameStateData = new byte[] { 2 } }
+            new() { Id = Guid.NewGuid(), CurrentGameStateData = new byte[] { 2 } },
+            new() { Id = Guid.NewGuid(), CurrentGameStateData = new byte[] { 3 } }
         };
 
-        var mockDbSet = games.AsQueryable().BuildMockDbSet();
+        var mockDbSet = dbGames.AsQueryable().BuildMockDbSet();
         _dbContextMock.Setup(db => db.Games).Returns(mockDbSet.Object);
-        
+
         _bridgeMock.SetupSequence(b => b.IsPlayerInGame(It.IsAny<string>(), It.IsAny<byte[]>()))
             .Returns(true)
-            .Returns(false);
+            .Returns(false)
+            .Returns(true);
+
+        _cacheServiceMock
+            .Setup(c => c.TryGetAll(
+                It.IsAny<Func<GameViewModel, bool>>(),
+                out It.Ref<IList<GameViewModel>>.IsAny))
+            .Returns((Func<GameViewModel, bool> predicate, out IList<GameViewModel> values) =>
+            {
+                values = new List<GameViewModel>();
+
+                return true;
+            });
 
         // Act
         var result = await CreateRepository().GetAllGamesByPlayer(playerId);
 
         // Assert
-        Assert.Single(result);
+        Assert.Equal(2, result.Count);
     }
 }
