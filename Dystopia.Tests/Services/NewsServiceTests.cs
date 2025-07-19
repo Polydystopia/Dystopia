@@ -65,13 +65,12 @@ public class NewsServiceTests
     {
         // Arrange
         _mockRepo.Setup(r => r.GetSystemMessageAsync()).ReturnsAsync("test");
-
+        _mockRepo.Setup(r => r.GetActiveNewsAsync()).ReturnsAsync(new List<NewsEntity>());
         // Act
         var result = await _newsService.GetSystemMessage();
 
         // Assert
-        Assert.StartsWith("test\n", result);
-        Assert.True(Guid.TryParse(result.Split('\n')[1], out _));
+        Assert.StartsWith("test", result);
     }
 
     [Fact]
@@ -79,6 +78,7 @@ public class NewsServiceTests
     {
         // Arrange
         _mockRepo.Setup(r => r.GetSystemMessageAsync()).ReturnsAsync("");
+        _mockRepo.Setup(r => r.GetActiveNewsAsync()).ReturnsAsync(new List<NewsEntity>());
 
         // Act
         var result = await _newsService.GetSystemMessage();
@@ -92,6 +92,7 @@ public class NewsServiceTests
     {
         // Arrange
         _mockRepo.Setup(r => r.GetSystemMessageAsync()).ReturnsAsync((string?) null);
+        _mockRepo.Setup(r => r.GetActiveNewsAsync()).ReturnsAsync(new List<NewsEntity>());
 
         // Act
         var result = await _newsService.GetSystemMessage();

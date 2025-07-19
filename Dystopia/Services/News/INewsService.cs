@@ -6,5 +6,5 @@ public interface INewsService
 {
     Task<IReadOnlyCollection<NewsItem>> GetNews();
 
-    Task<string?> GetSystemMessage();
+    Task<string> GetSystemMessage();
 }

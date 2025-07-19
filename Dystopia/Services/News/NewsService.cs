@@ -10,7 +10,7 @@ public class NewsService : INewsService
 {
     private readonly IServiceScopeFactory _scopeFactory;
     private ImmutableList<NewsItem> _news = ImmutableList<NewsItem>.Empty;
-    private string? _systemMessage;
+    private string _systemMessage;
     private bool _isInitialized;
     public NewsService(IServiceScopeFactory scopeFactory)
     {
@@ -31,7 +31,7 @@ public class NewsService : INewsService
         // var newsItems = newsRepository.GetActiveNewsAsync()
         //     .Then(n => n.Select(n => (NewsItem)n));
         _news = newsItems.ToImmutableList(); 
-        _systemMessage = await newsRepository.GetSystemMessageAsync();
+        _systemMessage = await newsRepository.GetSystemMessageAsync() ?? string.Empty;
 
         _isInitialized = true;
     }
@@ -41,7 +41,7 @@ public class NewsService : INewsService
         return _news;   
     }
 
-    public async Task<string?> GetSystemMessage()
+    public async Task<string> GetSystemMessage()
     {
         await Initialize();
         return _systemMessage;
