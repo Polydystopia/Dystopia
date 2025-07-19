@@ -1,11 +1,11 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using System.Collections.Concurrent;
+using Microsoft.EntityFrameworkCore;
 
 namespace Dystopia.Database.News;
 
 public class NewsRepository : INewsRepository
 {
     private readonly PolydystopiaDbContext _dbContext;
-
     public NewsRepository(PolydystopiaDbContext dbContext)
     {
         _dbContext = dbContext;
@@ -19,11 +19,12 @@ public class NewsRepository : INewsRepository
             .ToListAsync();
     }
 
-    public async Task<NewsEntity?> GetSystemMessageAsync()
+    public async Task<string?> GetSystemMessageAsync()
     {
         return await _dbContext.News
             .Where(n => n.IsActive && n.NewsType == NewsType.SystemMessage)
             .OrderByDescending(n => n.CreatedAt)
+            .Select(n => n.Body)
             .FirstOrDefaultAsync();
     }
 
@@ -32,8 +33,9 @@ public class NewsRepository : INewsRepository
         news.CreatedAt = DateTime.UtcNow;
         _dbContext.News.Add(news);
         await _dbContext.SaveChangesAsync();
+        
+        
         return news;
-
     }
 
     public async Task<NewsEntity> UpdateAsync(NewsEntity news)

@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using PolytopiaBackendBase.Game;
 
 namespace Dystopia.Database.News;
 
@@ -24,6 +25,18 @@ public class NewsEntity
     public bool IsActive { get; set; }
 
     public long GetUnixTimestamp() => new DateTimeOffset(CreatedAt).ToUnixTimeSeconds();
+
+    public static explicit operator NewsItem(NewsEntity v)
+    {
+        return new NewsItem
+        {
+            Id = v.Id,
+            Date = v.GetUnixTimestamp(),
+            Body = v.Body,
+            Image = v.Image,
+            Link = v.Link
+        };
+    }
 }
 
 public enum NewsType

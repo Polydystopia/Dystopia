@@ -11,14 +11,14 @@ namespace Dystopia.Services.Cache;
 public class CacheCleaningService : BackgroundService
 {
     private readonly ICacheService<GameViewModel> _cacheService;
-    private readonly IServiceProvider _provider;
+    private readonly IServiceScopeFactory _scopeFactory;
     private readonly ILogger _logger;
     private readonly CacheSettings _settings;
 
-    public CacheCleaningService(IOptions<CacheSettings> settings, ICacheService<GameViewModel> cacheService, IServiceProvider provider, ILogger<CacheCleaningService> logger)
+    public CacheCleaningService(IOptions<CacheSettings> settings, ICacheService<GameViewModel> cacheService, IServiceScopeFactory scopeFactory, ILogger<CacheCleaningService> logger)
     {
         _cacheService = cacheService;
-        _provider = provider;
+        _scopeFactory = scopeFactory;
         _logger = logger;
         // TODO make it generic
         // but for now we only have game view model caching so its ok
@@ -37,7 +37,7 @@ public class CacheCleaningService : BackgroundService
             {
                 break;
             }
-            using (var scope = _provider.CreateScope())
+            using (var scope = _scopeFactory.CreateScope())
             {
                 var dbContext = scope.ServiceProvider.GetRequiredService<PolydystopiaDbContext>();
                 _cacheService.CleanStaleCache(_settings.GameViewModel.StaleTime, dbContext);
@@ -45,7 +45,7 @@ public class CacheCleaningService : BackgroundService
             }
         }
         _logger.LogInformation("CacheCleaningService shutting down; Saving all cache to disk");
-        using (var scope = _provider.CreateScope())
+        using (var scope = _scopeFactory.CreateScope())
         {
             var dbContext = scope.ServiceProvider.GetRequiredService<PolydystopiaDbContext>();
             _cacheService.SaveAllCacheToDisk(dbContext);

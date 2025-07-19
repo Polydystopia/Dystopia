@@ -120,7 +120,7 @@ builder.Services.AddScoped<IPolydystopiaGameRepository, PolydystopiaGameReposito
 builder.Services.AddScoped<IPolydystopiaMatchmakingRepository, PolydystopiaMatchmakingRepository>();
 builder.Services.AddScoped<INewsRepository, NewsRepository>();
 
-builder.Services.AddScoped<INewsService, NewsService>();
+builder.Services.AddSingleton<INewsService, NewsService>();
 #region cache
 builder.Services.AddSingleton(typeof(ICacheService<>), typeof(CacheService<>));
 builder.Services.AddHostedService<CacheCleaningService>();

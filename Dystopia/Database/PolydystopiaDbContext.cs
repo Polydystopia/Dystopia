@@ -17,7 +17,7 @@ public class PolydystopiaDbContext : DbContext
     public virtual DbSet<LobbyGameViewModel> Lobbies { get; set; }
     public virtual DbSet<GameViewModel> Games { get; set; }
     public virtual DbSet<MatchmakingEntity> Matchmaking { get; set; }
-    public virtual DbSet<NewsEntity?> News { get; set; }
+    public virtual DbSet<NewsEntity> News { get; set; }
 
     public PolydystopiaDbContext(DbContextOptions<PolydystopiaDbContext> options) : base(options)
     {

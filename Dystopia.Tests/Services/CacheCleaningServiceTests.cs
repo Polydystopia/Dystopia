@@ -45,7 +45,7 @@ public class CacheCleaningServiceTests
         serviceProvider.Setup(x => x.GetService(typeof(IServiceScopeFactory)))
             .Returns(serviceScopeFactory.Object);
 
-        var service = new CacheCleaningService(mockOptions, mockCacheService.Object, serviceProvider.Object,
+        var service = new CacheCleaningService(mockOptions, mockCacheService.Object, serviceScopeFactory.Object,
             NullLogger<CacheCleaningService>.Instance);
         cts = new CancellationTokenSource();
         return service;

@@ -88,7 +88,7 @@ public class PolytopiaController : ControllerBase
     {
         var news = new NewsObject();
 
-        news.News = await _newsService.GetNews();
+        news.News = (await _newsService.GetNews()).ToList();
 
         return new ServerResponse<NewsObject>(news);
     }
