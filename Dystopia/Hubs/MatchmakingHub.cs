@@ -1,5 +1,4 @@
-﻿using Dystopia.Game.Matchmaking;
-using Dystopia.Database.Matchmaking;
+﻿using Dystopia.Database.Matchmaking;
 using PolytopiaBackendBase;
 using PolytopiaBackendBase.Auth;
 using PolytopiaBackendBase.Common;
@@ -12,7 +11,7 @@ public partial class PolytopiaHub
     public async Task<ServerResponse<MatchmakingSubmissionViewModel>> SubmitMatchmakingRequest(
         SubmitMatchmakingBindingModel model)
     {
-        var matchmakingSubmissionViewModel = await PolydystopiaMatchmakingManager.QueuePlayer(_userGuid, model, Clients.Caller, _matchmakingRepository, _userRepository, _lobbyRepository);
+        var matchmakingSubmissionViewModel = await _matchMaking.QueuePlayer(UserGuid, model, Clients.Caller);
 
         return new ServerResponse<MatchmakingSubmissionViewModel>(matchmakingSubmissionViewModel);
     }

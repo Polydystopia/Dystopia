@@ -13,12 +13,12 @@ namespace Dystopia.Database.Game;
 public class PolydystopiaGameRepository : IPolydystopiaGameRepository
 {
     private readonly PolydystopiaDbContext _dbContext;
-    private readonly ICacheService<GameViewModel> _cacheService;
+    private readonly ICacheService<GameEntity> _cacheService;
     private readonly IDystopiaCastle _bridge;
     private readonly TimeSpan _maxAccessIntervalForCache;
 
     public PolydystopiaGameRepository(PolydystopiaDbContext dbContext,
-        ICacheService<GameViewModel> cacheService,
+        ICacheService<GameEntity> cacheService,
         IOptions<CacheSettings> settings,
         IDystopiaCastle bridge)
     {
@@ -29,9 +29,9 @@ public class PolydystopiaGameRepository : IPolydystopiaGameRepository
         _maxAccessIntervalForCache = settings.Value.GameViewModel.CacheTime;
     }
 
-    public async Task<GameViewModel?> GetByIdAsync(Guid id)
+    public async Task<GameEntity?> GetByIdAsync(Guid id)
     {
-        if (_cacheService.TryGet(id, out GameViewModel? model))
+        if (_cacheService.TryGet(id, out GameEntity? model))
         {
             return model;
         }
@@ -40,7 +40,7 @@ public class PolydystopiaGameRepository : IPolydystopiaGameRepository
         return model;
     }
 
-    private bool ShouldCache(GameViewModel game)
+    private bool ShouldCache(GameEntity game)
     {
         if (game.TimerSettings.UseTimebanks)
         {
@@ -55,30 +55,27 @@ public class PolydystopiaGameRepository : IPolydystopiaGameRepository
         return false;
     }
 
-    public async Task<GameViewModel> CreateAsync(GameViewModel gameViewModel)
+    public async Task<GameEntity> CreateAsync(GameEntity gameEntity)
     {
-        await _dbContext.Games.AddAsync(gameViewModel);
+        await _dbContext.Games.AddAsync(gameEntity);
         await _dbContext.SaveChangesAsync();
-        return gameViewModel;
+        return gameEntity;
     }
 
-    public async Task<GameViewModel> UpdateAsync(GameViewModel gameViewModel)
+    public async Task<GameEntity> UpdateAsync(GameEntity gameEntity)
     {
-        if (ShouldCache(gameViewModel))
+        if (ShouldCache(gameEntity))
         {
-            _cacheService.Set(gameViewModel.Id, gameViewModel, context => context.Games.Update(gameViewModel));
-            return gameViewModel; // update is automatic as it is a reference type
-            // _dbContext.Games.Update(gameViewModel);
-            // await _dbContext.SaveChangesAsync();
-            // Add this if it is catastrophic when live games or last few moves of games are deleted on server crash.
+            _cacheService.Set(gameEntity.Id, gameEntity, context => context.Games.Update(gameEntity));
+            return gameEntity;
         }
-        _dbContext.Games.Update(gameViewModel);
+        _dbContext.Games.Update(gameEntity);
         await _dbContext.SaveChangesAsync();
 
-        return gameViewModel;
+        return gameEntity;
     }
 
-    public async Task<List<GameViewModel>> GetAllGamesByPlayer(Guid playerId)
+    public async Task<List<GameEntity>> GetAllGamesByPlayer(Guid playerId)
     {
         // no need to cache as it is usually not relevant. TODO fix when custom entities are implemented(just have a list of playerid in game)
         var allGames = await _dbContext.Games.ToListAsync();

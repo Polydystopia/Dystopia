@@ -1,4 +1,5 @@
 using Dystopia.Database;
+using Dystopia.Database.Game;
 using Dystopia.Settings;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
@@ -10,12 +11,12 @@ namespace Dystopia.Services.Cache;
 /// </summary>
 public class CacheCleaningService : BackgroundService
 {
-    private readonly ICacheService<GameViewModel> _cacheService;
+    private readonly ICacheService<GameEntity> _cacheService;
     private readonly IServiceProvider _provider;
     private readonly ILogger _logger;
     private readonly CacheSettings _settings;
 
-    public CacheCleaningService(IOptions<CacheSettings> settings, ICacheService<GameViewModel> cacheService, IServiceProvider provider, ILogger<CacheCleaningService> logger)
+    public CacheCleaningService(IOptions<CacheSettings> settings, ICacheService<GameEntity> cacheService, IServiceProvider provider, ILogger<CacheCleaningService> logger)
     {
         _cacheService = cacheService;
         _provider = provider;

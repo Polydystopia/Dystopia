@@ -5,9 +5,9 @@ namespace Dystopia.Database.User;
 
 public interface IPolydystopiaUserRepository
 {
-    Task<PolytopiaUserViewModel> GetBySteamIdAsync(SteamID steamId, string username);
-    Task<PolytopiaUserViewModel?> GetByIdAsync(Guid polytopiaId);
-    Task<bool> UpdateAsync(PolytopiaUserViewModel userViewModel);
-    Task<PolytopiaUserViewModel> CreateAsync(SteamID steamId, string username);
-    Task<List<PolytopiaUserViewModel>> GetAllByNameStartsWith(string name);
+    Task<UserEntity> GetBySteamIdAsync(SteamID steamId, string username);
+    Task<UserEntity?> GetByIdAsync(Guid polytopiaId);
+    Task<bool> UpdateAsync(UserEntity userEntity);
+    Task<UserEntity> CreateAsync(SteamID steamId, string username);
+    Task<List<UserEntity>> GetAllByNameStartsWith(string name);
 }

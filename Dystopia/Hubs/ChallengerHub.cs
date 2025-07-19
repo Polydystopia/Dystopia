@@ -13,7 +13,7 @@ public partial class PolytopiaHub //TODO tournaments are not implemented yet. on
         status.IsConnected = true;
         status.IsAnotherAccountConnected = false;
         status.IsRefreshtokenExpired = false;
-        status.ChallengermodeUserId = _userGuid;
+        status.ChallengermodeUserId = UserGuid;
 
         return new ServerResponse<ChallengermodeConnectionStatus>(status);
     }

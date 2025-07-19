@@ -9,7 +9,7 @@ public partial class PolytopiaHub
     {
         var responseViewModel = new ResponseViewModel();
 
-        var user = await _userRepository.GetByIdAsync(_userGuid);
+        var user = await _userRepository.GetByIdAsync(UserGuid);
 
         if (user == null) return new ServerResponse<ResponseViewModel>(ErrorCode.UserNotFound, "User not found");
 

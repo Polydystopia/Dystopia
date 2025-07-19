@@ -1,4 +1,4 @@
-﻿using PolytopiaBackendBase.Common;
+using PolytopiaBackendBase.Common;
 using PolytopiaBackendBase.Game;
 
 namespace Dystopia.Database.Matchmaking;
@@ -7,6 +7,12 @@ public interface IPolydystopiaMatchmakingRepository
 {
     Task<MatchmakingEntity> CreateAsync(MatchmakingEntity matchmakingEntity);
     Task<MatchmakingEntity> UpdateAsync(MatchmakingEntity matchmakingEntity);
-    Task<List<MatchmakingEntity>> GetAllFittingLobbies(Guid playerId, int version, int mapSize, MapPreset mapPreset, GameMode gameMode, int scoreLimit, int timeLimit, Platform platform, bool allowCrossPlay);
+
+    Task<List<MatchmakingEntity>> GetAllFittingLobbies(MatchMakingFilter matchMakingFilter);
+
+    Task<List<MatchmakingEntity>> GetAllFittingLobbiesOrderedByAmountOfPlayers(MatchMakingFilter matchMakingFilter);
+
+    Task<MatchmakingEntity?> GetMostFittingLobbyOrDefault(MatchMakingFilter matchMakingFilter);
+
     Task<bool> DeleteByIdAsync(Guid lobbyId);
 }

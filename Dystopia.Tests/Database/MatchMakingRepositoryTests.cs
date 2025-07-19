@@ -78,8 +78,7 @@ public class MatchMakingRepositoryTests
         await _context.SaveChangesAsync();
 
         // Act
-        var result = await _repository.GetAllFittingLobbies(
-            playerId, 1, 2, MapPreset.Dryland, GameMode.Domination, 10, 5, Platform.Steam, true);
+        var result = await _repository.GetAllFittingLobbies();
 
         // Assert
         Assert.Single(result);
@@ -100,8 +99,7 @@ public class MatchMakingRepositoryTests
         await _context.SaveChangesAsync();
 
         // Act
-        var result = await _repository.GetAllFittingLobbies(
-            playerId, 1, 2, MapPreset.Dryland, GameMode.Domination, 10, 5, Platform.Steam, true);
+        var result = await _repository.GetAllFittingLobbies();
 
         // Assert
         Assert.Empty(result);
@@ -136,8 +134,7 @@ public class MatchMakingRepositoryTests
         await _context.SaveChangesAsync();
 
         // Act
-        var result = await _repository.GetAllFittingLobbies(
-            Guid.NewGuid(), 1, 2, MapPreset.Dryland, GameMode.Domination, 1000, 5, Platform.Steam, true);
+        var result = await _repository.GetAllFittingLobbies();
 
         // Assert
         Assert.Single(result);

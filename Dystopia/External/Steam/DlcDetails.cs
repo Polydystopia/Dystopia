@@ -2,6 +2,6 @@
 
 public class DlcDetails
 {
-    public uint AppID { get; set; }
-    public List<uint> Licenses { get; set; }
+    public uint AppID { get; init; }
+    public List<uint> Licenses { get; init; }
 }

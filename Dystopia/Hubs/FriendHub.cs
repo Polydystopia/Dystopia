@@ -11,10 +11,8 @@ public partial class PolytopiaHub
     public async Task<ServerResponse<PlayersStatusesResponse>> GetFriendsStatuses()
     {
         var statuses = new Dictionary<string, PlayerStatus>();
-
-        var myFriends = await _friendRepository.GetFriendsForUserAsync(Guid.Parse(_userId));
-
-        foreach (var friend in myFriends)
+        
+        foreach (var friend in await _friendRepository.GetFriendsForUserAsync(UserGuid))
         {
             bool foundInGame = false;
 
@@ -22,25 +20,23 @@ public partial class PolytopiaHub
             {
                 foreach (var playerInGame in game.Value)
                 {
-                    if (playerInGame.id == friend.User.PolytopiaId)
-                    {
-                        statuses[friend.User.PolytopiaId.ToString()] = new PlayerStatus()
-                            { GameId = game.Key, PlayerOnlineStatus = PlayerOnlineStatus.PlayingGame };
-                        foundInGame = true;
-                        break;
-                    }
+                    if (playerInGame.id != friend.UserId1) continue;
+                    statuses[friend.UserId1.ToString()] = new PlayerStatus()
+                        { GameId = game.Key, PlayerOnlineStatus = PlayerOnlineStatus.PlayingGame };
+                    foundInGame = true;
+                    break;
                 }
                 if (foundInGame) break;
             }
 
-            if (OnlinePlayers.ContainsKey(friend.User.PolytopiaId))
+            if (OnlinePlayers.ContainsKey(friend.UserId1))
             {
-                statuses[friend.User.PolytopiaId.ToString()] = new PlayerStatus()
+                statuses[friend.UserId1.ToString()] = new PlayerStatus()
                     { PlayerOnlineStatus = PlayerOnlineStatus.Online };
             }
             else
             {
-                statuses[friend.User.PolytopiaId.ToString()] = new PlayerStatus()
+                statuses[friend.UserId1.ToString()] = new PlayerStatus()
                     { PlayerOnlineStatus = PlayerOnlineStatus.Offline };
             }
         }
@@ -50,32 +46,32 @@ public partial class PolytopiaHub
 
     public async Task<ServerResponseList<PolytopiaFriendViewModel>> GetFriends()
     {
-        var myFriends = await _friendRepository.GetFriendsForUserAsync(Guid.Parse(_userId));
+        var myFriends = await _friendRepository.GetFriendsForUserAsync(Guid.Parse(UserId));
 
-        return new ServerResponseList<PolytopiaFriendViewModel>(myFriends);
+        return new ServerResponseList<PolytopiaFriendViewModel>(myFriends.Select(f => (PolytopiaFriendViewModel)f).ToList());
     }
 
     public async Task<ServerResponse<ResponseViewModel>> AcceptFriendRequest(
         FriendRequestBindingModel model)
     {
-        var currentStatus = await _friendRepository.GetFriendshipStatusAsync(Guid.Parse(_userId), model.FriendUserId);
+        var currentStatus = await _friendRepository.GetFriendshipStatusAsync(Guid.Parse(UserId), model.FriendUserId);
 
         if (currentStatus != FriendshipStatus.ReceivedRequest)
             return new ServerResponse<ResponseViewModel>(new ResponseViewModel());
 
-        await _friendRepository.SetFriendshipStatusAsync(Guid.Parse(_userId), model.FriendUserId,
+        await _friendRepository.SetFriendshipStatusAsync(Guid.Parse(UserId), model.FriendUserId,
             FriendshipStatus.Accepted);
 
         var isRequestSenderOnline = FriendSubscribers.TryGetValue(model.FriendUserId, out var friendProxy);
         if (isRequestSenderOnline)
         {
-            await friendProxy?.SendAsync("OnFriendRequestAccepted", Guid.Parse(_userId))!;
+            await friendProxy?.SendAsync("OnFriendRequestAccepted", Guid.Parse(UserId))!;
 
             var friendFriends = await _friendRepository.GetFriendsForUserAsync(model.FriendUserId);
             await friendProxy?.SendAsync("OnFriendsUpdated", friendFriends)!;
         }
 
-        var myFriends = await _friendRepository.GetFriendsForUserAsync(Guid.Parse(_userId));
+        var myFriends = await _friendRepository.GetFriendsForUserAsync(Guid.Parse(UserId));
         await Clients.Caller.SendAsync("OnFriendsUpdated", myFriends)!;
 
         return new ServerResponse<ResponseViewModel>(new ResponseViewModel());
@@ -84,24 +80,24 @@ public partial class PolytopiaHub
     public async Task<ServerResponse<ResponseViewModel>> SendFriendRequest(
         FriendRequestBindingModel model)
     {
-        var currentStatus = await _friendRepository.GetFriendshipStatusAsync(Guid.Parse(_userId), model.FriendUserId);
+        var currentStatus = await _friendRepository.GetFriendshipStatusAsync(Guid.Parse(UserId), model.FriendUserId);
 
         if (currentStatus != FriendshipStatus.None)
             return new ServerResponse<ResponseViewModel>(new ResponseViewModel());
 
-        await _friendRepository.SetFriendshipStatusAsync(Guid.Parse(_userId), model.FriendUserId,
+        await _friendRepository.SetFriendshipStatusAsync(Guid.Parse(UserId), model.FriendUserId,
             FriendshipStatus.SentRequest);
 
         var isRequestReceiverOnline = FriendSubscribers.TryGetValue(model.FriendUserId, out var friendProxy);
         if (isRequestReceiverOnline)
         {
-            await friendProxy?.SendAsync("OnFriendRequestReceived", Guid.Parse(_userId))!;
+            await friendProxy?.SendAsync("OnFriendRequestReceived", Guid.Parse(UserId))!;
 
             var friendFriends = await _friendRepository.GetFriendsForUserAsync(model.FriendUserId);
             await friendProxy?.SendAsync("OnFriendsUpdated", friendFriends)!;
         }
 
-        var myFriends = await _friendRepository.GetFriendsForUserAsync(Guid.Parse(_userId));
+        var myFriends = await _friendRepository.GetFriendsForUserAsync(Guid.Parse(UserId));
         await Clients.Caller.SendAsync("OnFriendsUpdated", myFriends)!;
 
         return new ServerResponse<ResponseViewModel>(new ResponseViewModel());
@@ -109,14 +105,14 @@ public partial class PolytopiaHub
 
     public async Task<ServerResponse<ResponseViewModel>> RemoveFriend(FriendRequestBindingModel model)
     {
-        var currentStatus = await _friendRepository.GetFriendshipStatusAsync(Guid.Parse(_userId), model.FriendUserId);
+        var currentStatus = await _friendRepository.GetFriendshipStatusAsync(Guid.Parse(UserId), model.FriendUserId);
 
         if (currentStatus
             is FriendshipStatus.Accepted
             or FriendshipStatus.SentRequest
             or FriendshipStatus.ReceivedRequest)
         {
-            await _friendRepository.SetFriendshipStatusAsync(Guid.Parse(_userId), model.FriendUserId,
+            await _friendRepository.SetFriendshipStatusAsync(Guid.Parse(UserId), model.FriendUserId,
                 FriendshipStatus.None);
         }
 
@@ -127,7 +123,7 @@ public partial class PolytopiaHub
             await friendProxy?.SendAsync("OnFriendsUpdated", friendFriends)!;
         }
 
-        var myFriends = await _friendRepository.GetFriendsForUserAsync(Guid.Parse(_userId));
+        var myFriends = await _friendRepository.GetFriendsForUserAsync(Guid.Parse(UserId));
         await Clients.Caller.SendAsync("OnFriendsUpdated", myFriends)!;
 
         return new ServerResponse<ResponseViewModel>(new ResponseViewModel());
@@ -142,13 +138,13 @@ public partial class PolytopiaHub
 
         foreach (var foundUser in foundUsers)
         {
-            if (foundUser.PolytopiaId.ToString() == _userId) continue;
+            if (foundUser.PolytopiaId.ToString() == UserId) continue;
 
             var friendViewModel = new PolytopiaFriendViewModel();
-            friendViewModel.User = foundUser;
+            friendViewModel.User = (PolytopiaUserViewModel)foundUser;
 
             friendViewModel.FriendshipStatus = await _friendRepository
-                .GetFriendshipStatusAsync(Guid.Parse(_userId), foundUser.PolytopiaId);
+                .GetFriendshipStatusAsync(Guid.Parse(UserId), foundUser.PolytopiaId);
 
             response.Data.Add(friendViewModel);
         }
