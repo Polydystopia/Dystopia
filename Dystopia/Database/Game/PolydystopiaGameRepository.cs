@@ -35,6 +35,7 @@ public class PolydystopiaGameRepository : IPolydystopiaGameRepository
         {
             return model;
         }
+
         model = await _dbContext.Games.FindAsync(id) ?? null;
 
         return model;
@@ -72,6 +73,7 @@ public class PolydystopiaGameRepository : IPolydystopiaGameRepository
             // await _dbContext.SaveChangesAsync();
             // Add this if it is catastrophic when live games or last few moves of games are deleted on server crash.
         }
+
         _dbContext.Games.Update(gameViewModel);
         await _dbContext.SaveChangesAsync();
 
@@ -80,9 +82,16 @@ public class PolydystopiaGameRepository : IPolydystopiaGameRepository
 
     public async Task<List<GameViewModel>> GetAllGamesByPlayer(Guid playerId)
     {
-        // no need to cache as it is usually not relevant. TODO fix when custom entities are implemented(just have a list of playerid in game)
-        var allGames = await _dbContext.Games.ToListAsync();
-        return allGames
-            .Where(game => _bridge.IsPlayerInGame(playerId.ToString(), game.CurrentGameStateData)).ToList();
+        _cacheService.TryGetAll(
+            model => _bridge.IsPlayerInGame(playerId.ToString(), model.CurrentGameStateData),
+            out var cachedPlayerGames);
+
+        var allDbGames = await _dbContext.Games.ToListAsync();
+        var dbPlayerGames =
+            allDbGames.Where(game =>
+                _bridge.IsPlayerInGame(playerId.ToString(), game.CurrentGameStateData) &&
+                cachedPlayerGames.All(c => c.Id != game.Id));
+
+        return cachedPlayerGames.Concat(dbPlayerGames).ToList();
     }
 }
