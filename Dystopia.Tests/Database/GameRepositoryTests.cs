@@ -162,11 +162,9 @@ public class GameRepositoryTests
             .Setup(c => c.TryGetAll(
                 It.IsAny<Func<GameViewModel, bool>>(),
                 out It.Ref<IList<GameViewModel>>.IsAny))
-            .Returns((Func<GameViewModel, bool> predicate, out IList<GameViewModel> values) =>
+            .Callback((Func<GameViewModel, bool> predicate, out IList<GameViewModel> values) =>
             {
                 values = new List<GameViewModel>();
-
-                return true;
             });
 
         // Act
@@ -201,14 +199,12 @@ public class GameRepositoryTests
             .Setup(c => c.TryGetAll(
                 It.IsAny<Func<GameViewModel, bool>>(),
                 out It.Ref<IList<GameViewModel>>.IsAny))
-            .Returns((Func<GameViewModel, bool> predicate, out IList<GameViewModel> values) =>
+            .Callback((Func<GameViewModel, bool> predicate, out IList<GameViewModel> values) =>
             {
                 values = new List<GameViewModel>();
                 values.Add(new() { Id = Guid.NewGuid(), CurrentGameStateData = new byte[] { 4 } });
                 values.Add(new() { Id = Guid.NewGuid(), CurrentGameStateData = new byte[] { 5 } });
                 values.Add(new() { Id = Guid.NewGuid(), CurrentGameStateData = new byte[] { 6 } });
-
-                return true;
             });
 
         // Act
@@ -243,14 +239,12 @@ public class GameRepositoryTests
             .Setup(c => c.TryGetAll(
                 It.IsAny<Func<GameViewModel, bool>>(),
                 out It.Ref<IList<GameViewModel>>.IsAny))
-            .Returns((Func<GameViewModel, bool> predicate, out IList<GameViewModel> values) =>
+            .Callback((Func<GameViewModel, bool> predicate, out IList<GameViewModel> values) =>
             {
                 values = new List<GameViewModel>();
                 values.Add(new() { Id = Guid.NewGuid(), CurrentGameStateData = new byte[] { 4 } });
                 values.Add(new() { Id = Guid.NewGuid(), CurrentGameStateData = new byte[] { 5 } });
                 values.Add(new() { Id = Guid.NewGuid(), CurrentGameStateData = new byte[] { 6 } });
-
-                return true;
             });
 
         // Act
@@ -293,7 +287,7 @@ public class GameRepositoryTests
             .Setup(c => c.TryGetAll(
                 It.IsAny<Func<GameViewModel, bool>>(),
                 out It.Ref<IList<GameViewModel>>.IsAny))
-            .Returns((Func<GameViewModel, bool> predicate, out IList<GameViewModel> values) =>
+            .Callback((Func<GameViewModel, bool> predicate, out IList<GameViewModel> values) =>
             {
                 values = new List<GameViewModel>();
                 values.Add(new() { Id = Guid.NewGuid(), CurrentGameStateData = new byte[] { 6 } });
@@ -302,8 +296,6 @@ public class GameRepositoryTests
 
                 values.Add(new() { Id = overlapGuidA, CurrentGameStateData = new byte[] { 4 } });
                 values.Add(new() { Id = overlapGuidB, CurrentGameStateData = new byte[] { 5 } });
-
-                return true;
             });
 
         // Act

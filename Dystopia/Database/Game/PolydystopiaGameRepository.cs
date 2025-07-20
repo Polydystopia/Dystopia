@@ -82,7 +82,7 @@ public class PolydystopiaGameRepository : IPolydystopiaGameRepository
 
     public async Task<List<GameViewModel>> GetAllGamesByPlayer(Guid playerId)
     {
-        var _ = _cacheService.TryGetAll(
+        _cacheService.TryGetAll(
             model => _bridge.IsPlayerInGame(playerId.ToString(), model.CurrentGameStateData),
             out var cachedPlayerGames);
 

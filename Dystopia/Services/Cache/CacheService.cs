@@ -30,26 +30,22 @@ public class CacheService<T> : ICacheService<T>
         return false;
     }
 
-    public bool TryGetAll(Func<T, bool> predicate, out IList<T> values)
+    public void TryGetAll(Func<T, bool> predicate, out IList<T> values)
     {
         if (predicate == null)
         {
             throw new ArgumentNullException(nameof(predicate));
         }
 
-        var matches = new List<T>();
+        values = new List<T>();
 
-        foreach (var kvp in _cache)
+        foreach (var (_, (value, _, _)) in _cache)
         {
-            var (value, _, _) = kvp.Value;
             if (predicate(value))
             {
-                matches.Add(value);
+                values.Add(value);
             }
         }
-
-        values = matches;
-        return true;
     }
 
     public void Set(Guid key, T value, Action<PolydystopiaDbContext> saveToDisk)
