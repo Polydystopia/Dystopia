@@ -100,6 +100,27 @@ public static class PolydystopiaGameManager
 
         await gameRepository.UpdateAsync(game);
 
+        if (PolytopiaHub.GameSummariesSubscribers.TryGetValue(game.Id, out var gameSummarySubscribersList))
+        {
+            var gameSummaryModel = GetGameSummaryViewModelByGameViewModel(game);
+            var pushReason = StateUpdateReason.ValidCommand;
+
+            var gameSummarySubscribers = gameSummarySubscribersList.Where(u => senderId == null || u.id != senderId)
+                .Select(gs => gs.proxy).ToList();
+            var tasks = gameSummarySubscribers.Select(async gameSummarySubscriber =>
+            {
+                try
+                {
+                    await gameSummarySubscriber.SendAsync("OnGameSummaryUpdated", gameSummaryModel, pushReason);
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine(e);
+                }
+            });
+
+            await Task.WhenAll(tasks);
+        }
         return true;
     }
 

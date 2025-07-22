@@ -13,6 +13,10 @@ public partial class PolytopiaHub
     public static readonly ConcurrentDictionary<Guid, IClientProxy> OnlinePlayers = new();
 
     public static readonly ConcurrentDictionary<Guid, List<(Guid id, IClientProxy proxy)>> GameSubscribers = new();
+
+    public static readonly ConcurrentDictionary<Guid, List<(Guid id, IClientProxy proxy)>> GameSummariesSubscribers =
+        new();
+
     public static readonly ConcurrentDictionary<Guid, List<(Guid id, IClientProxy proxy)>> LobbySubscribers = new();
 
     public static readonly ConcurrentDictionary<Guid, IClientProxy> FriendSubscribers = new();
@@ -36,12 +40,20 @@ public partial class PolytopiaHub
         }
     }
 
-    public ServerResponse<ResponseViewModel> SubscribeToParticipatingGameSummaries() //TODO
+    public async Task<ServerResponse<ResponseViewModel>> SubscribeToParticipatingGameSummaries()
     {
+        var gameSummariesSubList = GameSummariesSubscribers;
+
+        var allPlayerGames = await _gameRepository.GetAllGamesByPlayer(_userGuid);
+
+        foreach (var playerGame in allPlayerGames)
+        {
+            Subscribe(gameSummariesSubList, playerGame.Id);
+        }
+
         var responseViewModel = new ResponseViewModel();
         return new ServerResponse<ResponseViewModel>(responseViewModel);
     }
-
 
     public ServerResponse<ResponseViewModel> SubscribeToFriends()
     {
@@ -59,10 +71,11 @@ public partial class PolytopiaHub
 
         foreach (var lobbyId in model.LobbyIds)
         {
-            Subscribe(subList, lobbyId);;
+            Subscribe(subList, lobbyId);
+            ;
         }
 
-        var responseViewModel = new BoolResponseViewModel() {Result = true};
+        var responseViewModel = new BoolResponseViewModel() { Result = true };
         return new ServerResponse<BoolResponseViewModel>(responseViewModel);
     }
 
@@ -70,7 +83,8 @@ public partial class PolytopiaHub
     {
         var subList = GameSubscribers;
 
-        Subscribe(subList, model.GameId);;
+        Subscribe(subList, model.GameId);
+        ;
 
         var responseViewModel = new ResponseViewModel();
         return new ServerResponse<ResponseViewModel>(responseViewModel);
