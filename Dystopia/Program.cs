@@ -20,6 +20,7 @@ using Dystopia.Database.Matchmaking;
 using Dystopia.Database.News;
 using Dystopia.Database.User;
 using Dystopia.Hubs;
+using Dystopia.Managers.Game;
 using Dystopia.Patches;
 using Dystopia.Services.Cache;
 using Dystopia.Services.News;
@@ -113,17 +114,23 @@ builder.Services.Configure<CacheSettings>(builder.Configuration.GetSection("Cach
 builder.Services.Configure<SteamSettings>(builder.Configuration.GetSection("Steam"));
 builder.Services.Configure<Il2cppSettings>(builder.Configuration.GetSection("Il2cppSettings"));
 
+#region repository
 builder.Services.AddScoped<IPolydystopiaUserRepository, PolydystopiaUserRepository>();
 builder.Services.AddScoped<IFriendshipRepository, FriendshipRepository>();
 builder.Services.AddScoped<IPolydystopiaLobbyRepository, PolydystopiaLobbyRepository>();
 builder.Services.AddScoped<IPolydystopiaGameRepository, PolydystopiaGameRepository>();
 builder.Services.AddScoped<IPolydystopiaMatchmakingRepository, PolydystopiaMatchmakingRepository>();
 builder.Services.AddScoped<INewsRepository, NewsRepository>();
+#endregion
 
 builder.Services.AddSingleton<INewsService, NewsService>();
 #region cache
 builder.Services.AddSingleton(typeof(ICacheService<>), typeof(CacheService<>));
 builder.Services.AddHostedService<CacheCleaningService>();
+#endregion
+
+#region manager
+builder.Services.AddScoped<IPolydystopiaGameManager, PolydystopiaGameManager>();
 #endregion
 
 builder.Services.AddScoped<IDystopiaCastle, DystopiaBridge>();

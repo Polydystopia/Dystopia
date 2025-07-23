@@ -1,8 +1,8 @@
 using System.Text;
 
-namespace Dystopia.Game.Names;
+namespace Dystopia.Managers.Names;
 
-public class LobbyNameGenerator
+public static class LobbyNameGenerator
 {
     private static readonly string[] Adjectives = {
         "Silent", "Crimson", "Shadow", "Iron", "Neon", "Phantom", "Frozen", "Vapor", "Storm", "Rogue",

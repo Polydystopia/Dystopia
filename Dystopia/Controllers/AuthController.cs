@@ -2,7 +2,6 @@
 using System.Security.Claims;
 using System.Text;
 using Dystopia.Database.User;
-using Dystopia.Game.Names;
 using Dystopia.Services.Steam;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;

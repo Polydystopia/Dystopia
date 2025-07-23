@@ -1,5 +1,4 @@
-﻿using Dystopia.Game;
-using Dystopia.Game.Lobby;
+﻿using Dystopia.Managers.Lobby;
 using Microsoft.AspNetCore.SignalR;
 using Newtonsoft.Json;
 using PolytopiaBackendBase;
@@ -212,7 +211,7 @@ public partial class PolytopiaHub
         }
 
         _logger.LogInformation("Starting game {lobbyId}", lobby.Id);
-        var result = await PolydystopiaGameManager.CreateGame(lobby, _gameRepository);
+        var result = await _gameManager.CreateGame(lobby);
 
         lobby.StartTime = DateTime.Now;
         lobby.StartedGameId = lobby.Id;
@@ -229,13 +228,15 @@ public partial class PolytopiaHub
             var lobbyDeleted = await _lobbyRepository.DeleteAsync(model.LobbyId);
 
             var game = await _gameRepository.GetByIdAsync(lobby.Id);
-            foreach (var lobbySubscribers in LobbySubscribers[lobby.Id])
+            foreach (var lobbySubscriber in LobbySubscribers[lobby.Id])
             {
                 lobby.Participators.Clear();
-                await lobbySubscribers.proxy.SendAsync("OnLobbyUpdated", lobby);
+                await lobbySubscriber.proxy.SendAsync("OnLobbyUpdated", lobby);
 
-                await lobbySubscribers.proxy.SendAsync("OnGameSummaryUpdated",
-                    PolydystopiaGameManager.GetGameSummaryViewModelByGameViewModel(game), StateUpdateReason.ValidStartGame);
+                await lobbySubscriber.proxy.SendAsync("OnGameSummaryUpdated",
+                    _gameManager.GetGameSummaryViewModelByGameViewModel(game), StateUpdateReason.ValidStartGame);
+
+                Subscribe(GameSummariesSubscribers, game.Id, lobbySubscriber.id, lobbySubscriber.proxy);
             }
 
             return new ServerResponse<LobbyGameViewModel>(lobby) { Success = lobbyDeleted };

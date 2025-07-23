@@ -4,18 +4,10 @@ using Dystopia.Database.Lobby;
 using Dystopia.Database.Matchmaking;
 using Dystopia.Database.User;
 using Microsoft.AspNetCore.SignalR;
-using Newtonsoft.Json;
-using Polytopia.Data;
-using Dystopia.Controllers;
-using Dystopia.Database;
-using Dystopia.Game;
-using Dystopia.Patches;
+using Dystopia.Managers.Game;
 using PolytopiaBackendBase;
 using PolytopiaBackendBase.Auth;
-using PolytopiaBackendBase.Common;
 using PolytopiaBackendBase.Game;
-using PolytopiaBackendBase.Game.BindingModels;
-using PolytopiaBackendBase.Game.ViewModels;
 
 namespace Dystopia.Hubs;
 
@@ -27,6 +19,8 @@ public partial class PolytopiaHub : Hub
     private readonly IPolydystopiaGameRepository _gameRepository;
     private readonly IPolydystopiaMatchmakingRepository _matchmakingRepository;
 
+    private readonly IPolydystopiaGameManager _gameManager;
+
     private string _userId => Context.User?.FindFirst("nameid")?.Value ?? string.Empty;
     private string _username => Context.User?.FindFirst("unique_name")?.Value ?? string.Empty;
     private string _steamId => Context.User?.FindFirst("steam")?.Value ?? string.Empty;
@@ -37,13 +31,15 @@ public partial class PolytopiaHub : Hub
 
     public PolytopiaHub(IPolydystopiaUserRepository userRepository, IFriendshipRepository friendRepository,
         IPolydystopiaLobbyRepository lobbyRepository, IPolydystopiaGameRepository gameRepository,
-        IPolydystopiaMatchmakingRepository matchmakingRepository, ILogger<PolytopiaHub> logger)
+        IPolydystopiaMatchmakingRepository matchmakingRepository, IPolydystopiaGameManager gameManager, ILogger<PolytopiaHub> logger)
     {
         _userRepository = userRepository;
         _friendRepository = friendRepository;
         _lobbyRepository = lobbyRepository;
         _gameRepository = gameRepository;
         _matchmakingRepository = matchmakingRepository;
+
+        _gameManager = gameManager;
 
         _logger = logger;
     }

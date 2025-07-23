@@ -1,12 +1,10 @@
-﻿using Dystopia.Database.User;
-using Dystopia.Game.Names;
-using PolytopiaBackendBase;
+﻿using Dystopia.Managers.Names;
 using PolytopiaBackendBase.Auth;
 using PolytopiaBackendBase.Game;
 using PolytopiaBackendBase.Game.BindingModels;
 using PolytopiaBackendBase.Game.ViewModels;
 
-namespace Dystopia.Game.Lobby;
+namespace Dystopia.Managers.Lobby;
 
 public static class PolydystopiaLobbyManager
 {
