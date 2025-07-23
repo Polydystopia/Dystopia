@@ -1,11 +1,11 @@
 ﻿using Dystopia.Database.Lobby;
 using Dystopia.Database.Matchmaking;
 using Dystopia.Database.User;
-using Dystopia.Game.Lobby;
+using Dystopia.Managers.Lobby;
 using Microsoft.AspNetCore.SignalR;
 using PolytopiaBackendBase.Game;
 
-namespace Dystopia.Game.Matchmaking;
+namespace Dystopia.Managers.Matchmaking;
 
 public static class PolydystopiaMatchmakingManager
 {

@@ -1,5 +1,5 @@
-﻿using Dystopia.Game.Matchmaking;
-using Dystopia.Database.Matchmaking;
+﻿using Dystopia.Database.Matchmaking;
+using Dystopia.Managers.Matchmaking;
 using PolytopiaBackendBase;
 using PolytopiaBackendBase.Auth;
 using PolytopiaBackendBase.Common;

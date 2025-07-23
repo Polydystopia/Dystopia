@@ -1,11 +1,6 @@
-﻿using Dystopia.Game;
-using Dystopia.Patches;
-using Newtonsoft.Json;
-using PolytopiaBackendBase;
-using PolytopiaBackendBase.Auth;
+﻿using PolytopiaBackendBase;
 using PolytopiaBackendBase.Game;
 using PolytopiaBackendBase.Game.BindingModels;
-using PolytopiaBackendBase.Game.ViewModels;
 
 namespace Dystopia.Hubs;
 
@@ -22,7 +17,7 @@ public partial class PolytopiaHub
         {
             if (game.State != GameSessionState.Started) continue;
 
-            response.gameSummaries.Add(PolydystopiaGameManager.GetGameSummaryViewModelByGameViewModel(game));
+            response.gameSummaries.Add(_gameManager.GetGameSummaryViewModelByGameViewModel(game));
         }
 
         return new ServerResponse<GameListingViewModel>(response);
@@ -30,7 +25,7 @@ public partial class PolytopiaHub
 
     public async Task<ServerResponse<ResponseViewModel>> Resign(ResignBindingModel model)
     {
-        var res = await PolydystopiaGameManager.Resign(model, _gameRepository, _userGuid);
+        var res = await _gameManager.Resign(model, _userGuid);
 
         if (!res)
         {
@@ -42,7 +37,7 @@ public partial class PolytopiaHub
 
     public async Task<ServerResponse<ResponseViewModel>> SendCommand(SendCommandBindingModel model)
     {
-        var res = await PolydystopiaGameManager.SendCommand(model, _gameRepository, _userGuid);
+        var res = await _gameManager.SendCommand(model, _userGuid);
 
         return res ? new ServerResponse<ResponseViewModel>(new ResponseViewModel()) : new ServerResponse<ResponseViewModel>();
     }

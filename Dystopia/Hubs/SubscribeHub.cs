@@ -1,6 +1,5 @@
 ﻿using System.Collections.Concurrent;
 using Microsoft.AspNetCore.SignalR;
-using Dystopia.Game;
 using PolytopiaBackendBase;
 using PolytopiaBackendBase.Auth;
 using PolytopiaBackendBase.Common;
@@ -26,7 +25,7 @@ public partial class PolytopiaHub
         var myId = _userGuid;
         var myProxy = Clients.Caller;
 
-        Subscribe(subList, gameId, myId, myProxy);;
+        Subscribe(subList, gameId, myId, myProxy);
     }
 
     private void Subscribe(ConcurrentDictionary<Guid, List<(Guid id, IClientProxy proxy)>> subList, Guid gameId, Guid userId, IClientProxy userProxy)
@@ -77,7 +76,6 @@ public partial class PolytopiaHub
         foreach (var lobbyId in model.LobbyIds)
         {
             Subscribe(subList, lobbyId);
-            ;
         }
 
         var responseViewModel = new BoolResponseViewModel() { Result = true };
@@ -89,7 +87,6 @@ public partial class PolytopiaHub
         var subList = GameSubscribers;
 
         Subscribe(subList, model.GameId);
-        ;
 
         var responseViewModel = new ResponseViewModel();
         return new ServerResponse<ResponseViewModel>(responseViewModel);

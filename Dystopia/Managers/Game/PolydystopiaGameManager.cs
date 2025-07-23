@@ -1,27 +1,32 @@
-﻿using System.Reflection;
-using Dystopia.Bridge;
+﻿using Dystopia.Bridge;
 using Dystopia.Database.Game;
 using Dystopia.Hubs;
 using Dystopia.Patches;
 using DystopiaShared.SharedModels;
 using Microsoft.AspNetCore.SignalR;
 using Newtonsoft.Json;
-using Polytopia.Data;
 using PolytopiaBackendBase.Auth;
 using PolytopiaBackendBase.Game;
 using PolytopiaBackendBase.Game.ViewModels;
 using PolytopiaBackendBase.Timers;
 
-namespace Dystopia.Game;
+namespace Dystopia.Managers.Game;
 
-public static class PolydystopiaGameManager
+public class PolydystopiaGameManager : IPolydystopiaGameManager
 {
-    static PolydystopiaGameManager()
+    private readonly IPolydystopiaGameRepository _gameRepository;
+
+    private readonly ILogger<PolytopiaHub> _logger;
+
+    public PolydystopiaGameManager(IPolydystopiaGameRepository gameRepository, ILogger<PolytopiaHub> logger)
     {
+        _gameRepository = gameRepository;
+        _logger = logger;
+
         PolytopiaDataManager.provider = new MyProvider();
     }
 
-    public static async Task<bool> CreateGame(LobbyGameViewModel lobby, IPolydystopiaGameRepository gameRepository)
+    public async Task<bool> CreateGame(LobbyGameViewModel lobby)
     {
         var bridge = new DystopiaBridge();
         var (serializedGameState, gameSettingsJson) = bridge.CreateGame(lobby.Map());
@@ -41,15 +46,14 @@ public static class PolydystopiaGameManager
         gameViewModel.DateCurrentTurnDeadline = DateTime.Now.AddDays(1); //TODO: Calc
         gameViewModel.GameContext = new GameContext(); //TODO?
 
-        await gameRepository.CreateAsync(gameViewModel);
+        await _gameRepository.CreateAsync(gameViewModel);
 
         return true;
     }
 
-    public static async Task<bool> Resign(ResignBindingModel model, IPolydystopiaGameRepository gameRepository,
-        Guid senderId)
+    public async Task<bool> Resign(ResignBindingModel model, Guid senderId)
     {
-        var game = await gameRepository.GetByIdAsync(model.GameId);
+        var game = await _gameRepository.GetByIdAsync(model.GameId);
         if (game == null) return false;
 
         var bridge = new DystopiaBridge();
@@ -67,15 +71,14 @@ public static class PolydystopiaGameManager
             Command = new PolytopiaCommandViewModel(serializedCommand)
         };
 
-        await SendCommand(commandModel, gameRepository, senderId);
+        await SendCommand(commandModel, senderId);
 
         return true;
     }
 
-    public static async Task<bool> SendCommand(SendCommandBindingModel commandBindingModel,
-        IPolydystopiaGameRepository gameRepository, Guid senderId)
+    public async Task<bool> SendCommand(SendCommandBindingModel commandBindingModel, Guid senderId)
     {
-        var game = await gameRepository.GetByIdAsync(commandBindingModel.GameId);
+        var game = await _gameRepository.GetByIdAsync(commandBindingModel.GameId);
 
         if (game == null) return false;
 
@@ -98,7 +101,7 @@ public static class PolydystopiaGameManager
             game.State = GameSessionState.Ended;
         }
 
-        await gameRepository.UpdateAsync(game);
+        await _gameRepository.UpdateAsync(game);
 
         if (PolytopiaHub.GameSummariesSubscribers.TryGetValue(game.Id, out var gameSummarySubscribersList))
         {
@@ -115,7 +118,7 @@ public static class PolydystopiaGameManager
                 }
                 catch (Exception e)
                 {
-                    Console.WriteLine(e);
+                    _logger.LogDebug("Error sending game summary update to client: {exception}", e);
                 }
             });
 
@@ -124,7 +127,7 @@ public static class PolydystopiaGameManager
         return true;
     }
 
-    private static async Task SendCommandBack(Guid gameId, PolytopiaCommandViewModel command, Guid? senderId = null)
+    private async Task SendCommandBack(Guid gameId, PolytopiaCommandViewModel command, Guid? senderId = null)
     {
         var commandArray = new CommandArrayViewModel();
         commandArray.GameId = gameId;
@@ -145,7 +148,7 @@ public static class PolydystopiaGameManager
                 }
                 catch (Exception e)
                 {
-                    Console.WriteLine(e);
+                    _logger.LogDebug("Error sending new command to client: {exception}", e);
                 }
             });
 
@@ -153,7 +156,7 @@ public static class PolydystopiaGameManager
         }
     }
 
-    public static GameSummaryViewModel GetGameSummaryViewModelByGameViewModel(GameViewModel game)
+    public GameSummaryViewModel GetGameSummaryViewModelByGameViewModel(GameViewModel game)
     {
         var bridge = new DystopiaBridge();
         var serializedSummary = bridge.GetSummary(game.CurrentGameStateData);
