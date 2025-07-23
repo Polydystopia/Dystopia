@@ -229,13 +229,15 @@ public partial class PolytopiaHub
             var lobbyDeleted = await _lobbyRepository.DeleteAsync(model.LobbyId);
 
             var game = await _gameRepository.GetByIdAsync(lobby.Id);
-            foreach (var lobbySubscribers in LobbySubscribers[lobby.Id])
+            foreach (var lobbySubscriber in LobbySubscribers[lobby.Id])
             {
                 lobby.Participators.Clear();
-                await lobbySubscribers.proxy.SendAsync("OnLobbyUpdated", lobby);
+                await lobbySubscriber.proxy.SendAsync("OnLobbyUpdated", lobby);
 
-                await lobbySubscribers.proxy.SendAsync("OnGameSummaryUpdated",
+                await lobbySubscriber.proxy.SendAsync("OnGameSummaryUpdated",
                     PolydystopiaGameManager.GetGameSummaryViewModelByGameViewModel(game), StateUpdateReason.ValidStartGame);
+
+                Subscribe(GameSummariesSubscribers, game.Id, lobbySubscriber.id, lobbySubscriber.proxy);
             }
 
             return new ServerResponse<LobbyGameViewModel>(lobby) { Success = lobbyDeleted };

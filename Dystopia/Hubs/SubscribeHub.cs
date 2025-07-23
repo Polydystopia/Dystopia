@@ -26,17 +26,22 @@ public partial class PolytopiaHub
         var myId = _userGuid;
         var myProxy = Clients.Caller;
 
+        Subscribe(subList, gameId, myId, myProxy);;
+    }
+
+    private void Subscribe(ConcurrentDictionary<Guid, List<(Guid id, IClientProxy proxy)>> subList, Guid gameId, Guid userId, IClientProxy userProxy)
+    {
         var el = subList.GetOrAdd(gameId, _ => new List<(Guid id, IClientProxy proxy)>());
 
         lock (el)
         {
-            var existingIndex = el.FindIndex(x => x.id == myId);
+            var existingIndex = el.FindIndex(x => x.id == userId);
             if (existingIndex >= 0)
             {
                 el.RemoveAt(existingIndex);
             }
 
-            el.Add((myId, myProxy));
+            el.Add((userId, userProxy));
         }
     }
 
