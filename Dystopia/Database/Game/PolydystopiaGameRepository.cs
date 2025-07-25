@@ -83,15 +83,40 @@ public class PolydystopiaGameRepository : IPolydystopiaGameRepository
     public async Task<List<GameViewModel>> GetAllGamesByPlayer(Guid playerId)
     {
         _cacheService.TryGetAll(
-            model => _bridge.IsPlayerInGame(playerId.ToString(), model.CurrentGameStateData),
+            game =>
+                game.State != GameSessionState.Ended &&
+                _bridge.IsPlayerInGame(playerId.ToString(), game.CurrentGameStateData),
             out var cachedPlayerGames);
 
         var allDbGames = await _dbContext.Games.ToListAsync();
         var dbPlayerGames =
             allDbGames.Where(game =>
+                game.State != GameSessionState.Ended &&
                 _bridge.IsPlayerInGame(playerId.ToString(), game.CurrentGameStateData) &&
                 cachedPlayerGames.All(c => c.Id != game.Id));
 
         return cachedPlayerGames.Concat(dbPlayerGames).ToList();
+    }
+
+    public async Task<List<GameViewModel>> GetLastEndedGamesByPlayer(Guid playerId, int limit)
+    {
+        _cacheService.TryGetAll(
+            game =>
+                game.State == GameSessionState.Ended &&
+                _bridge.IsPlayerInGame(playerId.ToString(), game.CurrentGameStateData),
+            out var cachedPlayerGames);
+
+        var allDbGames = await _dbContext.Games.ToListAsync();
+        var dbPlayerGames =
+            allDbGames.Where(game =>
+                game.State == GameSessionState.Ended &&
+                _bridge.IsPlayerInGame(playerId.ToString(), game.CurrentGameStateData) &&
+                cachedPlayerGames.All(c => c.Id != game.Id));
+
+        return cachedPlayerGames
+            .Concat(dbPlayerGames)
+            .OrderByDescending(game => game.DateLastCommand)
+            .Take(limit)
+            .ToList();
     }
 }

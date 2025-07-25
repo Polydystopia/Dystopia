@@ -11,13 +11,11 @@ public partial class PolytopiaHub
     {
         var summaries = new List<GameSummaryViewModel>();
 
-        var games = await _gameRepository.GetAllGamesByPlayer(_userGuid);
+        var games = await _gameRepository.GetLastEndedGamesByPlayer(_userGuid, model.Limit);
 
         foreach (var gameViewModel in games)
         {
             var summary = _gameManager.GetGameSummaryViewModelByGameViewModel(gameViewModel);
-            summary.DateEnded = DateTime.Today;
-            summary.State = GameSessionState.Ended;
 
             summaries.Add(summary);
         }
