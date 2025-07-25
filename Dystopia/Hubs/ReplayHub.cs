@@ -39,7 +39,7 @@ public partial class PolytopiaHub
 
     public async Task<ServerResponseList<GameSummaryViewModel>> GetSavedGames()
     {
-        var games = await _gameRepository.GetFavouriteGamesByPlayer(_userGuid);
+        var games = await _gameRepository.GetFavoriteGamesByPlayer(_userGuid);
 
         var summaries = new List<GameSummaryViewModel>();
 

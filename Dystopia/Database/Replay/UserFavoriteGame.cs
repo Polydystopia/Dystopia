@@ -3,7 +3,7 @@ using PolytopiaBackendBase.Game;
 
 namespace Dystopia.Database.Replay;
 
-public class UserFavouriteGame
+public class UserFavoriteGame
 {
     public Guid UserId { get; set; }
     public PolytopiaUserViewModel User { get; set; }

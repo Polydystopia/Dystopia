@@ -19,7 +19,7 @@ public class PolydystopiaDbContext : DbContext
     public virtual DbSet<GameViewModel> Games { get; set; }
     public virtual DbSet<MatchmakingEntity> Matchmaking { get; set; }
     public virtual DbSet<NewsEntity> News { get; set; }
-    public DbSet<UserFavouriteGame> UserFavouriteGames { get; set; }
+    public DbSet<UserFavoriteGame> UserFavoriteGames { get; set; }
 
     public PolydystopiaDbContext(DbContextOptions<PolydystopiaDbContext> options) : base(options)
     {
@@ -149,7 +149,7 @@ public class PolydystopiaDbContext : DbContext
 
 
 
-        var favEntity = modelBuilder.Entity<UserFavouriteGame>();
+        var favEntity = modelBuilder.Entity<UserFavoriteGame>();
 
         favEntity.HasKey(uf => new { uf.UserId, uf.GameId });
 

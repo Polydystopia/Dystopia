@@ -11,7 +11,7 @@ public interface IPolydystopiaGameRepository
     Task<List<GameViewModel>> GetAllGamesByPlayer(Guid playerId);
     Task<List<GameViewModel>> GetLastEndedGamesByPlayer(Guid playerId, int limit);
 
-    Task<List<GameViewModel>> GetFavouriteGamesByPlayer(Guid playerId);
+    Task<List<GameViewModel>> GetFavoriteGamesByPlayer(Guid playerId);
     Task AddFavoriteAsync(Guid userId, Guid gameId);
     Task RemoveFavoriteAsync(Guid userId, Guid gameId);
 }
