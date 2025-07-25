@@ -1,4 +1,5 @@
 using Dystopia.Bridge;
+using Dystopia.Database.Replay;
 using Dystopia.Patches;
 using Dystopia.Services.Cache;
 using Dystopia.Settings;
@@ -118,5 +119,59 @@ public class PolydystopiaGameRepository : IPolydystopiaGameRepository
             .OrderByDescending(game => game.DateLastCommand)
             .Take(limit)
             .ToList();
+    }
+
+    public async Task<List<GameViewModel>> GetFavouriteGamesByPlayer(Guid playerId)
+    {
+        var favGameIds = await _dbContext.UserFavoriteGames
+            .Where(uf => uf.UserId == playerId)
+            .Select(uf => uf.GameId)
+            .ToListAsync();
+
+        if (!favGameIds.Any())
+        {
+            return new List<GameViewModel>();
+        }
+
+        var cachedGames = favGameIds
+            .Select(id => _cacheService.TryGet(id, out var g) ? g : null)
+            .Where(g => g is { State: GameSessionState.Ended })
+            .ToList()!;
+
+        var cachedIds = cachedGames.Select(g => g.Id).ToHashSet();
+
+        var dbGames = await _dbContext.Games
+            .Where(g => favGameIds.Contains(g.Id) && !cachedIds.Contains(g.Id) && g.State == GameSessionState.Ended)
+            .ToListAsync();
+
+        return cachedGames
+            .Concat(dbGames)
+            .OrderByDescending(g => g.DateLastCommand)
+            .ToList();
+    }
+
+
+    public async Task AddFavoriteAsync(Guid userId, Guid gameId)
+    {
+        var fav = new UserFavouriteGame
+        {
+            UserId = userId,
+            GameId = gameId
+        };
+
+        _dbContext.UserFavoriteGames.Add(fav);
+        await _dbContext.SaveChangesAsync();
+    }
+
+    public async Task RemoveFavoriteAsync(Guid userId, Guid gameId)
+    {
+        var favorite = await _dbContext.UserFavoriteGames
+            .FirstOrDefaultAsync(f => f.UserId == userId && f.GameId == gameId);
+
+        if (favorite != null)
+        {
+            _dbContext.UserFavoriteGames.Remove(favorite);
+            await _dbContext.SaveChangesAsync();
+        }
     }
 }

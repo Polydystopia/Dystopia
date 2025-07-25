@@ -1,6 +1,7 @@
 ﻿using Dystopia.Database.Friendship;
 using Dystopia.Database.Matchmaking;
 using Dystopia.Database.News;
+using Dystopia.Database.Replay;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
 using PolytopiaBackendBase.Auth;
@@ -18,6 +19,7 @@ public class PolydystopiaDbContext : DbContext
     public virtual DbSet<GameViewModel> Games { get; set; }
     public virtual DbSet<MatchmakingEntity> Matchmaking { get; set; }
     public virtual DbSet<NewsEntity> News { get; set; }
+    public DbSet<UserFavouriteGame> UserFavoriteGames { get; set; }
 
     public PolydystopiaDbContext(DbContextOptions<PolydystopiaDbContext> options) : base(options)
     {
@@ -143,5 +145,24 @@ public class PolydystopiaDbContext : DbContext
         matchmakingEntity.Property(e => e.PlayerIds).HasConversion(
             v => JsonConvert.SerializeObject(v, jsonSettings),
             v => JsonConvert.DeserializeObject<List<Guid>>(v, jsonSettings));
+
+
+
+
+        var favEntity = modelBuilder.Entity<UserFavouriteGame>();
+
+        favEntity.HasKey(uf => new { uf.UserId, uf.GameId });
+
+        favEntity
+            .HasOne(uf => uf.User)
+            .WithMany()
+            .HasForeignKey(uf => uf.UserId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        favEntity
+            .HasOne(uf => uf.Game)
+            .WithMany()
+            .HasForeignKey(uf => uf.GameId)
+            .OnDelete(DeleteBehavior.Cascade);
     }
 }

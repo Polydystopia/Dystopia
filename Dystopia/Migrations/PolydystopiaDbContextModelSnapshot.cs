@@ -17,7 +17,7 @@ namespace Dystopia.Migrations
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "7.0.20");
 
-            modelBuilder.Entity("PolytopiaB2.Carrier.Database.Friendship.FriendshipEntity", b =>
+            modelBuilder.Entity("Dystopia.Database.Friendship.FriendshipEntity", b =>
                 {
                     b.Property<Guid>("UserId1")
                         .HasColumnType("TEXT");
@@ -41,7 +41,7 @@ namespace Dystopia.Migrations
                     b.ToTable("Friends");
                 });
 
-            modelBuilder.Entity("PolytopiaB2.Carrier.Database.Matchmaking.MatchmakingEntity", b =>
+            modelBuilder.Entity("Dystopia.Database.Matchmaking.MatchmakingEntity", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -88,7 +88,7 @@ namespace Dystopia.Migrations
                     b.ToTable("Matchmaking");
                 });
 
-            modelBuilder.Entity("PolytopiaB2.Carrier.Database.News.NewsEntity", b =>
+            modelBuilder.Entity("Dystopia.Database.News.NewsEntity", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -119,6 +119,24 @@ namespace Dystopia.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("News");
+                });
+
+            modelBuilder.Entity("Dystopia.Database.Replay.UserFavouriteGame", b =>
+                {
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid>("GameId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("MarkedAt")
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("UserId", "GameId");
+
+                    b.HasIndex("GameId");
+
+                    b.ToTable("UserFavoriteGames");
                 });
 
             modelBuilder.Entity("PolytopiaBackendBase.Auth.PolytopiaUserViewModel", b =>
@@ -307,7 +325,7 @@ namespace Dystopia.Migrations
                     b.ToTable("Lobbies");
                 });
 
-            modelBuilder.Entity("PolytopiaB2.Carrier.Database.Friendship.FriendshipEntity", b =>
+            modelBuilder.Entity("Dystopia.Database.Friendship.FriendshipEntity", b =>
                 {
                     b.HasOne("PolytopiaBackendBase.Auth.PolytopiaUserViewModel", "User1")
                         .WithMany()
@@ -326,7 +344,7 @@ namespace Dystopia.Migrations
                     b.Navigation("User2");
                 });
 
-            modelBuilder.Entity("PolytopiaB2.Carrier.Database.Matchmaking.MatchmakingEntity", b =>
+            modelBuilder.Entity("Dystopia.Database.Matchmaking.MatchmakingEntity", b =>
                 {
                     b.HasOne("PolytopiaBackendBase.Game.LobbyGameViewModel", "LobbyGameViewModel")
                         .WithMany()
@@ -334,6 +352,25 @@ namespace Dystopia.Migrations
                         .OnDelete(DeleteBehavior.Cascade);
 
                     b.Navigation("LobbyGameViewModel");
+                });
+
+            modelBuilder.Entity("Dystopia.Database.Replay.UserFavouriteGame", b =>
+                {
+                    b.HasOne("PolytopiaBackendBase.Game.GameViewModel", "Game")
+                        .WithMany()
+                        .HasForeignKey("GameId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("PolytopiaBackendBase.Auth.PolytopiaUserViewModel", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Game");
+
+                    b.Navigation("User");
                 });
 #pragma warning restore 612, 618
         }
