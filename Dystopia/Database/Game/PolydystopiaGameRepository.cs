@@ -123,7 +123,7 @@ public class PolydystopiaGameRepository : IPolydystopiaGameRepository
 
     public async Task<List<GameViewModel>> GetFavouriteGamesByPlayer(Guid playerId)
     {
-        var favGameIds = await _dbContext.UserFavoriteGames
+        var favGameIds = await _dbContext.UserFavouriteGames
             .Where(uf => uf.UserId == playerId)
             .Select(uf => uf.GameId)
             .ToListAsync();
@@ -159,18 +159,18 @@ public class PolydystopiaGameRepository : IPolydystopiaGameRepository
             GameId = gameId
         };
 
-        _dbContext.UserFavoriteGames.Add(fav);
+        _dbContext.UserFavouriteGames.Add(fav);
         await _dbContext.SaveChangesAsync();
     }
 
     public async Task RemoveFavoriteAsync(Guid userId, Guid gameId)
     {
-        var favorite = await _dbContext.UserFavoriteGames
+        var favorite = await _dbContext.UserFavouriteGames
             .FirstOrDefaultAsync(f => f.UserId == userId && f.GameId == gameId);
 
         if (favorite != null)
         {
-            _dbContext.UserFavoriteGames.Remove(favorite);
+            _dbContext.UserFavouriteGames.Remove(favorite);
             await _dbContext.SaveChangesAsync();
         }
     }
