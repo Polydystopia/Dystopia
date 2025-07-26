@@ -119,4 +119,18 @@ public class PolytopiaController : ControllerBase
 
         return new ServerResponseList<TournamentMatchmakingQueueViewModel>(tournamentMatchmakingQueues);
     }
+
+
+    [Route("api/game/spectate_game")]
+    public async Task<ServerResponse<GameViewModel>> SpectateGame([FromBody] SpectateGameBindingModel model)
+    {
+        var gameViewModel = await _gameRepository.GetByIdAsync(model.GameId);
+
+        if (gameViewModel == null)
+        {
+            return new ServerResponse<GameViewModel>() { Success = false, ErrorCode = ErrorCode.GameNotFound, ErrorMessage = "Game not found."};
+        }
+
+        return new ServerResponse<GameViewModel>(gameViewModel);
+    }
 }

@@ -158,8 +158,8 @@ Legend:
 | Matchmaking       | 🟢     |
 | Friends           | 🟢     |
 | Private Matches   | 🟢     |
+| Replays           | 🟢     |
 | Own Profile       | 🟡     |
-| Replays           | 🔴     |
 | Leaderboards      | 🔴     |
 | Tournaments       | 🔴     |
 | Weekly challenges | 🔴     |
@@ -200,7 +200,7 @@ Legend:
 | Type | Status |
 |--------|---|
 | Steam | 🟢 | 
-| Android | 🔴 |
+| Android | 🟢 |
 | IOS | 🔴 |
 | Switch | 🔴 |
 | Tesla | 🔴 |

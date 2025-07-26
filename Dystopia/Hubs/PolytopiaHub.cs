@@ -106,33 +106,14 @@ public partial class PolytopiaHub : Hub
         return new ServerResponse<TribeRatingsViewModel>(response);
     }
 
-    public ServerResponse<GameSummaryViewModel> GetGameSummaryViewModelByIdAsync(Guid gameId) //TODO
+    public async Task<ServerResponse<GameSummaryViewModel>> GetGameSummaryViewModelByIdAsync(Guid gameId)
     {
-        var gameSummaryViewModel = new GameSummaryViewModel();
+        var game = await _gameRepository.GetByIdAsync(gameId);
 
-        gameSummaryViewModel.GameId = Guid.Parse("597f332b-281c-464c-a8e7-6a79f4496360");
-        gameSummaryViewModel.State = GameSessionState.Started;
+        if(game == null) return new ServerResponse<GameSummaryViewModel>(ErrorCode.GameNotFound, "Game not found");
 
-        gameSummaryViewModel.Participators = new List<ParticipatorViewModel>();
+        var summary = _gameManager.GetGameSummaryViewModelByGameViewModel(game);
 
-        var participator = new ParticipatorViewModel()
-        {
-            UserId = Guid.Parse("bbbbbbbb-281c-464c-a8e7-6a79f4496360"),
-            Name = "PlayerB",
-            NumberOfFriends = 0,
-            NumberOfMultiplayerGames = 0,
-            GameVersion = new List<ClientGameVersionViewModel>(),
-            MultiplayerRating = 0,
-            SelectedTribe = 1,
-            SelectedTribeSkin = 1,
-            AvatarStateData =
-                Convert.FromBase64String("YgAAACgAAAAMAAAAAAAAABEAAAAAAAAAHgAAAAAAAAAfAAAAAAAAADIAAAC4SusA"),
-            InvitationState = PlayerInvitationState.Accepted
-        };
-
-        gameSummaryViewModel.Participators.Add(participator);
-        gameSummaryViewModel.Participators.Add(participator);
-
-        return new ServerResponse<GameSummaryViewModel>(gameSummaryViewModel);
+        return new ServerResponse<GameSummaryViewModel>(summary);
     }
 }

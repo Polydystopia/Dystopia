@@ -47,17 +47,4 @@ public partial class PolytopiaHub
     {
         return new ServerResponse<ResponseViewModel>(new ResponseViewModel());
     }
-
-    public async Task<ServerResponseList<GameSummaryViewModel>> GetRecentGames(
-        RecentGamesBindingModel model)
-    {
-        var list = new List<GameSummaryViewModel>();
-        return new ServerResponseList<GameSummaryViewModel>(list);
-    }
-
-    public async Task<ServerResponseList<GameSummaryViewModel>> GetSavedGames()
-    {
-        var list = new List<GameSummaryViewModel>();
-        return new ServerResponseList<GameSummaryViewModel>(list);
-    }
 }
