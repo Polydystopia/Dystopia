@@ -31,7 +31,7 @@ public class CacheCleaningService : BackgroundService
         {
             try
             {
-                await Task.Delay(_settings.GameViewModel.CacheCleanupFrequency, token);
+                await Task.Delay(_settings.GameEntity.CacheCleanupFrequency, token);
             }
             catch (TaskCanceledException)
             {
@@ -40,7 +40,7 @@ public class CacheCleaningService : BackgroundService
             using (var scope = _scopeFactory.CreateScope())
             {
                 var dbContext = scope.ServiceProvider.GetRequiredService<PolydystopiaDbContext>();
-                _cacheService.CleanStaleCache(_settings.GameViewModel.StaleTime, dbContext);
+                _cacheService.CleanStaleCache(_settings.GameEntity.StaleTime, dbContext);
                 await dbContext.SaveChangesAsync(token);
             }
         }

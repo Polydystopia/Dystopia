@@ -1,4 +1,5 @@
-﻿using Dystopia.Managers.Lobby;
+﻿using Dystopia.Database.Game;
+using Dystopia.Managers.Lobby;
 using Microsoft.AspNetCore.SignalR;
 using Newtonsoft.Json;
 using PolytopiaBackendBase;
@@ -234,7 +235,7 @@ public partial class PolytopiaHub
                 await lobbySubscriber.proxy.SendAsync("OnLobbyUpdated", lobby);
 
                 await lobbySubscriber.proxy.SendAsync("OnGameSummaryUpdated",
-                    _gameManager.GetGameSummaryViewModelByGameViewModel(game), StateUpdateReason.ValidStartGame);
+                    _gameManager.GetGameSummaryViewModelByGameViewModel(game.ToViewModel()), StateUpdateReason.ValidStartGame);
 
                 Subscribe(GameSummariesSubscribers, game.Id, lobbySubscriber.id, lobbySubscriber.proxy);
             }
