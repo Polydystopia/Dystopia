@@ -1,5 +1,6 @@
 ﻿using Dystopia.Database.Friendship;
 using Dystopia.Database.Game;
+using Dystopia.Database.Lobby;
 using Dystopia.Database.Matchmaking;
 using Dystopia.Database.News;
 using Dystopia.Database.Replay;
@@ -16,7 +17,7 @@ public class PolydystopiaDbContext : DbContext
 {
     public virtual DbSet<PolytopiaUserViewModel> Users { get; set; }
     public virtual DbSet<FriendshipEntity> Friends { get; set; }
-    public virtual DbSet<LobbyGameViewModel> Lobbies { get; set; }
+    public virtual DbSet<LobbyEntity> Lobbies { get; set; }
     public virtual DbSet<GameEntity> Games { get; set; }
     public virtual DbSet<MatchmakingEntity> Matchmaking { get; set; }
     public virtual DbSet<NewsEntity> News { get; set; }
@@ -104,13 +105,9 @@ public class PolydystopiaDbContext : DbContext
 
         #region Lobby
 
-        var lobbyEntity = modelBuilder.Entity<LobbyGameViewModel>();
+        var lobbyEntity = modelBuilder.Entity<LobbyEntity>();
 
         lobbyEntity.HasKey(e => e.Id);
-
-        lobbyEntity.Property(e => e.GameContext).HasConversion(
-            v => v != null ? JsonConvert.SerializeObject(v, jsonSettings) : null,
-            v => !string.IsNullOrEmpty(v) ? JsonConvert.DeserializeObject<GameContext>(v, jsonSettings) : null);
 
         lobbyEntity.Property(e => e.DisabledTribes).HasConversion(
             v => JsonConvert.SerializeObject(v, jsonSettings),
@@ -145,9 +142,9 @@ public class PolydystopiaDbContext : DbContext
         matchmakingEntity.HasKey(e => e.Id);
 
         matchmakingEntity
-            .HasOne(m => m.LobbyGameViewModel)
+            .HasOne(m => m.LobbyEntity)
             .WithMany()
-            .HasForeignKey(m => m.LobbyGameViewModelId)
+            .HasForeignKey(m => m.LobbyEntityId)
             .OnDelete(DeleteBehavior.Cascade);
 
         matchmakingEntity.Property(e => e.PlayerIds).HasConversion(

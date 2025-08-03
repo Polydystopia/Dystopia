@@ -15,7 +15,7 @@ public class LobbyRepositoryTests
 {
     private readonly Mock<PolydystopiaDbContext> _mockContext;
     private readonly PolydystopiaLobbyRepository _repository;
-    private readonly Mock<DbSet<LobbyGameViewModel>> _mockLobbiesSet;
+    private readonly Mock<DbSet<LobbyEntity>> _mockLobbiesSet;
 
     public LobbyRepositoryTests()
     {
@@ -23,7 +23,7 @@ public class LobbyRepositoryTests
             .UseInMemoryDatabase(databaseName: Guid.NewGuid().ToString())
             .Options;
         _mockContext = new Mock<PolydystopiaDbContext>(options);
-        _mockLobbiesSet = new Mock<DbSet<LobbyGameViewModel>>();
+        _mockLobbiesSet = new Mock<DbSet<LobbyEntity>>();
         _mockContext.Setup(m => m.Lobbies).Returns(_mockLobbiesSet.Object);
         _repository = new PolydystopiaLobbyRepository(_mockContext.Object);
     }

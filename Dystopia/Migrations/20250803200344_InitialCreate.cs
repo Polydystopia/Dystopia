@@ -38,28 +38,25 @@ namespace Dystopia.Migrations
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "TEXT", nullable: false),
-                    UpdatedReason = table.Column<int>(type: "INTEGER", nullable: false),
-                    DateCreated = table.Column<DateTime>(type: "TEXT", nullable: true),
+                    DateCreated = table.Column<DateTime>(type: "TEXT", nullable: false),
                     DateModified = table.Column<DateTime>(type: "TEXT", nullable: true),
-                    Name = table.Column<string>(type: "TEXT", nullable: true),
+                    Name = table.Column<string>(type: "TEXT", nullable: false),
                     MapPreset = table.Column<int>(type: "INTEGER", nullable: false),
                     MapSize = table.Column<int>(type: "INTEGER", nullable: false),
-                    OpponentCount = table.Column<short>(type: "INTEGER", nullable: false),
                     GameMode = table.Column<int>(type: "INTEGER", nullable: false),
                     OwnerId = table.Column<Guid>(type: "TEXT", nullable: false),
-                    DisabledTribes = table.Column<string>(type: "TEXT", nullable: true),
+                    DisabledTribes = table.Column<string>(type: "TEXT", nullable: false),
                     StartedGameId = table.Column<Guid>(type: "TEXT", nullable: true),
-                    IsPersistent = table.Column<bool>(type: "INTEGER", nullable: false),
-                    IsSharable = table.Column<bool>(type: "INTEGER", nullable: false),
                     TimeLimit = table.Column<int>(type: "INTEGER", nullable: false),
                     ScoreLimit = table.Column<int>(type: "INTEGER", nullable: false),
-                    InviteLink = table.Column<string>(type: "TEXT", nullable: true),
+                    InviteLink = table.Column<string>(type: "TEXT", nullable: false),
                     MatchmakingGameId = table.Column<long>(type: "INTEGER", nullable: true),
                     ChallengermodeGameId = table.Column<Guid>(type: "TEXT", nullable: true),
                     StartTime = table.Column<DateTime>(type: "TEXT", nullable: true),
-                    GameContext = table.Column<string>(type: "TEXT", nullable: true),
-                    Participators = table.Column<string>(type: "TEXT", nullable: true),
-                    Bots = table.Column<string>(type: "TEXT", nullable: true)
+                    ExternalTournamentId = table.Column<Guid>(type: "TEXT", nullable: true),
+                    ExternalMatchId = table.Column<Guid>(type: "TEXT", nullable: true),
+                    Participators = table.Column<string>(type: "TEXT", nullable: false),
+                    Bots = table.Column<string>(type: "TEXT", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -120,7 +117,7 @@ namespace Dystopia.Migrations
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "TEXT", nullable: false),
-                    LobbyGameViewModelId = table.Column<Guid>(type: "TEXT", nullable: true),
+                    LobbyEntityId = table.Column<Guid>(type: "TEXT", nullable: true),
                     Version = table.Column<int>(type: "INTEGER", nullable: false),
                     MapSize = table.Column<int>(type: "INTEGER", nullable: false),
                     MapPreset = table.Column<int>(type: "INTEGER", nullable: false),
@@ -136,8 +133,8 @@ namespace Dystopia.Migrations
                 {
                     table.PrimaryKey("PK_Matchmaking", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_Matchmaking_Lobbies_LobbyGameViewModelId",
-                        column: x => x.LobbyGameViewModelId,
+                        name: "FK_Matchmaking_Lobbies_LobbyEntityId",
+                        column: x => x.LobbyEntityId,
                         principalTable: "Lobbies",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
@@ -201,9 +198,9 @@ namespace Dystopia.Migrations
                 column: "UserId2");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Matchmaking_LobbyGameViewModelId",
+                name: "IX_Matchmaking_LobbyEntityId",
                 table: "Matchmaking",
-                column: "LobbyGameViewModelId");
+                column: "LobbyEntityId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_UserFavoriteGames_GameId",
