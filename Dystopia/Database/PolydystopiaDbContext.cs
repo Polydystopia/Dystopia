@@ -1,4 +1,5 @@
 ﻿using Dystopia.Database.Friendship;
+using Dystopia.Database.Game;
 using Dystopia.Database.Matchmaking;
 using Dystopia.Database.News;
 using Dystopia.Database.Replay;
@@ -16,7 +17,7 @@ public class PolydystopiaDbContext : DbContext
     public virtual DbSet<PolytopiaUserViewModel> Users { get; set; }
     public virtual DbSet<FriendshipEntity> Friends { get; set; }
     public virtual DbSet<LobbyGameViewModel> Lobbies { get; set; }
-    public virtual DbSet<GameViewModel> Games { get; set; }
+    public virtual DbSet<GameEntity> Games { get; set; }
     public virtual DbSet<MatchmakingEntity> Matchmaking { get; set; }
     public virtual DbSet<NewsEntity> News { get; set; }
     public DbSet<UserFavoriteGame> UserFavoriteGames { get; set; }
@@ -36,6 +37,7 @@ public class PolydystopiaDbContext : DbContext
             ObjectCreationHandling = ObjectCreationHandling.Replace
         };
 
+        #region User
 
         var polytopiaUserViewModelEntity = modelBuilder.Entity<PolytopiaUserViewModel>();
 
@@ -80,6 +82,9 @@ public class PolydystopiaDbContext : DbContext
             v => JsonConvert.DeserializeObject
                 <UserViewModel>(v, jsonSettings));
 
+        #endregion
+
+        #region Friendship
 
         var friendshipEntity = modelBuilder.Entity<FriendshipEntity>();
 
@@ -95,6 +100,9 @@ public class PolydystopiaDbContext : DbContext
             .WithMany()
             .HasForeignKey(f => f.UserId2);
 
+        #endregion
+
+        #region Lobby
 
         var lobbyEntity = modelBuilder.Entity<LobbyGameViewModel>();
 
@@ -115,22 +123,22 @@ public class PolydystopiaDbContext : DbContext
         lobbyEntity.Property(e => e.Bots).HasConversion(
             v => JsonConvert.SerializeObject(v, jsonSettings),
             v => JsonConvert.DeserializeObject<List<int>>(v, jsonSettings));
-        
-        
-        
-        var gameEntity = modelBuilder.Entity<GameViewModel>();
+
+        #endregion
+
+        #region Game
+
+        var gameEntity = modelBuilder.Entity<GameEntity>();
 
         gameEntity.HasKey(e => e.Id);
-
-        gameEntity.Property(e => e.GameContext).HasConversion(
-            v => v != null ? JsonConvert.SerializeObject(v, jsonSettings) : null,
-            v => !string.IsNullOrEmpty(v) ? JsonConvert.DeserializeObject<GameContext>(v, jsonSettings) : null);
 
         gameEntity.Property(e => e.TimerSettings).HasConversion(
             v => v != null ? JsonConvert.SerializeObject(v, jsonSettings) : null,
             v => !string.IsNullOrEmpty(v) ? JsonConvert.DeserializeObject<PolytopiaBackendBase.Timers.TimerSettings>(v, jsonSettings) : null);
 
+        #endregion
 
+        #region Matchmaking
 
         var matchmakingEntity = modelBuilder.Entity<MatchmakingEntity>();
 
@@ -146,8 +154,9 @@ public class PolydystopiaDbContext : DbContext
             v => JsonConvert.SerializeObject(v, jsonSettings),
             v => JsonConvert.DeserializeObject<List<Guid>>(v, jsonSettings));
 
+        #endregion
 
-
+        #region Favorite
 
         var favEntity = modelBuilder.Entity<UserFavoriteGame>();
 
@@ -164,5 +173,7 @@ public class PolydystopiaDbContext : DbContext
             .WithMany()
             .HasForeignKey(uf => uf.GameId)
             .OnDelete(DeleteBehavior.Cascade);
+
+        #endregion
     }
 }

@@ -1,4 +1,5 @@
-﻿using PolytopiaBackendBase.Auth;
+﻿using Dystopia.Database.Game;
+using PolytopiaBackendBase.Auth;
 using PolytopiaBackendBase.Game;
 
 namespace Dystopia.Database.Replay;
@@ -9,7 +10,7 @@ public class UserFavoriteGame
     public PolytopiaUserViewModel User { get; set; }
 
     public Guid GameId { get; set; }
-    public GameViewModel Game { get; set; }
+    public GameEntity Game { get; set; }
 
     public DateTime MarkedAt { get; set; } = DateTime.UtcNow;
 }
