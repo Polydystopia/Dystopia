@@ -31,7 +31,7 @@ public class PolydystopiaMatchmakingRepository : IPolydystopiaMatchmakingReposit
         int timeLimit, Platform platform, bool allowCrossPlay)
     {
         var query = _dbContext.Matchmaking
-            .Include(m => m.LobbyGameViewModel)
+            .Include(m => m.LobbyEntity)
             .Where(m =>
                 m.Version   == version &&
                 m.TimeLimit == timeLimit &&

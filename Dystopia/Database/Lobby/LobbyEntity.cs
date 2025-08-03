@@ -1,0 +1,126 @@
+﻿using System.ComponentModel.DataAnnotations;
+using PolytopiaBackendBase.Game;
+using PolytopiaBackendBase.Game.ViewModels;
+
+namespace Dystopia.Database.Lobby;
+
+public class LobbyEntity
+{
+    [Key] public Guid Id { get; init; }
+
+    public DateTime DateCreated { get; init; }
+    public DateTime? DateModified { get; set; }
+
+    public string Name { get; init; }
+
+    public MapPreset MapPreset { get; init; }
+    public int MapSize { get; init; }
+    public GameMode GameMode { get; init; }
+
+    public Guid OwnerId { get; set; }
+
+    public List<int> DisabledTribes { get; set; }
+
+    //public GameEntity Game { get; init; } = null!; //TODO
+    public Guid? StartedGameId { get; set; }
+
+    public int TimeLimit { get; init; }
+    public int ScoreLimit { get; init; }
+
+    public string InviteLink { get; init; }
+
+    //public GameEntity MatchmakingGame { get; init; } = null!; //TODO
+    public long? MatchmakingGameId { get; set; }
+
+    //public GameEntity ChallengermodeGame { get; init; } = null!; //TODO
+    public Guid? ChallengermodeGameId { get; set; }
+
+    public DateTime? StartTime { get; set; }
+
+    public Guid? ExternalTournamentId { get; init; }
+    //public TournamentEntity ExternalTournament { get; init; } = null!; //TODO
+
+    public Guid? ExternalMatchId { get; init; }
+    //public MatchEntity ExternalMatch { get; init; } = null!; //TODO
+
+    public short MaxPlayers { get; init; }
+
+    public List<ParticipatorViewModel> Participators { get; set; } //TODO
+
+    public List<int> Bots { get; set; }
+
+    public PlayerInvitationState? GetInvitationStateForPlayer(Guid userId)
+    {
+        return Participators.Find(participator => participator.UserId == userId)?.InvitationState;
+    }
+}
+
+public static class LobbyGameMappingExtensions
+{
+    public static LobbyGameViewModel ToViewModel(this LobbyEntity e)
+    {
+        return new LobbyGameViewModel
+        {
+            Id = e.Id,
+            DateCreated = e.DateCreated,
+            DateModified = e.DateModified,
+            Name = e.Name,
+            MapPreset = e.MapPreset,
+            MapSize = e.MapSize,
+            OpponentCount = (short)(e.MaxPlayers-1),
+            GameMode = e.GameMode,
+            OwnerId = e.OwnerId,
+            DisabledTribes = e.DisabledTribes,
+            StartedGameId = e.StartedGameId,
+            IsPersistent = true,
+            IsSharable = true,
+            TimeLimit = e.TimeLimit,
+            ScoreLimit = e.ScoreLimit,
+            InviteLink = e.InviteLink,
+            MatchmakingGameId = e.MatchmakingGameId,
+            ChallengermodeGameId = e.ChallengermodeGameId,
+            StartTime = e.StartTime,
+            GameContext = new GameContext()
+                { ExternalMatchId = e.ExternalMatchId, ExternalTournamentId = e.ExternalTournamentId },
+            Participators = e.Participators,
+            Bots = e.Bots
+        };
+    }
+
+    public static LobbyEntity ToEntity(this LobbyGameViewModel v)
+    {
+        return new LobbyEntity
+        {
+            Id = v.Id,
+            DateCreated = (DateTime)v.DateCreated!,
+            DateModified = v.DateModified,
+            Name = v.Name,
+            MapPreset = v.MapPreset,
+            MapSize = v.MapSize,
+            GameMode = v.GameMode,
+            OwnerId = v.OwnerId,
+            DisabledTribes = v.DisabledTribes,
+            StartedGameId = v.StartedGameId,
+            TimeLimit = v.TimeLimit,
+            ScoreLimit = v.ScoreLimit,
+            InviteLink = v.InviteLink,
+            MatchmakingGameId = v.MatchmakingGameId,
+            ChallengermodeGameId = v.ChallengermodeGameId,
+            StartTime = v.StartTime,
+            ExternalTournamentId = v.GameContext.ExternalTournamentId,
+            ExternalMatchId = v.GameContext.ExternalMatchId,
+            MaxPlayers = (short)(v.OpponentCount + 1),
+            Participators = v.Participators,
+            Bots = v.Bots,
+        };
+    }
+}
+
+public static class LobbyCollectionMappingExtensions
+{
+    public static List<LobbyGameViewModel> ToViewModels(this IEnumerable<LobbyEntity>? source) =>
+        source?.Select(e => e.ToViewModel()).ToList() ?? new List<LobbyGameViewModel>();
+
+    public static List<LobbyEntity> ToEntities(this IEnumerable<LobbyGameViewModel>? source) =>
+        source?.Select(v => v.ToEntity()).ToList() ?? new List<LobbyEntity>();
+}

@@ -12,28 +12,27 @@ public class PolydystopiaLobbyRepository : IPolydystopiaLobbyRepository
         _dbContext = dbContext;
     }
 
-    public async Task<LobbyGameViewModel?> GetByIdAsync(Guid id)
+    public async Task<LobbyEntity?> GetByIdAsync(Guid id)
     {
         var model = await _dbContext.Lobbies.FindAsync(id) ?? null;
 
         return model;
     }
 
-    public async Task<LobbyGameViewModel> CreateAsync(LobbyGameViewModel lobbyGameViewModel)
+    public async Task<LobbyEntity> CreateAsync(LobbyEntity lobbyEntity)
     {
-        await _dbContext.Lobbies.AddAsync(lobbyGameViewModel);
+        await _dbContext.Lobbies.AddAsync(lobbyEntity);
         await _dbContext.SaveChangesAsync();
-        return lobbyGameViewModel;
+        return lobbyEntity;
     }
 
-    public async Task<LobbyGameViewModel> UpdateAsync(LobbyGameViewModel lobbyGameViewModel, LobbyUpdatedReason reason)
+    public async Task<LobbyEntity> UpdateAsync(LobbyEntity lobbyEntity)
     {
-        lobbyGameViewModel.DateModified = DateTime.UtcNow;
-        lobbyGameViewModel.UpdatedReason = reason;
+        lobbyEntity.DateModified = DateTime.UtcNow;
         
-        _dbContext.Lobbies.Update(lobbyGameViewModel);
+        _dbContext.Lobbies.Update(lobbyEntity);
         await _dbContext.SaveChangesAsync();
-        return lobbyGameViewModel;
+        return lobbyEntity;
     }
 
     public async Task<bool> DeleteAsync(Guid id)
@@ -51,17 +50,17 @@ public class PolydystopiaLobbyRepository : IPolydystopiaLobbyRepository
         return true;
     }
 
-    public async Task<List<LobbyGameViewModel>> GetAllLobbiesByPlayer(Guid playerId)
+    public async Task<List<LobbyEntity>> GetAllLobbiesByPlayer(Guid playerId)
     {
-        var playerLobbies = new List<LobbyGameViewModel>();
+        var playerLobbies = new List<LobbyEntity>();
         
-        foreach (var lobbyGameViewModel in _dbContext.Lobbies)
+        foreach (var LobbyEntity in _dbContext.Lobbies)
         {
-            foreach (var participatorViewModel in lobbyGameViewModel.Participators)
+            foreach (var participatorViewModel in LobbyEntity.Participators)
             {
                 if (participatorViewModel.UserId == playerId)
                 {
-                    playerLobbies.Add(lobbyGameViewModel);
+                    playerLobbies.Add(LobbyEntity);
                     break;
                 }
             }
