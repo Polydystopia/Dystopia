@@ -74,15 +74,15 @@ public class FriendshipRepository : IFriendshipRepository
         var friendIds = friendships1.Concat(friendships2).ToList();
 
         var friendUsers = await _dbContext.Users
-            .Where(u => friendIds.Contains(u.PolytopiaId))
+            .Where(u => friendIds.Contains(u.Id))
             .ToListAsync();
 
         var friendViewModels = new List<PolytopiaFriendViewModel>();
         foreach (var user in friendUsers)
         {
             var friend = new PolytopiaFriendViewModel();
-            friend.User = user;
-            friend.FriendshipStatus = await GetFriendshipStatusAsync(userId, user.PolytopiaId);
+            friend.User = user.ToViewModel();
+            friend.FriendshipStatus = await GetFriendshipStatusAsync(userId, user.Id);
 
             friendViewModels.Add(friend);
         }

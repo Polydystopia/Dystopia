@@ -31,7 +31,7 @@ public class MatchmakingEntity
     public Guid Id { get; set; }
 
     public Guid? LobbyEntityId { get; set; }
-    public LobbyEntity? LobbyEntity { get; set; }
+    public virtual LobbyEntity? LobbyEntity { get; set; }
 
     public int Version { get; set; }
     public int MapSize { get; set; }

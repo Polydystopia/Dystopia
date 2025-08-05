@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using Dystopia.Database.User;
 using PolytopiaBackendBase.Game;
 using PolytopiaBackendBase.Game.ViewModels;
 
@@ -18,6 +19,7 @@ public class LobbyEntity
     public GameMode GameMode { get; init; }
 
     public Guid OwnerId { get; set; }
+    //public UserEntity Owner { get; init; } = null!; //TODO
 
     public List<int> DisabledTribes { get; set; }
 
@@ -45,13 +47,14 @@ public class LobbyEntity
 
     public short MaxPlayers { get; init; }
 
-    public List<ParticipatorViewModel> Participators { get; set; } //TODO
+    public virtual ICollection<LobbyParticipatorUserEntity> Participators { get; set; }
+        = new List<LobbyParticipatorUserEntity>();
 
     public List<int> Bots { get; set; }
 
     public PlayerInvitationState? GetInvitationStateForPlayer(Guid userId)
     {
-        return Participators.Find(participator => participator.UserId == userId)?.InvitationState;
+        return Participators.First(participator => participator.UserId == userId)?.InvitationState;
     }
 }
 
@@ -82,37 +85,39 @@ public static class LobbyGameMappingExtensions
             StartTime = e.StartTime,
             GameContext = new GameContext()
                 { ExternalMatchId = e.ExternalMatchId, ExternalTournamentId = e.ExternalTournamentId },
-            Participators = e.Participators,
+            Participators = e.Participators.ToViewModels(),
             Bots = e.Bots
         };
     }
 
     public static LobbyEntity ToEntity(this LobbyGameViewModel v)
     {
-        return new LobbyEntity
-        {
-            Id = v.Id,
-            DateCreated = (DateTime)v.DateCreated!,
-            DateModified = v.DateModified,
-            Name = v.Name,
-            MapPreset = v.MapPreset,
-            MapSize = v.MapSize,
-            GameMode = v.GameMode,
-            OwnerId = v.OwnerId,
-            DisabledTribes = v.DisabledTribes,
-            StartedGameId = v.StartedGameId,
-            TimeLimit = v.TimeLimit,
-            ScoreLimit = v.ScoreLimit,
-            InviteLink = v.InviteLink,
-            MatchmakingGameId = v.MatchmakingGameId,
-            ChallengermodeGameId = v.ChallengermodeGameId,
-            StartTime = v.StartTime,
-            ExternalTournamentId = v.GameContext.ExternalTournamentId,
-            ExternalMatchId = v.GameContext.ExternalMatchId,
-            MaxPlayers = (short)(v.OpponentCount + 1),
-            Participators = v.Participators,
-            Bots = v.Bots,
-        };
+        throw new Exception("Unsupported. This should not be needed.");
+
+        //return new LobbyEntity
+        //{
+        //    Id = v.Id,
+        //    DateCreated = (DateTime)v.DateCreated!,
+        //    DateModified = v.DateModified,
+        //    Name = v.Name,
+        //    MapPreset = v.MapPreset,
+        //    MapSize = v.MapSize,
+        //    GameMode = v.GameMode,
+        //    OwnerId = v.OwnerId,
+        //    DisabledTribes = v.DisabledTribes,
+        //    StartedGameId = v.StartedGameId,
+        //    TimeLimit = v.TimeLimit,
+        //    ScoreLimit = v.ScoreLimit,
+        //    InviteLink = v.InviteLink,
+        //    MatchmakingGameId = v.MatchmakingGameId,
+        //    ChallengermodeGameId = v.ChallengermodeGameId,
+        //    StartTime = v.StartTime,
+        //    ExternalTournamentId = v.GameContext.ExternalTournamentId,
+        //    ExternalMatchId = v.GameContext.ExternalMatchId,
+        //    MaxPlayers = (short)(v.OpponentCount + 1),
+        //    Participators = v.Participators.ToEntities(),
+        //    Bots = v.Bots,
+        //};
     }
 }
 
