@@ -1,5 +1,6 @@
 ﻿using Dystopia.Database.Game;
 using Dystopia.Database.Lobby;
+using Dystopia.Database.User;
 using Dystopia.Managers.Lobby;
 using Microsoft.AspNetCore.SignalR;
 using Newtonsoft.Json;
@@ -40,9 +41,9 @@ public partial class PolytopiaHub
 
         var createdLobby = PolydystopiaLobbyManager.CreateLobby(model, ownUser);
 
-        await _lobbyRepository.CreateAsync(createdLobby.ToEntity());
+        await _lobbyRepository.CreateAsync(createdLobby);
 
-        return new ServerResponse<LobbyGameViewModel>(createdLobby);
+        return new ServerResponse<LobbyGameViewModel>(createdLobby.ToViewModel());
     }
 
     public async Task<ServerResponse<BoolResponseViewModel>> ModifyPlayersInLobby(
@@ -76,17 +77,11 @@ public partial class PolytopiaHub
 
                 if (invitePlayer == null) continue;
 
-                var participator = new ParticipatorViewModel()
+                var participator = new LobbyParticipatorUserEntity()
                 {
                     UserId = invitedPlayerGuid,
-                    Name = invitePlayer.GetUniqueNameInternal(),
-                    NumberOfFriends = invitePlayer.NumFriends ?? 0,
-                    NumberOfMultiplayerGames = invitePlayer.NumMultiplayergames ?? 0,
-                    GameVersion = invitePlayer.GameVersions,
-                    MultiplayerRating = invitePlayer.MultiplayerRating ?? 0,
                     SelectedTribe = 0, //?
                     SelectedTribeSkin = 0, //?
-                    AvatarStateData = invitePlayer.AvatarStateData,
                     InvitationState = PlayerInvitationState.Invited
                 };
 

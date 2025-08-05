@@ -29,6 +29,8 @@ public class GameEntity
 
     public DateTime? DateCurrentTurnDeadline { get; init; }
 
+    public virtual ICollection<GameParticipatorUserEntity> Participators { get; set; }
+        = new List<GameParticipatorUserEntity>();
 
     public Guid? ExternalTournamentId { get; init; }
     //public TournamentEntity ExternalTournament { get; init; } = null!; //TODO

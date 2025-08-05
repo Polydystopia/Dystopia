@@ -22,29 +22,9 @@ public static class PolydystopiaMatchmakingManager
 
         if (selectedMatchmaking == null)
         {
-            var lobbyGameViewModel = PolydystopiaLobbyManager.CreateLobby(model, ownUser);
-            var participator = new ParticipatorViewModel()
-            {
-                UserId = ownUser.PolytopiaId,
-                Name = ownUser.GetUniqueNameInternal(),
-                NumberOfFriends = ownUser.NumFriends ?? 0,
-                NumberOfMultiplayerGames = ownUser.NumMultiplayergames ?? 0,
-                GameVersion = ownUser.GameVersions,
-                MultiplayerRating = ownUser.MultiplayerRating ?? 0,
-                SelectedTribe = 0, //?
-                SelectedTribeSkin = 0, //?
-                AvatarStateData = ownUser.AvatarStateData,
-                InvitationState = PlayerInvitationState.Invited
-            };
+            var lobbyEntity = PolydystopiaLobbyManager.CreateLobby(model, ownUser);
 
-            lobbyGameViewModel.Participators.Add(participator);
-
-            var maxPlayers = model.OpponentCount != 0 ? model.OpponentCount+1 : (short)Random.Shared.Next(2, 9);
-            lobbyGameViewModel.OpponentCount = (short)(maxPlayers-1);
-
-            var lobbyEntity = lobbyGameViewModel.ToEntity();
-
-            selectedMatchmaking = new MatchmakingEntity(lobbyEntity, model.Version, lobbyGameViewModel.MapSize, lobbyGameViewModel.MapPreset, lobbyGameViewModel.GameMode, lobbyGameViewModel.ScoreLimit, lobbyGameViewModel.TimeLimit, model.Platform, model.AllowCrossPlay, maxPlayers);
+            selectedMatchmaking = new MatchmakingEntity(lobbyEntity, model.Version, lobbyEntity.MapSize, lobbyEntity.MapPreset, lobbyEntity.GameMode, lobbyEntity.ScoreLimit, lobbyEntity.TimeLimit, model.Platform, model.AllowCrossPlay, lobbyEntity.MaxPlayers);
             await _lobbyRepository.CreateAsync(lobbyEntity);
             await _matchmakingRepository.CreateAsync(selectedMatchmaking);
         }
@@ -52,18 +32,10 @@ public static class PolydystopiaMatchmakingManager
         {
             selectedMatchmaking.PlayerIds.Add(playerId);
 
-            var participator = new ParticipatorViewModel()
+            var participator = new LobbyParticipatorUserEntity()
             {
-                UserId = ownUser.PolytopiaId,
-                Name = ownUser.GetUniqueNameInternal(),
-                NumberOfFriends = ownUser.NumFriends ?? 0,
-                NumberOfMultiplayerGames = ownUser.NumMultiplayergames ?? 0,
-                GameVersion = ownUser.GameVersions,
-                MultiplayerRating = ownUser.MultiplayerRating ?? 0,
-                SelectedTribe = 0, //?
-                SelectedTribeSkin = 0, //?
-                AvatarStateData = ownUser.AvatarStateData,
-                InvitationState = PlayerInvitationState.Invited
+                UserId = ownUser.Id,
+                InvitationState = PlayerInvitationState.Invited,
             };
 
             selectedMatchmaking.LobbyEntity.Participators.Add(participator);
@@ -91,7 +63,7 @@ public static class PolydystopiaMatchmakingManager
         summary.LobbyId = selectedMatchmaking.LobbyEntity.Id;
 
         summary.Participators = new List<ParticipatorViewModel>();
-        foreach (var participatorViewModel in selectedMatchmaking.LobbyEntity.Participators)
+        foreach (var participatorViewModel in selectedMatchmaking.LobbyEntity.Participators.ToViewModels())
         {
             summary.Participators.Add(participatorViewModel);
         }
