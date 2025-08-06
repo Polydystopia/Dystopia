@@ -3,6 +3,7 @@ using System;
 using Dystopia.Database;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,9 +11,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Dystopia.Migrations
 {
     [DbContext(typeof(PolydystopiaDbContext))]
-    partial class PolydystopiaDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250806092842_AddLobbyGameRelation")]
+    partial class AddLobbyGameRelation
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -166,8 +169,8 @@ namespace Dystopia.Migrations
                     b.Property<DateTime?>("StartTime")
                         .HasColumnType("TEXT");
 
-                    b.Property<int>("State")
-                        .HasColumnType("INTEGER");
+                    b.Property<Guid?>("StartedGameId")
+                        .HasColumnType("TEXT");
 
                     b.Property<int>("TimeLimit")
                         .HasColumnType("INTEGER");

@@ -11,7 +11,8 @@ public class GameEntity
 {
     [Key] public Guid Id { get; init; }
 
-    //public LobbyEntity Lobby { get; init; } = null!; //TODO
+    public Guid LobbyId { get; init; }
+    public virtual LobbyEntity Lobby { get; init; } = null!; //TODO
 
     public Guid? OwnerId { get; init; }
     public virtual UserEntity Owner { get; set; } = null!;

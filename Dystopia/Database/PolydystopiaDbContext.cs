@@ -22,7 +22,7 @@ public class PolydystopiaDbContext : DbContext
     public DbSet<UserFavoriteGame> UserFavoriteGames { get; set; }
 
     public DbSet<LobbyParticipatorUserEntity> LobbyParticipators { get; set; }
-    public DbSet<GameParticipatorUserEntity> GameParticipators  { get; set; }
+    public DbSet<GameParticipatorUserEntity> GameParticipators { get; set; }
 
     public PolydystopiaDbContext(DbContextOptions<PolydystopiaDbContext> options) : base(options)
     {
@@ -102,6 +102,11 @@ public class PolydystopiaDbContext : DbContext
                 : null);
 
         gameEntity.HasOne(g => g.Owner).WithMany().HasForeignKey(g => g.OwnerId);
+
+        gameEntity.HasOne(g => g.Lobby)
+            .WithOne(l => l.Game)
+            .HasForeignKey<GameEntity>(g => g.LobbyId)
+            .OnDelete(DeleteBehavior.Cascade);
 
         #endregion
 
