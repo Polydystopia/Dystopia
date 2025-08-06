@@ -35,10 +35,8 @@ public class GameEntity
         = new List<GameParticipatorUserEntity>();
 
     public Guid? ExternalTournamentId { get; init; }
-    //public TournamentEntity ExternalTournament { get; init; } = null!; //TODO
 
     public Guid? ExternalMatchId { get; init; }
-    //public MatchEntity ExternalMatch { get; init; } = null!; //TODO
 }
 
 public static class GameMappingExtensions

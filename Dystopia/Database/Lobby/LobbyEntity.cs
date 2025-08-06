@@ -33,19 +33,15 @@ public class LobbyEntity
 
     public string InviteLink { get; init; }
 
-    //public GameEntity MatchmakingGame { get; init; } = null!; //TODO
     public long? MatchmakingGameId { get; set; }
 
-    //public GameEntity ChallengermodeGame { get; init; } = null!; //TODO
     public Guid? ChallengermodeGameId { get; set; }
 
     public DateTime? StartTime { get; set; }
 
     public Guid? ExternalTournamentId { get; init; }
-    //public TournamentEntity ExternalTournament { get; init; } = null!; //TODO
 
     public Guid? ExternalMatchId { get; init; }
-    //public MatchEntity ExternalMatch { get; init; } = null!; //TODO
 
     public short MaxPlayers { get; init; }
 
