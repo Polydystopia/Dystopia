@@ -1,4 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations;
 using Dystopia.Database.Game;
 using Dystopia.Database.User;
 using PolytopiaBackendBase.Game;

@@ -1,4 +1,4 @@
-﻿using Dystopia.Database.Friendship;
+using Dystopia.Database.Friendship;
 using Dystopia.Database.Game;
 using Dystopia.Database.Lobby;
 using Dystopia.Database.Matchmaking;
