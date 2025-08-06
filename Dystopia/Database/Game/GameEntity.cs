@@ -12,8 +12,9 @@ public class GameEntity
     [Key] public Guid Id { get; init; }
 
     //public LobbyEntity Lobby { get; init; } = null!; //TODO
+
     public Guid? OwnerId { get; init; }
-    //public UserEntity Owner { get; init; } = null!; //TODO
+    public virtual UserEntity Owner { get; set; } = null!;
 
     public DateTime? DateCreated { get; init; }
     public DateTime? DateLastCommand { get; set; }

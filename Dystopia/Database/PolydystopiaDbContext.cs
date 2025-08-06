@@ -99,6 +99,8 @@ public class PolydystopiaDbContext : DbContext
                 ? JsonConvert.DeserializeObject<PolytopiaBackendBase.Timers.TimerSettings>(v, jsonSettings)
                 : null);
 
+        gameEntity.HasOne(g => g.Owner).WithMany().HasForeignKey(g => g.OwnerId);
+
         #endregion
 
         #region Participation
