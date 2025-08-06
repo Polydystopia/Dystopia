@@ -15,7 +15,7 @@ public class LobbyEntity
     public DateTime DateCreated { get; init; }
     public DateTime? DateModified { get; set; }
 
-    public string Name { get; init; }
+    [MaxLength(32)] public string Name { get; init; }
 
     public MapPreset MapPreset { get; init; }
     public int MapSize { get; init; }
@@ -26,7 +26,7 @@ public class LobbyEntity
 
     public GameSessionState State { get; set; }
 
-    public List<int> DisabledTribes { get; set; }
+    public List<int>? DisabledTribes { get; set; }
 
     public int TimeLimit { get; init; }
     public int ScoreLimit { get; init; }
