@@ -36,6 +36,7 @@ public class PolydystopiaGameManager : IPolydystopiaGameManager
         var gameEntity = new GameEntity()
         {
             Id = lobby.Id,
+            LobbyId = lobby.Id,
             OwnerId = lobby.OwnerId,
             DateCreated = DateTime.Now,
             DateLastCommand = DateTime.Now,

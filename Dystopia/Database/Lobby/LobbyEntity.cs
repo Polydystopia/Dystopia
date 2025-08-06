@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations;
+using Dystopia.Database.Game;
 using Dystopia.Database.User;
 using PolytopiaBackendBase.Game;
 using PolytopiaBackendBase.Game.ViewModels;
@@ -8,6 +9,8 @@ namespace Dystopia.Database.Lobby;
 public class LobbyEntity
 {
     [Key] public Guid Id { get; init; }
+
+    public virtual GameEntity Game { get; set; } = null!;
 
     public DateTime DateCreated { get; init; }
     public DateTime? DateModified { get; set; }
@@ -19,31 +22,26 @@ public class LobbyEntity
     public GameMode GameMode { get; init; }
 
     public Guid OwnerId { get; set; }
-    //public UserEntity Owner { get; init; } = null!; //TODO
+    public virtual UserEntity Owner { get; init; } = null!;
+
+    public GameSessionState State { get; set; }
 
     public List<int> DisabledTribes { get; set; }
-
-    //public GameEntity Game { get; init; } = null!; //TODO
-    public Guid? StartedGameId { get; set; }
 
     public int TimeLimit { get; init; }
     public int ScoreLimit { get; init; }
 
     public string InviteLink { get; init; }
 
-    //public GameEntity MatchmakingGame { get; init; } = null!; //TODO
     public long? MatchmakingGameId { get; set; }
 
-    //public GameEntity ChallengermodeGame { get; init; } = null!; //TODO
     public Guid? ChallengermodeGameId { get; set; }
 
     public DateTime? StartTime { get; set; }
 
     public Guid? ExternalTournamentId { get; init; }
-    //public TournamentEntity ExternalTournament { get; init; } = null!; //TODO
 
     public Guid? ExternalMatchId { get; init; }
-    //public MatchEntity ExternalMatch { get; init; } = null!; //TODO
 
     public short MaxPlayers { get; init; }
 
@@ -65,6 +63,7 @@ public static class LobbyGameMappingExtensions
         return new LobbyGameViewModel
         {
             Id = e.Id,
+            StartedGameId = e.Game?.Id,
             DateCreated = e.DateCreated,
             DateModified = e.DateModified,
             Name = e.Name,
@@ -74,7 +73,6 @@ public static class LobbyGameMappingExtensions
             GameMode = e.GameMode,
             OwnerId = e.OwnerId,
             DisabledTribes = e.DisabledTribes,
-            StartedGameId = e.StartedGameId,
             IsPersistent = true,
             IsSharable = true,
             TimeLimit = e.TimeLimit,

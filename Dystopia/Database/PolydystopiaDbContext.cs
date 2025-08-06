@@ -1,4 +1,4 @@
-﻿using Dystopia.Database.Friendship;
+using Dystopia.Database.Friendship;
 using Dystopia.Database.Game;
 using Dystopia.Database.Lobby;
 using Dystopia.Database.Matchmaking;
@@ -22,7 +22,7 @@ public class PolydystopiaDbContext : DbContext
     public DbSet<UserFavoriteGame> UserFavoriteGames { get; set; }
 
     public DbSet<LobbyParticipatorUserEntity> LobbyParticipators { get; set; }
-    public DbSet<GameParticipatorUserEntity> GameParticipators  { get; set; }
+    public DbSet<GameParticipatorUserEntity> GameParticipators { get; set; }
 
     public PolydystopiaDbContext(DbContextOptions<PolydystopiaDbContext> options) : base(options)
     {
@@ -85,6 +85,8 @@ public class PolydystopiaDbContext : DbContext
             v => JsonConvert.SerializeObject(v, jsonSettings),
             v => JsonConvert.DeserializeObject<List<int>>(v, jsonSettings));
 
+        lobbyEntity.HasOne(g => g.Owner).WithMany().HasForeignKey(g => g.OwnerId);
+
         #endregion
 
         #region Game
@@ -98,6 +100,13 @@ public class PolydystopiaDbContext : DbContext
             v => !string.IsNullOrEmpty(v)
                 ? JsonConvert.DeserializeObject<PolytopiaBackendBase.Timers.TimerSettings>(v, jsonSettings)
                 : null);
+
+        gameEntity.HasOne(g => g.Owner).WithMany().HasForeignKey(g => g.OwnerId);
+
+        gameEntity.HasOne(g => g.Lobby)
+            .WithOne(l => l.Game)
+            .HasForeignKey<GameEntity>(g => g.LobbyId)
+            .OnDelete(DeleteBehavior.Cascade);
 
         #endregion
 

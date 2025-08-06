@@ -11,9 +11,11 @@ public class GameEntity
 {
     [Key] public Guid Id { get; init; }
 
-    //public LobbyEntity Lobby { get; init; } = null!; //TODO
+    public Guid LobbyId { get; init; }
+    public virtual LobbyEntity Lobby { get; init; } = null!; //TODO
+
     public Guid? OwnerId { get; init; }
-    //public UserEntity Owner { get; init; } = null!; //TODO
+    public virtual UserEntity Owner { get; set; } = null!;
 
     public DateTime? DateCreated { get; init; }
     public DateTime? DateLastCommand { get; set; }
@@ -33,10 +35,8 @@ public class GameEntity
         = new List<GameParticipatorUserEntity>();
 
     public Guid? ExternalTournamentId { get; init; }
-    //public TournamentEntity ExternalTournament { get; init; } = null!; //TODO
 
     public Guid? ExternalMatchId { get; init; }
-    //public MatchEntity ExternalMatch { get; init; } = null!; //TODO
 }
 
 public static class GameMappingExtensions
@@ -62,20 +62,6 @@ public static class GameMappingExtensions
 
     public static GameEntity ToEntity(this GameViewModel v)
     {
-        return new GameEntity
-        {
-            Id = v.Id,
-            OwnerId = v.OwnerId,
-            DateCreated = v.DateCreated,
-            DateLastCommand = v.DateLastCommand,
-            State = v.State,
-            GameSettings = v.GameSettingsJson,
-            InitialGameStateData = v.InitialGameStateData,
-            CurrentGameStateData = v.CurrentGameStateData,
-            TimerSettings = v.TimerSettings,
-            DateCurrentTurnDeadline = v.DateCurrentTurnDeadline,
-            ExternalTournamentId = v.GameContext.ExternalTournamentId,
-            ExternalMatchId = v.GameContext.ExternalMatchId,
-        };
+        throw new Exception("Unsupported. This should not be needed.");
     }
 }
