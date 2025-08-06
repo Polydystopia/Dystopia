@@ -25,10 +25,10 @@ public class GameRepositoryTests
             .Options;
 
     private readonly Mock<PolydystopiaDbContext> _dbContextMock;
-    private readonly Mock<ICacheService<GameViewModel>> _cacheServiceMock = new();
+    private readonly Mock<ICacheService<GameEntity>> _cacheServiceMock = new();
 
     private readonly IOptions<CacheSettings> _settings = Options.Create(new CacheSettings
-        { GameViewModel = new CacheProfile() { CacheTime = TimeSpan.FromMinutes(30) } });
+        { GameEntity = new CacheProfile() { CacheTime = TimeSpan.FromMinutes(30) } });
 
     private readonly Mock<IDystopiaCastle> _bridgeMock = new();
 
@@ -49,7 +49,7 @@ public class GameRepositoryTests
     {
         // Arrange
         var testId = Guid.NewGuid();
-        var expectedGame = new GameViewModel { Id = testId };
+        var expectedGame = new GameEntity { Id = testId };
         _cacheServiceMock.Setup(c => c.TryGet(testId, out expectedGame)).Returns(true);
 
         // Act
@@ -65,7 +65,7 @@ public class GameRepositoryTests
     {
         // Arrange
         var testId = Guid.NewGuid();
-        var expectedGame = new GameViewModel { Id = testId };
+        var expectedGame = new GameEntity() { Id = testId };
         _cacheServiceMock.Setup(c => c.TryGet(testId, out expectedGame)).Returns(false);
         _dbContextMock.Setup(db => db.Games.FindAsync(testId)).ReturnsAsync(expectedGame);
 
@@ -81,8 +81,8 @@ public class GameRepositoryTests
     public async Task CreateAsync_AddsToDatabase()
     {
         // Arrange
-        var testGame = new GameViewModel();
-        var mockDbSet = new Mock<DbSet<GameViewModel>>();
+        var testGame = new GameEntity();
+        var mockDbSet = new Mock<DbSet<GameEntity>>();
         _dbContextMock.Setup(db => db.Games).Returns(mockDbSet.Object);
 
         // Act
@@ -98,7 +98,7 @@ public class GameRepositoryTests
     public async Task UpdateAsync_UsesCache_WhenShouldCache()
     {
         // Arrange
-        var testGame = new GameViewModel
+        var testGame = new GameEntity
         {
             Id = Guid.NewGuid(),
             TimerSettings = new TimerSettings { UseTimebanks = true },
@@ -121,19 +121,19 @@ public class GameRepositoryTests
     public async Task UpdateAsync_SavesDirectly_WhenNotCaching()
     {
         // Arrange
-        var testGame = new GameViewModel
+        var testGame = new GameEntity
         {
             Id = Guid.NewGuid(),
             TimerSettings = new TimerSettings { UseTimebanks = false },
             DateLastCommand = DateTime.UtcNow.AddHours(-10)
         };
-        _dbContextMock.Setup(db => db.Games).Returns(new Mock<DbSet<GameViewModel>>().Object);
+        _dbContextMock.Setup(db => db.Games).Returns(new Mock<DbSet<GameEntity>>().Object);
         // Act
         var result = await CreateRepository().UpdateAsync(testGame);
 
         // Assert
         _cacheServiceMock.Verify(
-            c => c.Set(It.IsAny<Guid>(), It.IsAny<GameViewModel>(), It.IsAny<Action<PolydystopiaDbContext>>()),
+            c => c.Set(It.IsAny<Guid>(), It.IsAny<GameEntity>(), It.IsAny<Action<PolydystopiaDbContext>>()),
             Times.Never);
         _dbContextMock.Verify(db => db.SaveChangesAsync(default), Times.Once);
     }
@@ -143,7 +143,7 @@ public class GameRepositoryTests
     {
         // Arrange
         var playerId = Guid.NewGuid();
-        var dbGames = new List<GameViewModel>
+        var dbGames = new List<GameEntity>
         {
             new() { Id = Guid.NewGuid(), CurrentGameStateData = new byte[] { 1 } },
             new() { Id = Guid.NewGuid(), CurrentGameStateData = new byte[] { 2 } },
@@ -160,11 +160,11 @@ public class GameRepositoryTests
 
         _cacheServiceMock
             .Setup(c => c.TryGetAll(
-                It.IsAny<Func<GameViewModel, bool>>(),
-                out It.Ref<IList<GameViewModel>>.IsAny))
-            .Callback((Func<GameViewModel, bool> predicate, out IList<GameViewModel> values) =>
+                It.IsAny<Func<GameEntity, bool>>(),
+                out It.Ref<IList<GameEntity>>.IsAny))
+            .Callback((Func<GameEntity, bool> predicate, out IList<GameEntity> values) =>
             {
-                values = new List<GameViewModel>();
+                values = new List<GameEntity>();
             });
 
         // Act
@@ -180,7 +180,7 @@ public class GameRepositoryTests
     {
         // Arrange
         var playerId = Guid.NewGuid();
-        var dbGames = new List<GameViewModel>
+        var dbGames = new List<GameEntity>
         {
             new() { Id = Guid.NewGuid(), CurrentGameStateData = new byte[] { 1 } },
             new() { Id = Guid.NewGuid(), CurrentGameStateData = new byte[] { 2 } },
@@ -197,11 +197,11 @@ public class GameRepositoryTests
 
         _cacheServiceMock
             .Setup(c => c.TryGetAll(
-                It.IsAny<Func<GameViewModel, bool>>(),
-                out It.Ref<IList<GameViewModel>>.IsAny))
-            .Callback((Func<GameViewModel, bool> predicate, out IList<GameViewModel> values) =>
+                It.IsAny<Func<GameEntity, bool>>(),
+                out It.Ref<IList<GameEntity>>.IsAny))
+            .Callback((Func<GameEntity, bool> predicate, out IList<GameEntity> values) =>
             {
-                values = new List<GameViewModel>();
+                values = new List<GameEntity>();
                 values.Add(new() { Id = Guid.NewGuid(), CurrentGameStateData = new byte[] { 4 } });
                 values.Add(new() { Id = Guid.NewGuid(), CurrentGameStateData = new byte[] { 5 } });
                 values.Add(new() { Id = Guid.NewGuid(), CurrentGameStateData = new byte[] { 6 } });
@@ -220,7 +220,7 @@ public class GameRepositoryTests
     {
         // Arrange
         var playerId = Guid.NewGuid();
-        var dbGames = new List<GameViewModel>
+        var dbGames = new List<GameEntity>
         {
             new() { Id = Guid.NewGuid(), CurrentGameStateData = new byte[] { 1 } },
             new() { Id = Guid.NewGuid(), CurrentGameStateData = new byte[] { 2 } },
@@ -237,11 +237,11 @@ public class GameRepositoryTests
 
         _cacheServiceMock
             .Setup(c => c.TryGetAll(
-                It.IsAny<Func<GameViewModel, bool>>(),
-                out It.Ref<IList<GameViewModel>>.IsAny))
-            .Callback((Func<GameViewModel, bool> predicate, out IList<GameViewModel> values) =>
+                It.IsAny<Func<GameEntity, bool>>(),
+                out It.Ref<IList<GameEntity>>.IsAny))
+            .Callback((Func<GameEntity, bool> predicate, out IList<GameEntity> values) =>
             {
-                values = new List<GameViewModel>();
+                values = new List<GameEntity>();
                 values.Add(new() { Id = Guid.NewGuid(), CurrentGameStateData = new byte[] { 4 } });
                 values.Add(new() { Id = Guid.NewGuid(), CurrentGameStateData = new byte[] { 5 } });
                 values.Add(new() { Id = Guid.NewGuid(), CurrentGameStateData = new byte[] { 6 } });
@@ -263,7 +263,7 @@ public class GameRepositoryTests
 
         // Arrange
         var playerId = Guid.NewGuid();
-        var dbGames = new List<GameViewModel>
+        var dbGames = new List<GameEntity>
         {
             new() { Id = Guid.NewGuid(), CurrentGameStateData = new byte[] { 1 } },
             new() { Id = Guid.NewGuid(), CurrentGameStateData = new byte[] { 2 } },
@@ -285,11 +285,11 @@ public class GameRepositoryTests
 
         _cacheServiceMock
             .Setup(c => c.TryGetAll(
-                It.IsAny<Func<GameViewModel, bool>>(),
-                out It.Ref<IList<GameViewModel>>.IsAny))
-            .Callback((Func<GameViewModel, bool> predicate, out IList<GameViewModel> values) =>
+                It.IsAny<Func<GameEntity, bool>>(),
+                out It.Ref<IList<GameEntity>>.IsAny))
+            .Callback((Func<GameEntity, bool> predicate, out IList<GameEntity> values) =>
             {
-                values = new List<GameViewModel>();
+                values = new List<GameEntity>();
                 values.Add(new() { Id = Guid.NewGuid(), CurrentGameStateData = new byte[] { 6 } });
                 values.Add(new() { Id = Guid.NewGuid(), CurrentGameStateData = new byte[] { 7 } });
                 values.Add(new() { Id = Guid.NewGuid(), CurrentGameStateData = new byte[] { 8 } });

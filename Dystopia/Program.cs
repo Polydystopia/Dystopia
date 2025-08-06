@@ -40,7 +40,7 @@ var builder = WebApplication.CreateBuilder(args);
 Directory.CreateDirectory(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "db"));
 var dbPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "db", "polytopia.db");
 builder.Services.AddDbContext<PolydystopiaDbContext>(options =>
-    options.UseSqlite($"Data Source={dbPath}"));
+    options.UseLazyLoadingProxies().UseSqlite($"Data Source={dbPath}"));
 
 builder.Logging.ClearProviders();
 

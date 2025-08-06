@@ -2,7 +2,7 @@ namespace Dystopia.Settings;
 
 public class CacheSettings
 {
-    public CacheProfile GameViewModel { get; set; } = new();
+    public CacheProfile GameEntity { get; set; } = new();
 }
 
 public class CacheProfile

@@ -1,4 +1,5 @@
-﻿using PolytopiaBackendBase;
+﻿using Dystopia.Database.Game;
+using PolytopiaBackendBase;
 using PolytopiaBackendBase.Game;
 using PolytopiaBackendBase.Game.BindingModels;
 
@@ -15,7 +16,7 @@ public partial class PolytopiaHub
 
         foreach (var gameViewModel in games)
         {
-            var summary = _gameManager.GetGameSummaryViewModelByGameViewModel(gameViewModel);
+            var summary = _gameManager.GetGameSummaryViewModelByGameViewModel(gameViewModel.ToViewModel());
 
             summaries.Add(summary);
         }
@@ -43,9 +44,9 @@ public partial class PolytopiaHub
 
         var summaries = new List<GameSummaryViewModel>();
 
-        foreach (var gameViewModel in games)
+        foreach (var game in games)
         {
-            var summary = _gameManager.GetGameSummaryViewModelByGameViewModel(gameViewModel);
+            var summary = _gameManager.GetGameSummaryViewModelByGameViewModel(game.ToViewModel());
 
             summaries.Add(summary);
         }

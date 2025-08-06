@@ -1,4 +1,5 @@
-﻿using PolytopiaBackendBase;
+﻿using Dystopia.Database.Game;
+using PolytopiaBackendBase;
 using PolytopiaBackendBase.Game;
 using PolytopiaBackendBase.Game.BindingModels;
 
@@ -17,7 +18,7 @@ public partial class PolytopiaHub
         {
             if (game.State != GameSessionState.Started) continue;
 
-            response.gameSummaries.Add(_gameManager.GetGameSummaryViewModelByGameViewModel(game));
+            response.gameSummaries.Add(_gameManager.GetGameSummaryViewModelByGameViewModel(game.ToViewModel()));
         }
 
         return new ServerResponse<GameListingViewModel>(response);

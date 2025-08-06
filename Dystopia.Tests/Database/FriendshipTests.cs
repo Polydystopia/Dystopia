@@ -19,13 +19,14 @@ public class FriendshipTests
 {
     private readonly PolydystopiaDbContext _mockContext;
     private readonly FriendshipRepository _repository;
+
     public FriendshipTests()
     {
         var options = new DbContextOptionsBuilder<PolydystopiaDbContext>()
             .UseInMemoryDatabase(databaseName: Guid.NewGuid().ToString())
             .Options;
         _mockContext = new PolydystopiaDbContext(options);
-        
+
         _repository = new FriendshipRepository(_mockContext);
     }
 
@@ -49,7 +50,8 @@ public class FriendshipTests
         // Arrange
         var user1 = Guid.NewGuid();
         var user2 = Guid.NewGuid();
-        var friendship = new FriendshipEntity { UserId1 = user1, UserId2 = user2, Status = FriendshipStatus.SentRequest };
+        var friendship = new FriendshipEntity
+            { UserId1 = user1, UserId2 = user2, Status = FriendshipStatus.SentRequest };
         _mockContext.Add(friendship);
         await _mockContext.SaveChangesAsync();
 
@@ -103,14 +105,22 @@ public class FriendshipTests
     {
         // Arrange
         var userId = Guid.NewGuid();
-        var friend1 = new PolytopiaUserViewModel { PolytopiaId = Guid.NewGuid(), UserName = "Friend1" };
-        var friend2 = new PolytopiaUserViewModel { PolytopiaId = Guid.NewGuid(), UserName = "Friend2" };
+        var friend1 = new UserEntity()
+        {
+            Id = Guid.NewGuid(), UserName = "Friend1", SteamId = "1", Discriminator = "1111",
+            AvatarStateData = new byte[0], GameVersions = new List<ClientGameVersionViewModel>()
+        };
+        var friend2 = new UserEntity
+        {
+            Id = Guid.NewGuid(), UserName = "Friend2", SteamId = "1", Discriminator = "1111",
+            AvatarStateData = new byte[0], GameVersions = new List<ClientGameVersionViewModel>()
+        };
 
         var friends = new List<FriendshipEntity>
         {
-            new() { UserId1 = userId, UserId2 = friend1.PolytopiaId },
-            new() { UserId1 = userId, UserId2 = friend2.PolytopiaId },
-            new() { UserId1 = friend1.PolytopiaId, UserId2 = friend2.PolytopiaId }, // this should not be in results
+            new() { UserId1 = userId, UserId2 = friend1.Id },
+            new() { UserId1 = userId, UserId2 = friend2.Id },
+            new() { UserId1 = friend1.Id, UserId2 = friend2.Id }, // this should not be in results
         };
         await _mockContext.AddRangeAsync(friend1, friend2);
         await _mockContext.AddRangeAsync(friends);

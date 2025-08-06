@@ -1,4 +1,7 @@
-﻿using Dystopia.Managers.Lobby;
+﻿using Dystopia.Database.Game;
+using Dystopia.Database.Lobby;
+using Dystopia.Database.User;
+using Dystopia.Managers.Lobby;
 using Microsoft.AspNetCore.SignalR;
 using Newtonsoft.Json;
 using PolytopiaBackendBase;
@@ -16,16 +19,13 @@ public partial class PolytopiaHub
     {
         var myLobbies = await _lobbyRepository.GetAllLobbiesByPlayer(_userGuid);
 
-        //TODO: HACK!! Since I do not want to use two devices all the time. Change later.
-        //foreach (var lobbyGameViewModel in myLobbies)
-        //{
-        //    foreach (var participatorViewModel in lobbyGameViewModel.Participators)
-        //    {
-        //        participatorViewModel.InvitationState = PlayerInvitationState.Accepted;
-        //    }
-        //}
+        var response = new GetLobbyInvitationsViewModel()
+        {
+            Lobbies = myLobbies
+                .Where(l => l.State is GameSessionState.Lobby or GameSessionState.ReadyToStart)
+                .ToViewModels()
+        };
 
-        var response = new GetLobbyInvitationsViewModel() { Lobbies = myLobbies };
         return new ServerResponse<GetLobbyInvitationsViewModel>(response);
     }
 
@@ -36,11 +36,11 @@ public partial class PolytopiaHub
             return new ServerResponse<LobbyGameViewModel>()
                 { Success = false, ErrorCode = ErrorCode.UserNotFound, ErrorMessage = "Own user not found." };
 
-        var response = PolydystopiaLobbyManager.CreateLobby(model, ownUser);
+        var createdLobby = PolydystopiaLobbyManager.CreateLobby(model, ownUser);
 
-        await _lobbyRepository.CreateAsync(response);
+        await _lobbyRepository.CreateAsync(createdLobby);
 
-        return new ServerResponse<LobbyGameViewModel>(response);
+        return new ServerResponse<LobbyGameViewModel>(createdLobby.ToViewModel());
     }
 
     public async Task<ServerResponse<BoolResponseViewModel>> ModifyPlayersInLobby(
@@ -74,17 +74,11 @@ public partial class PolytopiaHub
 
                 if (invitePlayer == null) continue;
 
-                var participator = new ParticipatorViewModel()
+                var participator = new LobbyParticipatorUserEntity()
                 {
                     UserId = invitedPlayerGuid,
-                    Name = invitePlayer.GetUniqueNameInternal(),
-                    NumberOfFriends = invitePlayer.NumFriends ?? 0,
-                    NumberOfMultiplayerGames = invitePlayer.NumMultiplayergames ?? 0,
-                    GameVersion = invitePlayer.GameVersions,
-                    MultiplayerRating = invitePlayer.MultiplayerRating ?? 0,
                     SelectedTribe = 0, //?
                     SelectedTribeSkin = 0, //?
-                    AvatarStateData = invitePlayer.AvatarStateData,
                     InvitationState = PlayerInvitationState.Invited
                 };
 
@@ -92,16 +86,16 @@ public partial class PolytopiaHub
 
                 if (OnlinePlayers.TryGetValue(invitedPlayerGuid, out var onlineFriendProxy))
                 {
-                    await onlineFriendProxy.SendAsync("OnLobbyInvitation", lobby);
+                    await onlineFriendProxy.SendAsync("OnLobbyInvitation", lobby.ToViewModel());
                 }
             }
         }
 
-        await _lobbyRepository.UpdateAsync(lobby, LobbyUpdatedReason.PlayersInvited);
+        await _lobbyRepository.UpdateAsync(lobby);
 
         foreach (var lobbySubscribers in LobbySubscribers[lobby.Id])
         {
-            await lobbySubscribers.proxy.SendAsync("OnLobbyUpdated", lobby);
+            await lobbySubscribers.proxy.SendAsync("OnLobbyUpdated", lobby.ToViewModel());
         }
 
         return new ServerResponse<BoolResponseViewModel>(new BoolResponseViewModel() { Result = true });
@@ -127,7 +121,7 @@ public partial class PolytopiaHub
                 lobby.Participators.Clear();
                 foreach (var lobbySubscribers in LobbySubscribers[lobby.Id])
                 {
-                    await lobbySubscribers.proxy.SendAsync("OnLobbyUpdated", lobby);
+                    await lobbySubscribers.proxy.SendAsync("OnLobbyUpdated", lobby.ToViewModel());
                 }
 
                 return new ServerResponse<BoolResponseViewModel>(new BoolResponseViewModel() { Result = true });
@@ -140,11 +134,11 @@ public partial class PolytopiaHub
 
             lobby.Participators.RemoveAll(p => p.UserId == _userGuid);
 
-            await _lobbyRepository.UpdateAsync(lobby, LobbyUpdatedReason.PlayerLeftByRequest);
+            await _lobbyRepository.UpdateAsync(lobby);
 
             foreach (var lobbySubscribers in LobbySubscribers[lobby.Id])
             {
-                await lobbySubscribers.proxy.SendAsync("OnLobbyUpdated", lobby);
+                await lobbySubscribers.proxy.SendAsync("OnLobbyUpdated", lobby.ToViewModel());
             }
 
             return new ServerResponse<BoolResponseViewModel>(new BoolResponseViewModel() { Result = true });
@@ -186,7 +180,7 @@ public partial class PolytopiaHub
                     participatorViewModel.InvitationState = PlayerInvitationState.Declined;
                 }
 
-                await _lobbyRepository.UpdateAsync(lobby, LobbyUpdatedReason.PlayerRespondedToInvitation);
+                await _lobbyRepository.UpdateAsync(lobby);
 
                 break;
             }
@@ -194,10 +188,10 @@ public partial class PolytopiaHub
 
         foreach (var lobbySubscribers in LobbySubscribers[lobby.Id])
         {
-            await lobbySubscribers.proxy.SendAsync("OnLobbyUpdated", lobby);
+            await lobbySubscribers.proxy.SendAsync("OnLobbyUpdated", lobby.ToViewModel());
         }
 
-        return new ServerResponse<LobbyGameViewModel>(lobby);
+        return new ServerResponse<LobbyGameViewModel>(lobby.ToViewModel());
     }
 
     public async Task<ServerResponse<LobbyGameViewModel>> StartLobbyGame(StartLobbyBindingModel model)
@@ -211,38 +205,38 @@ public partial class PolytopiaHub
         }
 
         _logger.LogInformation("Starting game {lobbyId}", lobby.Id);
-        var result = await _gameManager.CreateGame(lobby);
+        var gameCreated = await _gameManager.CreateGame(lobby.ToViewModel());
 
         lobby.StartTime = DateTime.Now;
-        lobby.StartedGameId = lobby.Id;
+        lobby.State = GameSessionState.Started;
+        _logger.LogInformation("Setting lobby {lobbyId} to {state} because game started", lobby.Id, lobby.State);
 
-        if (lobby.MatchmakingGameId != null)
+        if (gameCreated)
         {
-            _logger.LogInformation("Deleting matchmaking {lobbyId} because game started", lobby.Id);
-            await _matchmakingRepository.DeleteByIdAsync(lobby.Id);
-        }
+            if (lobby.MatchmakingGameId != null)
+            {
+                _logger.LogInformation("Deleting matchmaking {lobbyId} because game started", lobby.Id);
+                await _matchmakingRepository.DeleteByIdAsync(lobby.Id);
+            }
 
-        if (result)
-        {
-            _logger.LogInformation("Deleting lobby {lobbyId} because game started", lobby.Id);
-            var lobbyDeleted = await _lobbyRepository.DeleteAsync(model.LobbyId);
+            await _lobbyRepository.UpdateAsync(lobby);
 
             var game = await _gameRepository.GetByIdAsync(lobby.Id);
             foreach (var lobbySubscriber in LobbySubscribers[lobby.Id])
             {
-                lobby.Participators.Clear();
-                await lobbySubscriber.proxy.SendAsync("OnLobbyUpdated", lobby);
+                await lobbySubscriber.proxy.SendAsync("OnLobbyUpdated", lobby.ToViewModel());
 
                 await lobbySubscriber.proxy.SendAsync("OnGameSummaryUpdated",
-                    _gameManager.GetGameSummaryViewModelByGameViewModel(game), StateUpdateReason.ValidStartGame);
+                    _gameManager.GetGameSummaryViewModelByGameViewModel(game.ToViewModel()),
+                    StateUpdateReason.ValidStartGame);
 
                 Subscribe(GameSummariesSubscribers, game.Id, lobbySubscriber.id, lobbySubscriber.proxy);
             }
 
-            return new ServerResponse<LobbyGameViewModel>(lobby) { Success = lobbyDeleted };
+            return new ServerResponse<LobbyGameViewModel>(lobby.ToViewModel());
         }
 
-        return new ServerResponse<LobbyGameViewModel>(lobby)
+        return new ServerResponse<LobbyGameViewModel>(lobby.ToViewModel())
             { Success = false, ErrorCode = ErrorCode.StartGameFailed, ErrorMessage = "Could not create game" };
     }
 }

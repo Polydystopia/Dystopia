@@ -20,7 +20,7 @@ public class CacheCleaningServiceTests
     {
         settings = new CacheSettings
         {
-            GameViewModel = new CacheProfile()
+            GameEntity = new CacheProfile()
             {
                 CacheCleanupFrequency = TimeSpan.FromMilliseconds(1),
                 StaleTime = TimeSpan.FromMinutes(30)
@@ -57,7 +57,7 @@ public class CacheCleaningServiceTests
         var service = CreateService(out var settings, out var mockCacheService, out var mockDbContext, out var cts, out var serviceScope);
         var cleanupCalled = new ManualResetEventSlim();
 
-        mockCacheService.Setup(x => x.CleanStaleCache(settings.GameViewModel.StaleTime, mockDbContext.Object))
+        mockCacheService.Setup(x => x.CleanStaleCache(settings.GameEntity.StaleTime, mockDbContext.Object))
             .Callback(() => cleanupCalled.Set());
 
         // Act
@@ -67,7 +67,7 @@ public class CacheCleaningServiceTests
         await task;
 
         // Assert
-        mockCacheService.Verify(x => x.CleanStaleCache(settings.GameViewModel.StaleTime, mockDbContext.Object),
+        mockCacheService.Verify(x => x.CleanStaleCache(settings.GameEntity.StaleTime, mockDbContext.Object),
             Times.AtLeastOnce());
         mockDbContext.Verify(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.AtLeastOnce());
     }
@@ -115,7 +115,7 @@ public class CacheCleaningServiceTests
         var service = CreateService(out var settings, out var mockCacheService, out var mockDbContext, out var cts, out var serviceScopeFactory);
         var cleanupCalled = new ManualResetEventSlim();
 
-        mockCacheService.Setup(x => x.CleanStaleCache(settings.GameViewModel.StaleTime, mockDbContext.Object))
+        mockCacheService.Setup(x => x.CleanStaleCache(settings.GameEntity.StaleTime, mockDbContext.Object))
             .Callback(() => cleanupCalled.Set());
 
         // Act
