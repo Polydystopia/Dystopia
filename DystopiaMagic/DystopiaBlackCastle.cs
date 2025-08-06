@@ -100,7 +100,7 @@ public class DystopiaBlackCastle : IDystopiaCastle
 
             GameState gameState = new GameState()
             {
-                Version = 112, //TODO
+                Version = 114, //TODO
                 Settings = settings,
                 PlayerStates = new Il2CppSystem.Collections.Generic.List<PlayerState>()
             };
