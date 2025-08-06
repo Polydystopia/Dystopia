@@ -19,15 +19,6 @@ public partial class PolytopiaHub
     {
         var myLobbies = await _lobbyRepository.GetAllLobbiesByPlayer(_userGuid);
 
-        //TODO: HACK!! Since I do not want to use two devices all the time. Change later.
-        //foreach (var lobbyGameViewModel in myLobbies)
-        //{
-        //    foreach (var participatorViewModel in lobbyGameViewModel.Participators)
-        //    {
-        //        participatorViewModel.InvitationState = PlayerInvitationState.Accepted;
-        //    }
-        //}
-
         var response = new GetLobbyInvitationsViewModel() { Lobbies = myLobbies.ToViewModels() };
         return new ServerResponse<GetLobbyInvitationsViewModel>(response);
     }

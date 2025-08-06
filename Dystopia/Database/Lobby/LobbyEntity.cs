@@ -19,7 +19,7 @@ public class LobbyEntity
     public GameMode GameMode { get; init; }
 
     public Guid OwnerId { get; set; }
-    //public UserEntity Owner { get; init; } = null!; //TODO
+    public virtual UserEntity Owner { get; init; } = null!;
 
     public List<int> DisabledTribes { get; set; }
 

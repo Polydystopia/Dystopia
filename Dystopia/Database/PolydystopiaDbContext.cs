@@ -85,6 +85,8 @@ public class PolydystopiaDbContext : DbContext
             v => JsonConvert.SerializeObject(v, jsonSettings),
             v => JsonConvert.DeserializeObject<List<int>>(v, jsonSettings));
 
+        lobbyEntity.HasOne(g => g.Owner).WithMany().HasForeignKey(g => g.OwnerId);
+
         #endregion
 
         #region Game

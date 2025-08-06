@@ -63,20 +63,6 @@ public static class GameMappingExtensions
 
     public static GameEntity ToEntity(this GameViewModel v)
     {
-        return new GameEntity
-        {
-            Id = v.Id,
-            OwnerId = v.OwnerId,
-            DateCreated = v.DateCreated,
-            DateLastCommand = v.DateLastCommand,
-            State = v.State,
-            GameSettings = v.GameSettingsJson,
-            InitialGameStateData = v.InitialGameStateData,
-            CurrentGameStateData = v.CurrentGameStateData,
-            TimerSettings = v.TimerSettings,
-            DateCurrentTurnDeadline = v.DateCurrentTurnDeadline,
-            ExternalTournamentId = v.GameContext.ExternalTournamentId,
-            ExternalMatchId = v.GameContext.ExternalMatchId,
-        };
+        throw new Exception("Unsupported. This should not be needed.");
     }
 }
