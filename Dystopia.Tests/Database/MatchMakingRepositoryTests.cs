@@ -116,8 +116,8 @@ public class MatchMakingRepositoryTests
             new()
             {
                 Id = Guid.NewGuid(),
-                LobbyGameViewModelId = null,
-                LobbyGameViewModel = null,
+                LobbyEntityId = null,
+                LobbyEntity = null,
                 Version = 1,
                 MapSize = 2,
                 MapPreset = MapPreset.Dryland,

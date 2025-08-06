@@ -20,6 +20,7 @@ using Dystopia.Database.Matchmaking;
 using Dystopia.Database.News;
 using Dystopia.Database.User;
 using Dystopia.Hubs;
+using Dystopia.Info;
 using Dystopia.Managers.Game;
 using Dystopia.Patches;
 using Dystopia.Services.Cache;
@@ -39,7 +40,7 @@ var builder = WebApplication.CreateBuilder(args);
 Directory.CreateDirectory(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "db"));
 var dbPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "db", "polytopia.db");
 builder.Services.AddDbContext<PolydystopiaDbContext>(options =>
-    options.UseSqlite($"Data Source={dbPath}"));
+    options.UseLazyLoadingProxies().UseSqlite($"Data Source={dbPath}"));
 
 builder.Logging.ClearProviders();
 
@@ -139,6 +140,9 @@ builder.Services.Configure<SteamSettings>(
     builder.Configuration.GetSection("Steam"));
 builder.Services.AddScoped<ISteamService, SteamService>();
 
+builder.Services.Configure<InstanceInfoSettings>(builder.Configuration.GetSection("InstanceInfo"));
+builder.Services.AddSingleton(new StartTimeHolder { StartTime = DateTime.UtcNow });
+
 var app = builder.Build();
 
 app.UseAuthentication();
@@ -146,8 +150,6 @@ app.UseAuthorization();
 
 app.MapControllers();
 app.MapHub<PolytopiaHub>("/gamehub");
-
-app.MapGet("/", () => "Hello World!");
 
 Log.AddLogger(new MyLogger());
 

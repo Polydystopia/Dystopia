@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.SignalR;
+﻿using Dystopia.Database.User;
+using Microsoft.AspNetCore.SignalR;
 using PolytopiaBackendBase;
 using PolytopiaBackendBase.Auth;
 using PolytopiaBackendBase.Common;
@@ -142,13 +143,13 @@ public partial class PolytopiaHub
 
         foreach (var foundUser in foundUsers)
         {
-            if (foundUser.PolytopiaId.ToString() == _userId) continue;
+            if (foundUser.Id.ToString() == _userId) continue;
 
             var friendViewModel = new PolytopiaFriendViewModel();
-            friendViewModel.User = foundUser;
+            friendViewModel.User = foundUser.ToViewModel();
 
             friendViewModel.FriendshipStatus = await _friendRepository
-                .GetFriendshipStatusAsync(Guid.Parse(_userId), foundUser.PolytopiaId);
+                .GetFriendshipStatusAsync(Guid.Parse(_userId), foundUser.Id);
 
             response.Data.Add(friendViewModel);
         }
