@@ -61,20 +61,13 @@ public class FriendshipRepository : IFriendshipRepository
 
     public async Task<List<(UserEntity User, FriendshipStatus Status)>> GetFriendsForUserAsync(Guid userId)
     {
-        var friendships1 = await _dbContext.Friends
-            .Where(f => f.UserId1 == userId)
-            .Select(f => f.UserId2)
-            .ToListAsync();
-
-        var friendships2 = await _dbContext.Friends
-            .Where(f => f.UserId2 == userId)
-            .Select(f => f.UserId1)
-            .ToListAsync();
-
-        var friendIds = friendships1.Concat(friendships2).ToList();
-
         var friendUsers = await _dbContext.Users
-            .Where(u => friendIds.Contains(u.Id))
+            .Where(u => _dbContext.Friends
+                .Any(f =>
+                    (f.UserId1 == userId && f.UserId2 == u.Id) ||
+                    (f.UserId2 == userId && f.UserId1 == u.Id)
+                )
+            )
             .ToListAsync();
 
         var friends = new List<(UserEntity User, FriendshipStatus Status)>();
