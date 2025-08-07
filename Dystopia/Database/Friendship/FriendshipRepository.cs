@@ -59,7 +59,7 @@ public class FriendshipRepository : IFriendshipRepository
         return await _dbContext.SaveChangesAsync() > 0;
     }
 
-    public async Task<List<PolytopiaFriendViewModel>> GetFriendsForUserAsync(Guid userId)
+    public async Task<List<(UserEntity User, FriendshipStatus Status)>> GetFriendsForUserAsync(Guid userId)
     {
         var friendships1 = await _dbContext.Friends
             .Where(f => f.UserId1 == userId)
@@ -77,17 +77,13 @@ public class FriendshipRepository : IFriendshipRepository
             .Where(u => friendIds.Contains(u.Id))
             .ToListAsync();
 
-        var friendViewModels = new List<PolytopiaFriendViewModel>();
-        foreach (var user in friendUsers)
+        var friends = new List<(UserEntity User, FriendshipStatus Status)>();
+        foreach (var friend in friendUsers)
         {
-            var friend = new PolytopiaFriendViewModel();
-            friend.User = user.ToViewModel();
-            friend.FriendshipStatus = await GetFriendshipStatusAsync(userId, user.Id);
-
-            friendViewModels.Add(friend);
+            friends.Add((friend, await GetFriendshipStatusAsync(userId, friend.Id)));
         }
 
-        return friendViewModels;
+        return friends;
     }
 
     public async Task<bool> DeleteFriendshipAsync(Guid user1Id, Guid user2Id)

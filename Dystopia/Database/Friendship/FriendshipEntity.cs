@@ -19,3 +19,20 @@ public class FriendshipEntity
     public virtual UserEntity User1 { get; set; }
     public virtual UserEntity User2 { get; set; }
 }
+
+public static class FriendMappingExtensions
+{
+    public static List<PolytopiaFriendViewModel> ToFriendViewModels(
+        this IEnumerable<(UserEntity User, FriendshipStatus Status)> source)
+    {
+        if (source == null) return new List<PolytopiaFriendViewModel>();
+
+        return source
+            .Select(tuple => new PolytopiaFriendViewModel
+            {
+                User             = tuple.User.ToViewModel(),
+                FriendshipStatus = tuple.Status
+            })
+            .ToList();
+    }
+}
