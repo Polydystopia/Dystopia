@@ -35,8 +35,6 @@ public class LobbyEntity
 
     public long? MatchmakingGameId { get; set; }
 
-    public Guid? ChallengermodeGameId { get; set; }
-
     public DateTime? StartTime { get; set; }
 
     public Guid? ExternalTournamentId { get; init; }
@@ -79,7 +77,7 @@ public static class LobbyGameMappingExtensions
             ScoreLimit = e.ScoreLimit,
             InviteLink = e.InviteLink,
             MatchmakingGameId = e.MatchmakingGameId,
-            ChallengermodeGameId = e.ChallengermodeGameId,
+            ChallengermodeGameId = null,
             StartTime = e.StartTime,
             GameContext = new GameContext()
                 { ExternalMatchId = e.ExternalMatchId, ExternalTournamentId = e.ExternalTournamentId },
