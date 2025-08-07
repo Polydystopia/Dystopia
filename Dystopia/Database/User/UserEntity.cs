@@ -70,30 +70,10 @@ public static class LobbyGameMappingExtensions
             CmUserData = new UserViewModel(), //TODO check used
         };
     }
-
-    public static UserEntity ToEntity(this PolytopiaUserViewModel v)
-    {
-        throw new Exception("Unsupported. This should not be needed.");
-
-        return new UserEntity
-        {
-            Id = v.PolytopiaId,
-            SteamId = v.SteamId,
-            UserName = v.GetUniqueNameInternal(),
-            Discriminator = v.GetNameInternal()[^4..],
-            AllowsFriendRequests = v.AllowsFriendRequests,
-            Elo = v.Elo,
-            AvatarStateData = v.AvatarStateData,
-            GameVersions = v.GameVersions,
-        };
-    }
 }
 
 public static class UserCollectionMappingExtensions
 {
     public static List<PolytopiaUserViewModel> ToViewModels(this IEnumerable<UserEntity>? source) =>
         source?.Select(e => e.ToViewModel()).ToList() ?? new List<PolytopiaUserViewModel>();
-
-    public static List<UserEntity> ToEntities(this IEnumerable<PolytopiaUserViewModel>? source) =>
-        source?.Select(v => v.ToEntity()).ToList() ?? new List<UserEntity>();
 }

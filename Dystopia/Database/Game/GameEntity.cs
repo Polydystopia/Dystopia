@@ -59,9 +59,4 @@ public static class GameMappingExtensions
                 { ExternalMatchId = e.ExternalMatchId, ExternalTournamentId = e.ExternalTournamentId }
         };
     }
-
-    public static GameEntity ToEntity(this GameViewModel v)
-    {
-        throw new Exception("Unsupported. This should not be needed.");
-    }
 }

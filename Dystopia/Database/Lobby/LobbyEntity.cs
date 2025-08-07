@@ -87,43 +87,10 @@ public static class LobbyGameMappingExtensions
             Bots = e.Bots
         };
     }
-
-    public static LobbyEntity ToEntity(this LobbyGameViewModel v)
-    {
-        throw new Exception("Unsupported. This should not be needed.");
-
-        //return new LobbyEntity
-        //{
-        //    Id = v.Id,
-        //    DateCreated = (DateTime)v.DateCreated!,
-        //    DateModified = v.DateModified,
-        //    Name = v.Name,
-        //    MapPreset = v.MapPreset,
-        //    MapSize = v.MapSize,
-        //    GameMode = v.GameMode,
-        //    OwnerId = v.OwnerId,
-        //    DisabledTribes = v.DisabledTribes,
-        //    StartedGameId = v.StartedGameId,
-        //    TimeLimit = v.TimeLimit,
-        //    ScoreLimit = v.ScoreLimit,
-        //    InviteLink = v.InviteLink,
-        //    MatchmakingGameId = v.MatchmakingGameId,
-        //    ChallengermodeGameId = v.ChallengermodeGameId,
-        //    StartTime = v.StartTime,
-        //    ExternalTournamentId = v.GameContext.ExternalTournamentId,
-        //    ExternalMatchId = v.GameContext.ExternalMatchId,
-        //    MaxPlayers = (short)(v.OpponentCount + 1),
-        //    Participators = v.Participators.ToEntities(),
-        //    Bots = v.Bots,
-        //};
-    }
 }
 
 public static class LobbyCollectionMappingExtensions
 {
     public static List<LobbyGameViewModel> ToViewModels(this IEnumerable<LobbyEntity>? source) =>
         source?.Select(e => e.ToViewModel()).ToList() ?? new List<LobbyGameViewModel>();
-
-    public static List<LobbyEntity> ToEntities(this IEnumerable<LobbyGameViewModel>? source) =>
-        source?.Select(v => v.ToEntity()).ToList() ?? new List<LobbyEntity>();
 }
