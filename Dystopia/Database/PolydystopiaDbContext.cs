@@ -3,7 +3,6 @@ using Dystopia.Database.Game;
 using Dystopia.Database.Lobby;
 using Dystopia.Database.Matchmaking;
 using Dystopia.Database.News;
-using Dystopia.Database.Replay;
 using Dystopia.Database.User;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
@@ -19,7 +18,6 @@ public class PolydystopiaDbContext : DbContext
     public virtual DbSet<GameEntity> Games { get; set; }
     public virtual DbSet<MatchmakingEntity> Matchmaking { get; set; }
     public virtual DbSet<NewsEntity> News { get; set; }
-    public DbSet<UserFavoriteGame> UserFavoriteGames { get; set; }
 
     public DbSet<LobbyParticipatorUserEntity> LobbyParticipators { get; set; }
     public DbSet<GameParticipatorUserEntity> GameParticipators { get; set; }
@@ -50,6 +48,8 @@ public class PolydystopiaDbContext : DbContext
                 (v, jsonSettings),
             v => JsonConvert.DeserializeObject
                 <List<ClientGameVersionViewModel>>(v, jsonSettings));
+
+        userEntity.HasMany(u => u.FavoriteGames).WithMany().UsingEntity(j => j.ToTable("UserFavoriteGames"));
 
         #endregion
 
@@ -167,26 +167,6 @@ public class PolydystopiaDbContext : DbContext
         matchmakingEntity.Property(e => e.PlayerIds).HasConversion(
             v => JsonConvert.SerializeObject(v, jsonSettings),
             v => JsonConvert.DeserializeObject<List<Guid>>(v, jsonSettings));
-
-        #endregion
-
-        #region Favorite
-
-        var favEntity = modelBuilder.Entity<UserFavoriteGame>();
-
-        favEntity.HasKey(uf => new { uf.UserId, uf.GameId });
-
-        favEntity
-            .HasOne(uf => uf.User)
-            .WithMany()
-            .HasForeignKey(uf => uf.UserId)
-            .OnDelete(DeleteBehavior.Cascade);
-
-        favEntity
-            .HasOne(uf => uf.Game)
-            .WithMany()
-            .HasForeignKey(uf => uf.GameId)
-            .OnDelete(DeleteBehavior.Cascade);
 
         #endregion
     }

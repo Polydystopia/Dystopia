@@ -1,7 +1,9 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Dystopia.Database.Game;
+using Microsoft.EntityFrameworkCore;
 using PolytopiaBackendBase.Auth;
 using PolytopiaBackendBase.Challengermode.Data;
 using PolytopiaBackendBase.Common;
+using PolytopiaBackendBase.Game;
 using SteamKit2;
 
 namespace Dystopia.Database.User;
@@ -59,7 +61,7 @@ public class PolydystopiaUserRepository : IPolydystopiaUserRepository
             Elo = 1000,
             AvatarStateData = SerializationHelpers.ToByteArray(
                 AvatarExtensions.CreateRandomState(VersionManager.AvatarDataVersion), VersionManager.GameVersion),
-            GameVersions = new List<ClientGameVersionViewModel>()//TODO: Get real game versions
+            GameVersions = new List<ClientGameVersionViewModel>() //TODO: Get real game versions
             {
                 new()
                 {
@@ -83,6 +85,39 @@ public class PolydystopiaUserRepository : IPolydystopiaUserRepository
             .ToListAsync();
 
         return foundUsers;
+    }
+
+    public async Task AddFavoriteAsync(UserEntity user, GameEntity game)
+    {
+        if (!_dbContext.Entry(user).Collection(u => u.FavoriteGames).IsLoaded)
+        {
+            await _dbContext.Entry(user)
+                .Collection(u => u.FavoriteGames)
+                .LoadAsync();
+        }
+
+        if (user.FavoriteGames.All(g => g.Id != game.Id))
+        {
+            user.FavoriteGames.Add(game);
+            await _dbContext.SaveChangesAsync();
+        }
+    }
+
+    public async Task RemoveFavoriteAsync(UserEntity user, GameEntity game)
+    {
+        if (!_dbContext.Entry(user).Collection(u => u.FavoriteGames).IsLoaded)
+        {
+            await _dbContext.Entry(user)
+                .Collection(u => u.FavoriteGames)
+                .LoadAsync();
+        }
+
+        var existing = user.FavoriteGames.FirstOrDefault(g => g.Id == game.Id);
+        if (existing != null)
+        {
+            user.FavoriteGames.Remove(existing);
+            await _dbContext.SaveChangesAsync();
+        }
     }
 }
 

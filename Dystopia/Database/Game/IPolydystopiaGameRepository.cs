@@ -1,4 +1,5 @@
-﻿using PolytopiaBackendBase.Game;
+﻿using Dystopia.Database.User;
+using PolytopiaBackendBase.Game;
 
 namespace Dystopia.Database.Game;
 
@@ -11,7 +12,5 @@ public interface IPolydystopiaGameRepository
     Task<List<GameEntity>> GetAllGamesByPlayer(Guid playerId);
     Task<List<GameEntity>> GetLastEndedGamesByPlayer(Guid playerId, int limit);
 
-    Task<List<GameEntity>> GetFavoriteGamesByPlayer(Guid playerId);
-    Task AddFavoriteAsync(Guid userId, Guid gameId);
-    Task RemoveFavoriteAsync(Guid userId, Guid gameId);
+    Task<List<GameEntity>> GetFavoriteGamesByPlayer(UserEntity user);
 }

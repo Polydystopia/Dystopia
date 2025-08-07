@@ -1,11 +1,8 @@
-using Dystopia.Bridge;
-using Dystopia.Database.Replay;
-using Dystopia.Patches;
+using Dystopia.Database.User;
 using Dystopia.Services.Cache;
 using Dystopia.Settings;
 using Microsoft.EntityFrameworkCore;
 using DystopiaShared;
-using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Options;
 using PolytopiaBackendBase.Game;
 
@@ -124,12 +121,11 @@ public class PolydystopiaGameRepository : IPolydystopiaGameRepository
             .ToList();
     }
 
-    public async Task<List<GameEntity>> GetFavoriteGamesByPlayer(Guid playerId)
+
+
+    public async Task<List<GameEntity>> GetFavoriteGamesByPlayer(UserEntity user)
     {
-        var favGameIds = await _dbContext.UserFavoriteGames
-            .Where(uf => uf.UserId == playerId)
-            .Select(uf => uf.GameId)
-            .ToListAsync();
+        var favGameIds = user.FavoriteGames.Select(g => g.Id).ToList();
 
         if (!favGameIds.Any())
         {
@@ -151,30 +147,5 @@ public class PolydystopiaGameRepository : IPolydystopiaGameRepository
             .Concat(dbGames)
             .OrderByDescending(g => g.DateLastCommand)
             .ToList();
-    }
-
-
-    public async Task AddFavoriteAsync(Guid userId, Guid gameId)
-    {
-        var fav = new UserFavoriteGame
-        {
-            UserId = userId,
-            GameId = gameId
-        };
-
-        _dbContext.UserFavoriteGames.Add(fav);
-        await _dbContext.SaveChangesAsync();
-    }
-
-    public async Task RemoveFavoriteAsync(Guid userId, Guid gameId)
-    {
-        var favorite = await _dbContext.UserFavoriteGames
-            .FirstOrDefaultAsync(f => f.UserId == userId && f.GameId == gameId);
-
-        if (favorite != null)
-        {
-            _dbContext.UserFavoriteGames.Remove(favorite);
-            await _dbContext.SaveChangesAsync();
-        }
     }
 }
