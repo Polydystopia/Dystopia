@@ -29,7 +29,8 @@ public class PolydystopiaGameManager : IPolydystopiaGameManager
     public async Task<bool> CreateGame(LobbyGameViewModel lobby)
     {
         var bridge = new DystopiaBridge();
-        var (serializedGameState, gameSettingsJson) = bridge.CreateGame(lobby.Map());
+        var highestPossibleVersion = lobby.Participators.Select(p => p.GameVersion.Min(p => p.GameVersion)).Min(p => p);
+        var (serializedGameState, gameSettingsJson) = bridge.CreateGame(lobby.Map(), highestPossibleVersion);
 
         serializedGameState = bridge.Update(serializedGameState);
 
@@ -128,6 +129,7 @@ public class PolydystopiaGameManager : IPolydystopiaGameManager
 
             await Task.WhenAll(tasks);
         }
+
         return true;
     }
 

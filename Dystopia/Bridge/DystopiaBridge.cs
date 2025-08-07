@@ -98,11 +98,11 @@ public class DystopiaBridge : IDystopiaCastle
         return "Unsupported";
     }
 
-    public (byte[] serializedGamestate, string gameSettingsJson) CreateGame(SharedLobbyGameViewModel lobby)
+    public (byte[] serializedGamestate, string gameSettingsJson) CreateGame(SharedLobbyGameViewModel lobby, int gameVersion)
     {
         var castle = GetFittingCastle(lobby);
 
-        return castle.CreateGame(lobby);
+        return castle.CreateGame(lobby, gameVersion);
     }
 
     public byte[] Update(byte[] serializedGameState)

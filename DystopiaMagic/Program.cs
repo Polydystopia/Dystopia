@@ -35,8 +35,6 @@ try
 
     var sharedLobby = new SharedLobbyGameViewModel();
 
-    var x = castle.CreateGame(sharedLobby);
-
     Console.WriteLine("yes gurl");
 }
 catch (Exception e)
