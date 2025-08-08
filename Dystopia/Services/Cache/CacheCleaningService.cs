@@ -37,19 +37,33 @@ public class CacheCleaningService : BackgroundService
             {
                 break;
             }
-            using (var scope = _scopeFactory.CreateScope())
+
+            try
             {
+                using var scope = _scopeFactory.CreateScope();
+
                 var dbContext = scope.ServiceProvider.GetRequiredService<PolydystopiaDbContext>();
                 _cacheService.CleanStaleCache(_settings.GameEntity.StaleTime, dbContext);
                 await dbContext.SaveChangesAsync(token);
             }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error occurred during cache cleanup. Service will continue.");
+            }
         }
+        
         _logger.LogInformation("CacheCleaningService shutting down; Saving all cache to disk");
-        using (var scope = _scopeFactory.CreateScope())
+        try
         {
+            using var scope = _scopeFactory.CreateScope();
+
             var dbContext = scope.ServiceProvider.GetRequiredService<PolydystopiaDbContext>();
             _cacheService.SaveAllCacheToDisk(dbContext);
             await dbContext.SaveChangesAsync(token);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error occurred during final cache save during shutdown.");
         }
     }
 }
