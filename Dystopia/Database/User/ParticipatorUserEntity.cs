@@ -1,5 +1,7 @@
-﻿using Dystopia.Database.Game;
+﻿using System.ComponentModel.DataAnnotations.Schema;
+using Dystopia.Database.Game;
 using Dystopia.Database.Lobby;
+using Dystopia.Services.Cache;
 using PolytopiaBackendBase.Game;
 
 namespace Dystopia.Database.User;
@@ -23,8 +25,17 @@ public class LobbyParticipatorUserEntity : ParticipatorUserEntity
 
 public class GameParticipatorUserEntity : ParticipatorUserEntity
 {
+    private static ICacheService<GameEntity>? _gameCache;
+
+    public static void InitializeCache(ICacheService<GameEntity> cache)
+    {
+        _gameCache = cache;
+    }
+
     public Guid GameId { get; set; }
-    public virtual GameEntity Game { get; set; } = null!;
+
+    [Obsolete("Use ActualGame property instead - this may contain stale data", error: false)]
+    protected virtual GameEntity Game { get; set; } = null!;
 
     public DateTime? DateLastCommand { get; set; }
     public DateTime? DateLastStartTurn { get; set; }
@@ -32,6 +43,20 @@ public class GameParticipatorUserEntity : ParticipatorUserEntity
     public DateTime? DateCurrentTurnDeadline { get; set; }
     public TimeSpan? TimeBank { get; set; }
     public TimeSpan? LastConsumedTimeBank { get; set; }
+
+    [NotMapped]
+    public GameEntity ActualGame
+    {
+        get
+        {
+            if (_gameCache != null && _gameCache.TryGet(GameId, out var cachedGame) && cachedGame != null)
+            {
+                return cachedGame;
+            }
+
+            return Game;
+        }
+    }
 }
 
 public static class ParticipatorUserEntityExtensions

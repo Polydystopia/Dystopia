@@ -125,9 +125,12 @@ builder.Services.AddScoped<INewsRepository, NewsRepository>();
 #endregion
 
 builder.Services.AddSingleton<INewsService, NewsService>();
+
 #region cache
+
 builder.Services.AddSingleton(typeof(ICacheService<>), typeof(CacheService<>));
 builder.Services.AddHostedService<CacheCleaningService>();
+
 #endregion
 
 #region manager
@@ -164,6 +167,9 @@ var il2CPPSettings = app.Services.GetRequiredService<IOptions<Il2cppSettings>>()
 DystopiaBridge.InitIl2Cpp(!il2CPPSettings.Enabled);
 
 PolytopiaDataManager.provider = new MyProvider();
+
+var gameCache = app.Services.GetRequiredService<ICacheService<GameEntity>>();
+GameParticipatorUserEntity.InitializeCache(gameCache);
 
 app.Run();
 

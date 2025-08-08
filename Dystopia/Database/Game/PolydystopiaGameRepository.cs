@@ -81,22 +81,10 @@ public class PolydystopiaGameRepository : IPolydystopiaGameRepository
     public async Task<List<GameEntity>> GetAllGamesByPlayer(UserEntity user)
     {
         var activeParticipations = user.GameParticipations
-            .Where(g => g.Game.State != GameSessionState.Ended)
+            .Where(g => g.ActualGame.State != GameSessionState.Ended).Select(g => g.ActualGame)
             .ToList();
 
-        var gameIds = activeParticipations.Select(g => g.GameId).ToHashSet();
-
-        _cacheService.TryGetAll(
-            game => gameIds.Contains(game.Id),
-            out var cachedPlayerGames);
-
-        var cachedIds = new HashSet<Guid>(cachedPlayerGames.Select(g => g.Id));
-
-        var dbPlayerGames = activeParticipations
-            .Where(g => !cachedIds.Contains(g.GameId))
-            .Select(g => g.Game);
-
-        return cachedPlayerGames.Concat(dbPlayerGames).ToList();
+        return activeParticipations;
     }
 
     public async Task<List<GameEntity>> GetLastEndedGamesByPlayer(Guid playerId, int limit)

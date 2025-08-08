@@ -1,3 +1,4 @@
+using System.Reflection;
 using Dystopia.Database;
 using Dystopia.Database.User;
 using DystopiaShared;
@@ -36,6 +37,8 @@ public class GameRepositoryTests
     public GameRepositoryTests()
     {
         _dbContextMock = new Mock<PolydystopiaDbContext>(_options);
+
+        GameParticipatorUserEntity.InitializeCache(_cacheServiceMock.Object);
     }
 
     private PolydystopiaGameRepository CreateRepository() => new(
@@ -147,21 +150,9 @@ public class GameRepositoryTests
         {
             GameParticipations = new List<GameParticipatorUserEntity>()
             {
-                new()
-                {
-                    GameId = Guid.NewGuid(),
-                    Game = new(),
-                },
-                new()
-                {
-                    GameId = Guid.NewGuid(),
-                    Game = new(),
-                },
-                new()
-                {
-                    GameId = Guid.NewGuid(),
-                    Game = new(),
-                },
+                CreateGameParticipation(Guid.NewGuid(), new GameEntity()),
+                CreateGameParticipation(Guid.NewGuid(), new GameEntity()),
+                CreateGameParticipation(Guid.NewGuid(), new GameEntity()),
             }
         };
 
@@ -185,10 +176,19 @@ public class GameRepositoryTests
     [Fact]
     public async Task GetAllGamesByPlayer_OnlyCacheHits()
     {
+        var overlapGuidA = Guid.NewGuid();
+        var overlapGuidB = Guid.NewGuid();
+        var overlapGuidC = Guid.NewGuid();
+
         // Arrange
         var user = new UserEntity()
         {
             GameParticipations = new List<GameParticipatorUserEntity>()
+            {
+                CreateGameParticipation(overlapGuidA, new GameEntity()),
+                CreateGameParticipation(overlapGuidB, new GameEntity()),
+                CreateGameParticipation(overlapGuidC, new GameEntity()),
+            }
         };
 
         _cacheServiceMock
@@ -198,9 +198,9 @@ public class GameRepositoryTests
             .Callback((Func<GameEntity, bool> predicate, out IList<GameEntity> values) =>
             {
                 values = new List<GameEntity>();
-                values.Add(new() { Id = Guid.NewGuid(), CurrentGameStateData = new byte[] { 4 } });
-                values.Add(new() { Id = Guid.NewGuid(), CurrentGameStateData = new byte[] { 5 } });
-                values.Add(new() { Id = Guid.NewGuid(), CurrentGameStateData = new byte[] { 6 } });
+                values.Add(new() { Id = overlapGuidA, CurrentGameStateData = new byte[] { 4 } });
+                values.Add(new() { Id = overlapGuidB, CurrentGameStateData = new byte[] { 5 } });
+                values.Add(new() { Id = overlapGuidC, CurrentGameStateData = new byte[] { 6 } });
             });
 
         // Act
@@ -214,26 +214,22 @@ public class GameRepositoryTests
     [Fact]
     public async Task GetAllGamesByPlayer_CacheAndDbHits()
     {
+        var overlapGuidA = Guid.NewGuid();
+        var overlapGuidB = Guid.NewGuid();
+        var overlapGuidC = Guid.NewGuid();
+
         // Arrange
         var user = new UserEntity()
         {
             GameParticipations = new List<GameParticipatorUserEntity>()
             {
-                new()
-                {
-                    GameId = Guid.NewGuid(),
-                    Game = new(),
-                },
-                new()
-                {
-                    GameId = Guid.NewGuid(),
-                    Game = new(),
-                },
-                new()
-                {
-                    GameId = Guid.NewGuid(),
-                    Game = new(),
-                },
+                CreateGameParticipation(Guid.NewGuid(), new GameEntity()),
+                CreateGameParticipation(Guid.NewGuid(), new GameEntity()),
+                CreateGameParticipation(Guid.NewGuid(), new GameEntity()),
+
+                CreateGameParticipation(overlapGuidA, new GameEntity()),
+                CreateGameParticipation(overlapGuidB, new GameEntity()),
+                CreateGameParticipation(overlapGuidC, new GameEntity()),
             }
         };
 
@@ -244,9 +240,9 @@ public class GameRepositoryTests
             .Callback((Func<GameEntity, bool> predicate, out IList<GameEntity> values) =>
             {
                 values = new List<GameEntity>();
-                values.Add(new() { Id = Guid.NewGuid(), CurrentGameStateData = new byte[] { 4 } });
-                values.Add(new() { Id = Guid.NewGuid(), CurrentGameStateData = new byte[] { 5 } });
-                values.Add(new() { Id = Guid.NewGuid(), CurrentGameStateData = new byte[] { 6 } });
+                values.Add(new() { Id = overlapGuidA, CurrentGameStateData = new byte[] { 4 } });
+                values.Add(new() { Id = overlapGuidB, CurrentGameStateData = new byte[] { 5 } });
+                values.Add(new() { Id = overlapGuidC, CurrentGameStateData = new byte[] { 6 } });
             });
 
         // Act
@@ -262,37 +258,22 @@ public class GameRepositoryTests
     {
         var overlapGuidA = Guid.NewGuid();
         var overlapGuidB = Guid.NewGuid();
+        var overlapGuidC = Guid.NewGuid();
+
+        var overlapGuidD = Guid.NewGuid();
+        var overlapGuidE = Guid.NewGuid();
 
         // Arrange
         var user = new UserEntity()
         {
             GameParticipations = new List<GameParticipatorUserEntity>()
             {
-                new()
-                {
-                    GameId = Guid.NewGuid(),
-                    Game = new(),
-                },
-                new()
-                {
-                    GameId = Guid.NewGuid(),
-                    Game = new(),
-                },
-                new()
-                {
-                    GameId = Guid.NewGuid(),
-                    Game = new(),
-                },
-                new()
-                {
-                    GameId = overlapGuidA,
-                    Game = new(),
-                },
-                new()
-                {
-                    GameId = overlapGuidB,
-                    Game = new(),
-                },
+                CreateGameParticipation(overlapGuidA, new GameEntity()),
+                CreateGameParticipation(overlapGuidB, new GameEntity()),
+                CreateGameParticipation(overlapGuidC, new GameEntity()),
+
+                CreateGameParticipation(overlapGuidD, new GameEntity()),
+                CreateGameParticipation(overlapGuidE, new GameEntity()),
             }
         };
 
@@ -303,18 +284,32 @@ public class GameRepositoryTests
             .Callback((Func<GameEntity, bool> predicate, out IList<GameEntity> values) =>
             {
                 values = new List<GameEntity>();
-                values.Add(new() { Id = Guid.NewGuid(), CurrentGameStateData = new byte[] { 6 } });
-                values.Add(new() { Id = Guid.NewGuid(), CurrentGameStateData = new byte[] { 7 } });
-                values.Add(new() { Id = Guid.NewGuid(), CurrentGameStateData = new byte[] { 8 } });
+                values.Add(new() { Id = overlapGuidA, CurrentGameStateData = new byte[] { 6 } });
 
-                values.Add(new() { Id = overlapGuidA, CurrentGameStateData = new byte[] { 4 } });
-                values.Add(new() { Id = overlapGuidB, CurrentGameStateData = new byte[] { 5 } });
+                values.Add(new() { Id = overlapGuidD, CurrentGameStateData = new byte[] { 4 } });
+                values.Add(new() { Id = overlapGuidE, CurrentGameStateData = new byte[] { 5 } });
             });
 
         // Act
         var result = await CreateRepository().GetAllGamesByPlayer(user);
 
         // Assert
-        Assert.Equal(8, result.Count);
+        Assert.Equal(5, result.Count);
+    }
+
+
+    private GameParticipatorUserEntity CreateGameParticipation(Guid gameId, GameEntity game)
+    {
+        var participation = new GameParticipatorUserEntity
+        {
+            GameId = gameId
+        };
+
+        // Use reflection to set private/internal property
+        var gameProperty = typeof(GameParticipatorUserEntity)
+            .GetProperty("Game", BindingFlags.NonPublic | BindingFlags.Instance);
+        gameProperty?.SetValue(participation, game);
+
+        return participation;
     }
 }

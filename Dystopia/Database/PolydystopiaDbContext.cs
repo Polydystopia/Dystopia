@@ -137,7 +137,7 @@ public class PolydystopiaDbContext : DbContext
         {
             b.HasKey(gp => new { gp.GameId, gp.UserId });
 
-            b.HasOne(gp => gp.Game)
+            b.HasOne<GameEntity>("Game")
                 .WithMany(g => g.Participators)
                 .HasForeignKey(gp => gp.GameId)
                 .OnDelete(DeleteBehavior.Cascade);
