@@ -1,4 +1,5 @@
 using Dystopia.Database;
+using Dystopia.Database.User;
 using DystopiaShared;
 using MockQueryable.Moq;
 using PolytopiaBackendBase.Game;
@@ -139,24 +140,30 @@ public class GameRepositoryTests
     }
 
     [Fact]
-    public async Task GetAllGamesByPlayer_OnlyDatabaseHits_ReturnsFilteredResults()
+    public async Task GetAllGamesByPlayer_OnlyDatabaseHits()
     {
         // Arrange
-        var playerId = Guid.NewGuid();
-        var dbGames = new List<GameEntity>
+        var user = new UserEntity()
         {
-            new() { Id = Guid.NewGuid(), CurrentGameStateData = new byte[] { 1 } },
-            new() { Id = Guid.NewGuid(), CurrentGameStateData = new byte[] { 2 } },
-            new() { Id = Guid.NewGuid(), CurrentGameStateData = new byte[] { 3 } }
+            GameParticipations = new List<GameParticipatorUserEntity>()
+            {
+                new()
+                {
+                    GameId = Guid.NewGuid(),
+                    Game = new(),
+                },
+                new()
+                {
+                    GameId = Guid.NewGuid(),
+                    Game = new(),
+                },
+                new()
+                {
+                    GameId = Guid.NewGuid(),
+                    Game = new(),
+                },
+            }
         };
-
-        var mockDbSet = dbGames.AsQueryable().BuildMockDbSet();
-        _dbContextMock.Setup(db => db.Games).Returns(mockDbSet.Object);
-
-        _bridgeMock.SetupSequence(b => b.IsPlayerInGame(It.IsAny<string>(), It.IsAny<byte[]>()))
-            .Returns(true)
-            .Returns(false)
-            .Returns(true);
 
         _cacheServiceMock
             .Setup(c => c.TryGetAll(
@@ -168,47 +175,7 @@ public class GameRepositoryTests
             });
 
         // Act
-        var result = await CreateRepository().GetAllGamesByPlayer(playerId);
-
-        // Assert
-        Assert.Equal(2, result.Count);
-    }
-
-
-    [Fact]
-    public async Task GetAllGamesByPlayer_OnlyCacheHits_ReturnsFilteredResults()
-    {
-        // Arrange
-        var playerId = Guid.NewGuid();
-        var dbGames = new List<GameEntity>
-        {
-            new() { Id = Guid.NewGuid(), CurrentGameStateData = new byte[] { 1 } },
-            new() { Id = Guid.NewGuid(), CurrentGameStateData = new byte[] { 2 } },
-            new() { Id = Guid.NewGuid(), CurrentGameStateData = new byte[] { 3 } }
-        };
-
-        var mockDbSet = dbGames.AsQueryable().BuildMockDbSet();
-        _dbContextMock.Setup(db => db.Games).Returns(mockDbSet.Object);
-
-        _bridgeMock.SetupSequence(b => b.IsPlayerInGame(It.IsAny<string>(), It.IsAny<byte[]>()))
-            .Returns(false)
-            .Returns(false)
-            .Returns(false);
-
-        _cacheServiceMock
-            .Setup(c => c.TryGetAll(
-                It.IsAny<Func<GameEntity, bool>>(),
-                out It.Ref<IList<GameEntity>>.IsAny))
-            .Callback((Func<GameEntity, bool> predicate, out IList<GameEntity> values) =>
-            {
-                values = new List<GameEntity>();
-                values.Add(new() { Id = Guid.NewGuid(), CurrentGameStateData = new byte[] { 4 } });
-                values.Add(new() { Id = Guid.NewGuid(), CurrentGameStateData = new byte[] { 5 } });
-                values.Add(new() { Id = Guid.NewGuid(), CurrentGameStateData = new byte[] { 6 } });
-            });
-
-        // Act
-        var result = await CreateRepository().GetAllGamesByPlayer(playerId);
+        var result = await CreateRepository().GetAllGamesByPlayer(user);
 
         // Assert
         Assert.Equal(3, result.Count);
@@ -216,24 +183,13 @@ public class GameRepositoryTests
 
 
     [Fact]
-    public async Task GetAllGamesByPlayer_CacheAndDbHits_ReturnsFilteredResults()
+    public async Task GetAllGamesByPlayer_OnlyCacheHits()
     {
         // Arrange
-        var playerId = Guid.NewGuid();
-        var dbGames = new List<GameEntity>
+        var user = new UserEntity()
         {
-            new() { Id = Guid.NewGuid(), CurrentGameStateData = new byte[] { 1 } },
-            new() { Id = Guid.NewGuid(), CurrentGameStateData = new byte[] { 2 } },
-            new() { Id = Guid.NewGuid(), CurrentGameStateData = new byte[] { 3 } }
+            GameParticipations = new List<GameParticipatorUserEntity>()
         };
-
-        var mockDbSet = dbGames.AsQueryable().BuildMockDbSet();
-        _dbContextMock.Setup(db => db.Games).Returns(mockDbSet.Object);
-
-        _bridgeMock.SetupSequence(b => b.IsPlayerInGame(It.IsAny<string>(), It.IsAny<byte[]>()))
-            .Returns(false)
-            .Returns(true)
-            .Returns(false);
 
         _cacheServiceMock
             .Setup(c => c.TryGetAll(
@@ -248,10 +204,56 @@ public class GameRepositoryTests
             });
 
         // Act
-        var result = await CreateRepository().GetAllGamesByPlayer(playerId);
+        var result = await CreateRepository().GetAllGamesByPlayer(user);
 
         // Assert
-        Assert.Equal(4, result.Count);
+        Assert.Equal(3, result.Count);
+    }
+
+
+    [Fact]
+    public async Task GetAllGamesByPlayer_CacheAndDbHits()
+    {
+        // Arrange
+        var user = new UserEntity()
+        {
+            GameParticipations = new List<GameParticipatorUserEntity>()
+            {
+                new()
+                {
+                    GameId = Guid.NewGuid(),
+                    Game = new(),
+                },
+                new()
+                {
+                    GameId = Guid.NewGuid(),
+                    Game = new(),
+                },
+                new()
+                {
+                    GameId = Guid.NewGuid(),
+                    Game = new(),
+                },
+            }
+        };
+
+        _cacheServiceMock
+            .Setup(c => c.TryGetAll(
+                It.IsAny<Func<GameEntity, bool>>(),
+                out It.Ref<IList<GameEntity>>.IsAny))
+            .Callback((Func<GameEntity, bool> predicate, out IList<GameEntity> values) =>
+            {
+                values = new List<GameEntity>();
+                values.Add(new() { Id = Guid.NewGuid(), CurrentGameStateData = new byte[] { 4 } });
+                values.Add(new() { Id = Guid.NewGuid(), CurrentGameStateData = new byte[] { 5 } });
+                values.Add(new() { Id = Guid.NewGuid(), CurrentGameStateData = new byte[] { 6 } });
+            });
+
+        // Act
+        var result = await CreateRepository().GetAllGamesByPlayer(user);
+
+        // Assert
+        Assert.Equal(6, result.Count);
     }
 
 
@@ -262,26 +264,37 @@ public class GameRepositoryTests
         var overlapGuidB = Guid.NewGuid();
 
         // Arrange
-        var playerId = Guid.NewGuid();
-        var dbGames = new List<GameEntity>
+        var user = new UserEntity()
         {
-            new() { Id = Guid.NewGuid(), CurrentGameStateData = new byte[] { 1 } },
-            new() { Id = Guid.NewGuid(), CurrentGameStateData = new byte[] { 2 } },
-            new() { Id = Guid.NewGuid(), CurrentGameStateData = new byte[] { 3 } },
-
-            new() { Id = overlapGuidA, CurrentGameStateData = new byte[] { 4 } },
-            new() { Id = overlapGuidB, CurrentGameStateData = new byte[] { 5 } }
+            GameParticipations = new List<GameParticipatorUserEntity>()
+            {
+                new()
+                {
+                    GameId = Guid.NewGuid(),
+                    Game = new(),
+                },
+                new()
+                {
+                    GameId = Guid.NewGuid(),
+                    Game = new(),
+                },
+                new()
+                {
+                    GameId = Guid.NewGuid(),
+                    Game = new(),
+                },
+                new()
+                {
+                    GameId = overlapGuidA,
+                    Game = new(),
+                },
+                new()
+                {
+                    GameId = overlapGuidB,
+                    Game = new(),
+                },
+            }
         };
-
-        var mockDbSet = dbGames.AsQueryable().BuildMockDbSet();
-        _dbContextMock.Setup(db => db.Games).Returns(mockDbSet.Object);
-
-        _bridgeMock.SetupSequence(b => b.IsPlayerInGame(It.IsAny<string>(), It.IsAny<byte[]>()))
-            .Returns(false)
-            .Returns(true)
-            .Returns(false)
-            .Returns(true)
-            .Returns(true);
 
         _cacheServiceMock
             .Setup(c => c.TryGetAll(
@@ -299,9 +312,9 @@ public class GameRepositoryTests
             });
 
         // Act
-        var result = await CreateRepository().GetAllGamesByPlayer(playerId);
+        var result = await CreateRepository().GetAllGamesByPlayer(user);
 
         // Assert
-        Assert.Equal(6, result.Count);
+        Assert.Equal(8, result.Count);
     }
 }

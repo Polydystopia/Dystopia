@@ -78,25 +78,25 @@ public class PolydystopiaGameRepository : IPolydystopiaGameRepository
         return GameEntity;
     }
 
-    public async Task<List<GameEntity>> GetAllGamesByPlayer(Guid playerId)
+    public async Task<List<GameEntity>> GetAllGamesByPlayer(UserEntity user)
     {
-        var playerIdStr = playerId.ToString();
-
-        _cacheService.TryGetAll(
-            game => _bridge.IsPlayerInGame(playerIdStr, game.CurrentGameStateData),
-            out var cachedPlayerGames);
-
-        var activeCachedGames = cachedPlayerGames
-            .Where(g => g.State != GameSessionState.Ended)
+        var activeParticipations = user.GameParticipations
+            .Where(g => g.Game.State != GameSessionState.Ended)
             .ToList();
 
-        var allDbGames = await _dbContext.Games.ToListAsync();
-        var dbPlayerGames = allDbGames.Where(game =>
-            game.State != GameSessionState.Ended &&
-            _bridge.IsPlayerInGame(playerIdStr, game.CurrentGameStateData) &&
-            cachedPlayerGames.All(c => c.Id != game.Id));
+        var gameIds = activeParticipations.Select(g => g.GameId).ToHashSet();
 
-        return activeCachedGames.Concat(dbPlayerGames).ToList();
+        _cacheService.TryGetAll(
+            game => gameIds.Contains(game.Id),
+            out var cachedPlayerGames);
+
+        var cachedIds = new HashSet<Guid>(cachedPlayerGames.Select(g => g.Id));
+
+        var dbPlayerGames = activeParticipations
+            .Where(g => !cachedIds.Contains(g.GameId))
+            .Select(g => g.Game);
+
+        return cachedPlayerGames.Concat(dbPlayerGames).ToList();
     }
 
     public async Task<List<GameEntity>> GetLastEndedGamesByPlayer(Guid playerId, int limit)
@@ -120,7 +120,6 @@ public class PolydystopiaGameRepository : IPolydystopiaGameRepository
             .Take(limit)
             .ToList();
     }
-
 
 
     public async Task<List<GameEntity>> GetFavoriteGamesByPlayer(UserEntity user)

@@ -1,5 +1,6 @@
 ﻿using Dystopia.Bridge;
 using Dystopia.Database.Game;
+using Dystopia.Database.User;
 using Dystopia.Hubs;
 using Dystopia.Patches;
 using DystopiaShared.SharedModels;
@@ -49,6 +50,23 @@ public class PolydystopiaGameManager : IPolydystopiaGameManager
             ExternalMatchId = null, //TODO
             ExternalTournamentId = null, //TODO
         };
+
+        var gameParticipators = new List<GameParticipatorUserEntity>();
+        foreach (var lobbyParticipator in lobby.Participators)
+        {
+            if(lobbyParticipator.InvitationState != PlayerInvitationState.Accepted) continue;
+
+            gameParticipators.Add(new GameParticipatorUserEntity()
+            {
+                UserId = lobbyParticipator.UserId,
+                InvitationState = PlayerInvitationState.Accepted,
+                SelectedTribe = lobbyParticipator.SelectedTribe,
+                SelectedTribeSkin = lobbyParticipator.SelectedTribeSkin,
+                GameId = gameEntity.Id,
+                //TODO others?
+            });
+        }
+        gameEntity.Participators = gameParticipators;
 
         await _gameRepository.CreateAsync(gameEntity);
 
