@@ -38,7 +38,7 @@ public class GameRepositoryTests
     {
         _dbContextMock = new Mock<PolydystopiaDbContext>(_options);
 
-        GameParticipatorUserEntity.InitializeCache(_cacheServiceMock.Object);
+        GameCache.InitializeCache(_cacheServiceMock.Object);
     }
 
     private PolydystopiaGameRepository CreateRepository() => new(
@@ -148,7 +148,7 @@ public class GameRepositoryTests
         // Arrange
         var user = new UserEntity()
         {
-            GameParticipations = new List<GameParticipatorUserEntity>()
+            GameParticipations = new List<GameParticipatorUserUser>()
             {
                 CreateGameParticipation(Guid.NewGuid(), new GameEntity()),
                 CreateGameParticipation(Guid.NewGuid(), new GameEntity()),
@@ -183,7 +183,7 @@ public class GameRepositoryTests
         // Arrange
         var user = new UserEntity()
         {
-            GameParticipations = new List<GameParticipatorUserEntity>()
+            GameParticipations = new List<GameParticipatorUserUser>()
             {
                 CreateGameParticipation(overlapGuidA, new GameEntity()),
                 CreateGameParticipation(overlapGuidB, new GameEntity()),
@@ -221,7 +221,7 @@ public class GameRepositoryTests
         // Arrange
         var user = new UserEntity()
         {
-            GameParticipations = new List<GameParticipatorUserEntity>()
+            GameParticipations = new List<GameParticipatorUserUser>()
             {
                 CreateGameParticipation(Guid.NewGuid(), new GameEntity()),
                 CreateGameParticipation(Guid.NewGuid(), new GameEntity()),
@@ -266,7 +266,7 @@ public class GameRepositoryTests
         // Arrange
         var user = new UserEntity()
         {
-            GameParticipations = new List<GameParticipatorUserEntity>()
+            GameParticipations = new List<GameParticipatorUserUser>()
             {
                 CreateGameParticipation(overlapGuidA, new GameEntity()),
                 CreateGameParticipation(overlapGuidB, new GameEntity()),
@@ -298,15 +298,15 @@ public class GameRepositoryTests
     }
 
 
-    private GameParticipatorUserEntity CreateGameParticipation(Guid gameId, GameEntity game)
+    private GameParticipatorUserUser CreateGameParticipation(Guid gameId, GameEntity game)
     {
-        var participation = new GameParticipatorUserEntity
+        var participation = new GameParticipatorUserUser
         {
             GameId = gameId
         };
 
         // Use reflection to set private/internal property
-        var gameProperty = typeof(GameParticipatorUserEntity)
+        var gameProperty = typeof(GameParticipatorUserUser)
             .GetProperty("Game", BindingFlags.NonPublic | BindingFlags.Instance);
         gameProperty?.SetValue(participation, game);
 

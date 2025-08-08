@@ -169,7 +169,7 @@ DystopiaBridge.InitIl2Cpp(!il2CPPSettings.Enabled);
 PolytopiaDataManager.provider = new MyProvider();
 
 var gameCache = app.Services.GetRequiredService<ICacheService<GameEntity>>();
-GameParticipatorUserEntity.InitializeCache(gameCache);
+GameCache.InitializeCache(gameCache);
 
 app.Run();
 

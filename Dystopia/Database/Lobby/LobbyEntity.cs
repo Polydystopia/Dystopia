@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 using Dystopia.Database.Game;
 using Dystopia.Database.User;
 using PolytopiaBackendBase.Game;
@@ -10,7 +11,7 @@ public class LobbyEntity
 {
     [Key] public Guid Id { get; init; }
 
-    public virtual GameEntity Game { get; set; } = null!;
+    protected virtual GameEntity Game { get; set; } = null!;
 
     public DateTime DateCreated { get; init; }
     public DateTime? DateModified { get; set; }
@@ -52,6 +53,20 @@ public class LobbyEntity
     {
         return Participators.First(participator => participator.UserId == userId)?.InvitationState;
     }
+
+    [NotMapped]
+    public GameEntity ActualGame
+    {
+        get
+        {
+            if (GameCache.Cache != null && GameCache.Cache.TryGet(Game.Id, out var cachedGame) && cachedGame != null)
+            {
+                return cachedGame;
+            }
+
+            return Game;
+        }
+    }
 }
 
 public static class LobbyGameMappingExtensions
@@ -61,7 +76,7 @@ public static class LobbyGameMappingExtensions
         return new LobbyGameViewModel
         {
             Id = e.Id,
-            StartedGameId = e.Game?.Id,
+            StartedGameId = e.ActualGame?.Id,
             DateCreated = e.DateCreated,
             DateModified = e.DateModified,
             Name = e.Name,

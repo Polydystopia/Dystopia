@@ -26,8 +26,8 @@ public class UserEntity
     public virtual ICollection<LobbyParticipatorUserEntity> LobbyParticipations { get; set; }
         = new List<LobbyParticipatorUserEntity>();
 
-    public virtual ICollection<GameParticipatorUserEntity> GameParticipations { get; set; }
-        = new List<GameParticipatorUserEntity>();
+    public virtual ICollection<GameParticipatorUserUser> GameParticipations { get; set; }
+        = new List<GameParticipatorUserUser>();
 
     public virtual ICollection<GameEntity> FavoriteGames { get; set; } = new List<GameEntity>();
 

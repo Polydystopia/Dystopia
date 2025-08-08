@@ -51,12 +51,12 @@ public class PolydystopiaGameManager : IPolydystopiaGameManager
             ExternalTournamentId = null, //TODO
         };
 
-        var gameParticipators = new List<GameParticipatorUserEntity>();
+        var gameParticipators = new List<GameParticipatorUserUser>();
         foreach (var lobbyParticipator in lobby.Participators)
         {
             if(lobbyParticipator.InvitationState != PlayerInvitationState.Accepted) continue;
 
-            gameParticipators.Add(new GameParticipatorUserEntity()
+            gameParticipators.Add(new GameParticipatorUserUser()
             {
                 UserId = lobbyParticipator.UserId,
                 InvitationState = PlayerInvitationState.Accepted,

@@ -23,15 +23,8 @@ public class LobbyParticipatorUserEntity : ParticipatorUserEntity
     public virtual LobbyEntity Lobby { get; set; } = null!;
 }
 
-public class GameParticipatorUserEntity : ParticipatorUserEntity
+public class GameParticipatorUserUser : ParticipatorUserEntity
 {
-    private static ICacheService<GameEntity>? _gameCache;
-
-    public static void InitializeCache(ICacheService<GameEntity> cache)
-    {
-        _gameCache = cache;
-    }
-
     public Guid GameId { get; set; }
 
     [Obsolete("Use ActualGame property instead - this may contain stale data", error: false)]
@@ -49,7 +42,7 @@ public class GameParticipatorUserEntity : ParticipatorUserEntity
     {
         get
         {
-            if (_gameCache != null && _gameCache.TryGet(GameId, out var cachedGame) && cachedGame != null)
+            if (GameCache.Cache != null && GameCache.Cache.TryGet(GameId, out var cachedGame) && cachedGame != null)
             {
                 return cachedGame;
             }
@@ -78,7 +71,7 @@ public static class ParticipatorUserEntityExtensions
         };
     }
 
-    public static ParticipatorViewModel ToViewModel(this GameParticipatorUserEntity e)
+    public static ParticipatorViewModel ToViewModel(this GameParticipatorUserUser e)
     {
         return new ParticipatorViewModel
         {
@@ -108,7 +101,7 @@ public static class ParticipatorUserCollectionMappingExtensions
         source?.Select(e => e.ToViewModel()).ToList() ?? new List<ParticipatorViewModel>();
 
 
-    public static List<ParticipatorViewModel> ToViewModels(this IEnumerable<GameParticipatorUserEntity>? source) =>
+    public static List<ParticipatorViewModel> ToViewModels(this IEnumerable<GameParticipatorUserUser>? source) =>
         source?.Select(e => e.ToViewModel()).ToList() ?? new List<ParticipatorViewModel>();
 }
 
