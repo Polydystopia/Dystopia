@@ -28,6 +28,7 @@ public static class PolydystopiaLobbyManager
             TimeLimit = model.TimeLimit,
             ScoreLimit = model.ScoreLimit,
             InviteLink = "https://polydystopia.xyz/todo",
+            State = GameSessionState.Lobby,
             Participators = new List<LobbyParticipatorUserEntity>()
             {
                 new()
@@ -85,6 +86,7 @@ public static class PolydystopiaLobbyManager
                     InvitationState = PlayerInvitationState.Invited,
                 }
             },
+            State = GameSessionState.Lobby,
             ExternalMatchId = gameId, //TODO ?
             ExternalTournamentId = gameId, //TODO ?
             Bots = new List<int>()
