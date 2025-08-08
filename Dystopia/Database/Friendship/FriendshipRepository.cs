@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using Dystopia.Database.User;
 using PolytopiaBackendBase.Auth;
 using PolytopiaBackendBase.Game;
@@ -30,6 +30,11 @@ public class FriendshipRepository : IFriendshipRepository
 
     public async Task<bool> SetFriendshipStatusAsync(Guid user1Id, Guid user2Id, FriendshipStatus status)
     {
+        if (user1Id == Guid.Empty || user2Id == Guid.Empty)
+        {
+            return false;
+        }
+
         var friendship = await _dbContext.Friends
             .FirstOrDefaultAsync(f =>
                 (f.UserId1 == user1Id && f.UserId2 == user2Id) || (f.UserId1 == user2Id && f.UserId2 == user1Id));

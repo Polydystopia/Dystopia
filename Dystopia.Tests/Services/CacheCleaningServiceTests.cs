@@ -426,7 +426,7 @@ public class CacheCleaningServiceTests
     {
         // Arrange
         var service = CreateService(out var settings, out var mockCacheService, out var mockDbContext, out var cts, out var serviceScopeFactory);
-        settings.GameEntity.CacheCleanupFrequency = TimeSpan.FromMilliseconds(10);
+        settings.GameEntity.CacheCleanupFrequency = TimeSpan.FromMilliseconds(1000);
 
         // Act
         var task = service.StartAsync(cts.Token);
