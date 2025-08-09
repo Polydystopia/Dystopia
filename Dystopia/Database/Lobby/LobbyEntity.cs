@@ -49,9 +49,11 @@ public class LobbyEntity
 
     public List<int> Bots { get; set; }
 
-    public PlayerInvitationState? GetInvitationStateForPlayer(Guid userId)
+    public PlayerInvitationState GetInvitationStateForPlayer(Guid userId)
     {
-        return Participators.First(participator => participator.UserId == userId)?.InvitationState;
+        return Participators
+                   .FirstOrDefault(p => p.UserId == userId)?.InvitationState
+               ?? PlayerInvitationState.Unknown;
     }
 
     [NotMapped]
@@ -82,7 +84,7 @@ public static class LobbyGameMappingExtensions
             Name = e.Name,
             MapPreset = e.MapPreset,
             MapSize = e.MapSize,
-            OpponentCount = (short)(e.MaxPlayers-1),
+            OpponentCount = (short)(e.MaxPlayers - 1),
             GameMode = e.GameMode,
             OwnerId = e.OwnerId,
             DisabledTribes = e.DisabledTribes,
