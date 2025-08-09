@@ -1,5 +1,6 @@
 ﻿using Dystopia.Bridge;
 using Dystopia.Database.Game;
+using Dystopia.Database.User;
 using Dystopia.Hubs;
 using Dystopia.Patches;
 using DystopiaShared.SharedModels;
@@ -33,20 +34,41 @@ public class PolydystopiaGameManager : IPolydystopiaGameManager
 
         serializedGameState = bridge.Update(serializedGameState);
 
-        var gameViewModel = new GameViewModel();
-        gameViewModel.Id = lobby.Id;
-        gameViewModel.OwnerId = lobby.OwnerId;
-        gameViewModel.DateCreated = DateTime.Now; //?
-        gameViewModel.DateLastCommand = DateTime.Now; //?
-        gameViewModel.State = GameSessionState.Started;
-        gameViewModel.GameSettingsJson = gameSettingsJson;
-        gameViewModel.InitialGameStateData = serializedGameState;
-        gameViewModel.CurrentGameStateData = serializedGameState;
-        gameViewModel.TimerSettings = new TimerSettings(); //??? Used?
-        gameViewModel.DateCurrentTurnDeadline = DateTime.Now.AddDays(1); //TODO: Calc
-        gameViewModel.GameContext = new GameContext(); //TODO?
+        var gameEntity = new GameEntity()
+        {
+            Id = lobby.Id,
+            LobbyId = lobby.Id,
+            OwnerId = lobby.OwnerId,
+            DateCreated = DateTime.Now,
+            DateLastCommand = DateTime.Now,
+            State = GameSessionState.Started,
+            GameSettings = gameSettingsJson,
+            InitialGameStateData = serializedGameState,
+            CurrentGameStateData = serializedGameState,
+            TimerSettings = new TimerSettings(), //TODO
+            DateCurrentTurnDeadline = DateTime.Now.AddDays(1), //TODO
+            ExternalMatchId = null, //TODO
+            ExternalTournamentId = null, //TODO
+        };
 
-        await _gameRepository.CreateAsync(gameViewModel);
+        var gameParticipators = new List<GameParticipatorUserUser>();
+        foreach (var lobbyParticipator in lobby.Participators)
+        {
+            if(lobbyParticipator.InvitationState != PlayerInvitationState.Accepted) continue;
+
+            gameParticipators.Add(new GameParticipatorUserUser()
+            {
+                UserId = lobbyParticipator.UserId,
+                InvitationState = PlayerInvitationState.Accepted,
+                SelectedTribe = lobbyParticipator.SelectedTribe,
+                SelectedTribeSkin = lobbyParticipator.SelectedTribeSkin,
+                GameId = gameEntity.Id,
+                //TODO others?
+            });
+        }
+        gameEntity.Participators = gameParticipators;
+
+        await _gameRepository.CreateAsync(gameEntity);
 
         return true;
     }
@@ -105,7 +127,7 @@ public class PolydystopiaGameManager : IPolydystopiaGameManager
 
         if (PolytopiaHub.GameSummariesSubscribers.TryGetValue(game.Id, out var gameSummarySubscribersList))
         {
-            var gameSummaryModel = GetGameSummaryViewModelByGameViewModel(game);
+            var gameSummaryModel = GetGameSummaryViewModelByGameViewModel(game.ToViewModel());
             var pushReason = StateUpdateReason.ValidCommand;
 
             var gameSummarySubscribers = gameSummarySubscribersList.Where(u => senderId == null || u.id != senderId)

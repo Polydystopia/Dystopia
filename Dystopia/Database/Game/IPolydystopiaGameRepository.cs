@@ -1,17 +1,16 @@
-﻿using PolytopiaBackendBase.Game;
+﻿using Dystopia.Database.User;
+using PolytopiaBackendBase.Game;
 
 namespace Dystopia.Database.Game;
 
 public interface IPolydystopiaGameRepository
 {
-    public Task<GameViewModel?> GetByIdAsync(Guid id);
-    public Task<GameViewModel> CreateAsync(GameViewModel gameViewModel);
-    Task<GameViewModel> UpdateAsync(GameViewModel gameViewModel);
+    public Task<GameEntity?> GetByIdAsync(Guid id);
+    public Task<GameEntity> CreateAsync(GameEntity gameEntity);
+    Task<GameEntity> UpdateAsync(GameEntity gameEntity);
 
-    Task<List<GameViewModel>> GetAllGamesByPlayer(Guid playerId);
-    Task<List<GameViewModel>> GetLastEndedGamesByPlayer(Guid playerId, int limit);
+    Task<List<GameEntity>> GetAllGamesByPlayer(UserEntity user);
+    Task<List<GameEntity>> GetLastEndedGamesByPlayer(Guid playerId, int limit);
 
-    Task<List<GameViewModel>> GetFavoriteGamesByPlayer(Guid playerId);
-    Task AddFavoriteAsync(Guid userId, Guid gameId);
-    Task RemoveFavoriteAsync(Guid userId, Guid gameId);
+    Task<List<GameEntity>> GetFavoriteGamesByPlayer(UserEntity user);
 }

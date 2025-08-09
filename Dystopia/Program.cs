@@ -40,7 +40,7 @@ var builder = WebApplication.CreateBuilder(args);
 Directory.CreateDirectory(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "db"));
 var dbPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "db", "polytopia.db");
 builder.Services.AddDbContext<PolydystopiaDbContext>(options =>
-    options.UseSqlite($"Data Source={dbPath}"));
+    options.UseLazyLoadingProxies().UseSqlite($"Data Source={dbPath}"));
 
 builder.Logging.ClearProviders();
 
@@ -125,9 +125,12 @@ builder.Services.AddScoped<INewsRepository, NewsRepository>();
 #endregion
 
 builder.Services.AddSingleton<INewsService, NewsService>();
+
 #region cache
+
 builder.Services.AddSingleton(typeof(ICacheService<>), typeof(CacheService<>));
 builder.Services.AddHostedService<CacheCleaningService>();
+
 #endregion
 
 #region manager
@@ -164,6 +167,9 @@ var il2CPPSettings = app.Services.GetRequiredService<IOptions<Il2cppSettings>>()
 DystopiaBridge.InitIl2Cpp(!il2CPPSettings.Enabled);
 
 PolytopiaDataManager.provider = new MyProvider();
+
+var gameCache = app.Services.GetRequiredService<ICacheService<GameEntity>>();
+GameCache.InitializeCache(gameCache);
 
 app.Run();
 

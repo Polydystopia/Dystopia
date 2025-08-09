@@ -4,9 +4,9 @@ namespace Dystopia.Database.Lobby;
 
 public interface IPolydystopiaLobbyRepository
 {
-    public Task<LobbyGameViewModel?> GetByIdAsync(Guid id);
-    public Task<LobbyGameViewModel> CreateAsync(LobbyGameViewModel lobbyGameViewModel);
-    Task<LobbyGameViewModel> UpdateAsync(LobbyGameViewModel lobbyGameViewModel, LobbyUpdatedReason reason);
+    public Task<LobbyEntity?> GetByIdAsync(Guid id);
+    public Task<LobbyEntity> CreateAsync(LobbyEntity lobbyEntity);
+    Task<LobbyEntity> UpdateAsync(LobbyEntity lobbyEntity);
     Task<bool> DeleteAsync(Guid id);
-    Task<List<LobbyGameViewModel>> GetAllLobbiesByPlayer(Guid playerId);
+    Task<List<LobbyEntity>> GetAllLobbiesByPlayer(Guid playerId);
 }
