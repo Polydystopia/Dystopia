@@ -11,8 +11,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Dystopia.Migrations
 {
     [DbContext(typeof(PolydystopiaDbContext))]
-    [Migration("20250618194948_AddNews")]
-    partial class AddNews
+    [Migration("20250803200344_InitialCreate")]
+    partial class InitialCreate
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -20,7 +20,7 @@ namespace Dystopia.Migrations
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "7.0.20");
 
-            modelBuilder.Entity("PolytopiaB2.Carrier.Database.Friendship.FriendshipEntity", b =>
+            modelBuilder.Entity("Dystopia.Database.Friendship.FriendshipEntity", b =>
                 {
                     b.Property<Guid>("UserId1")
                         .HasColumnType("TEXT");
@@ -44,7 +44,126 @@ namespace Dystopia.Migrations
                     b.ToTable("Friends");
                 });
 
-            modelBuilder.Entity("PolytopiaB2.Carrier.Database.Matchmaking.MatchmakingEntity", b =>
+            modelBuilder.Entity("Dystopia.Database.Game.GameEntity", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT");
+
+                    b.Property<byte[]>("CurrentGameStateData")
+                        .HasColumnType("BLOB");
+
+                    b.Property<DateTime?>("DateCreated")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime?>("DateCurrentTurnDeadline")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime?>("DateLastCommand")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid?>("ExternalMatchId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid?>("ExternalTournamentId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("GameSettings")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<byte[]>("InitialGameStateData")
+                        .HasColumnType("BLOB");
+
+                    b.Property<Guid?>("OwnerId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("State")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("TimerSettings")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Games");
+                });
+
+            modelBuilder.Entity("Dystopia.Database.Lobby.LobbyEntity", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Bots")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid?>("ChallengermodeGameId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("DateCreated")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime?>("DateModified")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("DisabledTribes")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid?>("ExternalMatchId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid?>("ExternalTournamentId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("GameMode")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("InviteLink")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("MapPreset")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("MapSize")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<long?>("MatchmakingGameId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid>("OwnerId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Participators")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("ScoreLimit")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<DateTime?>("StartTime")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid?>("StartedGameId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("TimeLimit")
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Lobbies");
+                });
+
+            modelBuilder.Entity("Dystopia.Database.Matchmaking.MatchmakingEntity", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -56,7 +175,7 @@ namespace Dystopia.Migrations
                     b.Property<int>("GameMode")
                         .HasColumnType("INTEGER");
 
-                    b.Property<Guid?>("LobbyGameViewModelId")
+                    b.Property<Guid?>("LobbyEntityId")
                         .HasColumnType("TEXT");
 
                     b.Property<int>("MapPreset")
@@ -86,12 +205,12 @@ namespace Dystopia.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("LobbyGameViewModelId");
+                    b.HasIndex("LobbyEntityId");
 
                     b.ToTable("Matchmaking");
                 });
 
-            modelBuilder.Entity("PolytopiaB2.Carrier.Database.News.NewsEntity", b =>
+            modelBuilder.Entity("Dystopia.Database.News.NewsEntity", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -122,6 +241,24 @@ namespace Dystopia.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("News");
+                });
+
+            modelBuilder.Entity("Dystopia.Database.Replay.UserFavoriteGame", b =>
+                {
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid>("GameId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("MarkedAt")
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("UserId", "GameId");
+
+                    b.HasIndex("GameId");
+
+                    b.ToTable("UserFavoriteGames");
                 });
 
             modelBuilder.Entity("PolytopiaBackendBase.Auth.PolytopiaUserViewModel", b =>
@@ -192,125 +329,7 @@ namespace Dystopia.Migrations
                     b.ToTable("Users");
                 });
 
-            modelBuilder.Entity("PolytopiaBackendBase.Game.GameViewModel", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("TEXT");
-
-                    b.Property<byte[]>("CurrentGameStateData")
-                        .HasColumnType("BLOB");
-
-                    b.Property<DateTime?>("DateCreated")
-                        .HasColumnType("TEXT");
-
-                    b.Property<DateTime?>("DateCurrentTurnDeadline")
-                        .HasColumnType("TEXT");
-
-                    b.Property<DateTime?>("DateLastCommand")
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("GameContext")
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("GameSettingsJson")
-                        .HasColumnType("TEXT");
-
-                    b.Property<byte[]>("InitialGameStateData")
-                        .HasColumnType("BLOB");
-
-                    b.Property<Guid?>("OwnerId")
-                        .HasColumnType("TEXT");
-
-                    b.Property<int>("State")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<string>("TimerSettings")
-                        .HasColumnType("TEXT");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("Games");
-                });
-
-            modelBuilder.Entity("PolytopiaBackendBase.Game.LobbyGameViewModel", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("Bots")
-                        .HasColumnType("TEXT");
-
-                    b.Property<Guid?>("ChallengermodeGameId")
-                        .HasColumnType("TEXT");
-
-                    b.Property<DateTime?>("DateCreated")
-                        .HasColumnType("TEXT");
-
-                    b.Property<DateTime?>("DateModified")
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("DisabledTribes")
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("GameContext")
-                        .HasColumnType("TEXT");
-
-                    b.Property<int>("GameMode")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<string>("InviteLink")
-                        .HasColumnType("TEXT");
-
-                    b.Property<bool>("IsPersistent")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<bool>("IsSharable")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<int>("MapPreset")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<int>("MapSize")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<long?>("MatchmakingGameId")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<string>("Name")
-                        .HasColumnType("TEXT");
-
-                    b.Property<short>("OpponentCount")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<Guid>("OwnerId")
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("Participators")
-                        .HasColumnType("TEXT");
-
-                    b.Property<int>("ScoreLimit")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<DateTime?>("StartTime")
-                        .HasColumnType("TEXT");
-
-                    b.Property<Guid?>("StartedGameId")
-                        .HasColumnType("TEXT");
-
-                    b.Property<int>("TimeLimit")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<int>("UpdatedReason")
-                        .HasColumnType("INTEGER");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("Lobbies");
-                });
-
-            modelBuilder.Entity("PolytopiaB2.Carrier.Database.Friendship.FriendshipEntity", b =>
+            modelBuilder.Entity("Dystopia.Database.Friendship.FriendshipEntity", b =>
                 {
                     b.HasOne("PolytopiaBackendBase.Auth.PolytopiaUserViewModel", "User1")
                         .WithMany()
@@ -329,14 +348,33 @@ namespace Dystopia.Migrations
                     b.Navigation("User2");
                 });
 
-            modelBuilder.Entity("PolytopiaB2.Carrier.Database.Matchmaking.MatchmakingEntity", b =>
+            modelBuilder.Entity("Dystopia.Database.Matchmaking.MatchmakingEntity", b =>
                 {
-                    b.HasOne("PolytopiaBackendBase.Game.LobbyGameViewModel", "LobbyGameViewModel")
+                    b.HasOne("Dystopia.Database.Lobby.LobbyEntity", "LobbyEntity")
                         .WithMany()
-                        .HasForeignKey("LobbyGameViewModelId")
-                        .OnDelete(DeleteBehavior.SetNull);
+                        .HasForeignKey("LobbyEntityId")
+                        .OnDelete(DeleteBehavior.Cascade);
 
-                    b.Navigation("LobbyGameViewModel");
+                    b.Navigation("LobbyEntity");
+                });
+
+            modelBuilder.Entity("Dystopia.Database.Replay.UserFavoriteGame", b =>
+                {
+                    b.HasOne("Dystopia.Database.Game.GameEntity", "Game")
+                        .WithMany()
+                        .HasForeignKey("GameId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("PolytopiaBackendBase.Auth.PolytopiaUserViewModel", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Game");
+
+                    b.Navigation("User");
                 });
 #pragma warning restore 612, 618
         }

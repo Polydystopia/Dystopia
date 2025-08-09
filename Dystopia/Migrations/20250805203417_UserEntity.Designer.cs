@@ -3,6 +3,7 @@ using System;
 using Dystopia.Database;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,16 +11,14 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Dystopia.Migrations
 {
     [DbContext(typeof(PolydystopiaDbContext))]
-    partial class PolydystopiaDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250805203417_UserEntity")]
+    partial class UserEntity
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
-            modelBuilder
-                .HasAnnotation("ProductVersion", "7.0.20")
-                .HasAnnotation("Proxies:ChangeTracking", false)
-                .HasAnnotation("Proxies:CheckEquality", false)
-                .HasAnnotation("Proxies:LazyLoading", true);
+            modelBuilder.HasAnnotation("ProductVersion", "7.0.20");
 
             modelBuilder.Entity("Dystopia.Database.Friendship.FriendshipEntity", b =>
                 {
@@ -81,11 +80,7 @@ namespace Dystopia.Migrations
                     b.Property<byte[]>("InitialGameStateData")
                         .HasColumnType("BLOB");
 
-                    b.Property<Guid>("LobbyId")
-                        .HasColumnType("TEXT");
-
                     b.Property<Guid?>("OwnerId")
-                        .IsRequired()
                         .HasColumnType("TEXT");
 
                     b.Property<int>("State")
@@ -96,11 +91,6 @@ namespace Dystopia.Migrations
                         .HasColumnType("TEXT");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("LobbyId")
-                        .IsUnique();
-
-                    b.HasIndex("OwnerId");
 
                     b.ToTable("Games");
                 });
@@ -115,6 +105,9 @@ namespace Dystopia.Migrations
                         .IsRequired()
                         .HasColumnType("TEXT");
 
+                    b.Property<Guid?>("ChallengermodeGameId")
+                        .HasColumnType("TEXT");
+
                     b.Property<DateTime>("DateCreated")
                         .HasColumnType("TEXT");
 
@@ -122,6 +115,7 @@ namespace Dystopia.Migrations
                         .HasColumnType("TEXT");
 
                     b.Property<string>("DisabledTribes")
+                        .IsRequired()
                         .HasColumnType("TEXT");
 
                     b.Property<Guid?>("ExternalMatchId")
@@ -151,7 +145,6 @@ namespace Dystopia.Migrations
 
                     b.Property<string>("Name")
                         .IsRequired()
-                        .HasMaxLength(32)
                         .HasColumnType("TEXT");
 
                     b.Property<Guid>("OwnerId")
@@ -163,15 +156,13 @@ namespace Dystopia.Migrations
                     b.Property<DateTime?>("StartTime")
                         .HasColumnType("TEXT");
 
-                    b.Property<int>("State")
-                        .HasColumnType("INTEGER");
+                    b.Property<Guid?>("StartedGameId")
+                        .HasColumnType("TEXT");
 
                     b.Property<int>("TimeLimit")
                         .HasColumnType("INTEGER");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("OwnerId");
 
                     b.ToTable("Lobbies");
                 });
@@ -254,6 +245,24 @@ namespace Dystopia.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("News");
+                });
+
+            modelBuilder.Entity("Dystopia.Database.Replay.UserFavoriteGame", b =>
+                {
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid>("GameId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("MarkedAt")
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("UserId", "GameId");
+
+                    b.HasIndex("GameId");
+
+                    b.ToTable("UserFavoriteGames");
                 });
 
             modelBuilder.Entity("Dystopia.Database.User.GameParticipatorUserEntity", b =>
@@ -364,21 +373,6 @@ namespace Dystopia.Migrations
                     b.ToTable("Users");
                 });
 
-            modelBuilder.Entity("GameEntityUserEntity", b =>
-                {
-                    b.Property<Guid>("FavoriteGamesId")
-                        .HasColumnType("TEXT");
-
-                    b.Property<Guid>("UserEntityId")
-                        .HasColumnType("TEXT");
-
-                    b.HasKey("FavoriteGamesId", "UserEntityId");
-
-                    b.HasIndex("UserEntityId");
-
-                    b.ToTable("UserFavoriteGames", (string)null);
-                });
-
             modelBuilder.Entity("Dystopia.Database.Friendship.FriendshipEntity", b =>
                 {
                     b.HasOne("Dystopia.Database.User.UserEntity", null)
@@ -402,36 +396,6 @@ namespace Dystopia.Migrations
                     b.Navigation("User2");
                 });
 
-            modelBuilder.Entity("Dystopia.Database.Game.GameEntity", b =>
-                {
-                    b.HasOne("Dystopia.Database.Lobby.LobbyEntity", "Lobby")
-                        .WithOne("Game")
-                        .HasForeignKey("Dystopia.Database.Game.GameEntity", "LobbyId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("Dystopia.Database.User.UserEntity", "Owner")
-                        .WithMany()
-                        .HasForeignKey("OwnerId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Lobby");
-
-                    b.Navigation("Owner");
-                });
-
-            modelBuilder.Entity("Dystopia.Database.Lobby.LobbyEntity", b =>
-                {
-                    b.HasOne("Dystopia.Database.User.UserEntity", "Owner")
-                        .WithMany()
-                        .HasForeignKey("OwnerId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Owner");
-                });
-
             modelBuilder.Entity("Dystopia.Database.Matchmaking.MatchmakingEntity", b =>
                 {
                     b.HasOne("Dystopia.Database.Lobby.LobbyEntity", "LobbyEntity")
@@ -440,6 +404,25 @@ namespace Dystopia.Migrations
                         .OnDelete(DeleteBehavior.Cascade);
 
                     b.Navigation("LobbyEntity");
+                });
+
+            modelBuilder.Entity("Dystopia.Database.Replay.UserFavoriteGame", b =>
+                {
+                    b.HasOne("Dystopia.Database.Game.GameEntity", "Game")
+                        .WithMany()
+                        .HasForeignKey("GameId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Dystopia.Database.User.UserEntity", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Game");
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("Dystopia.Database.User.GameParticipatorUserEntity", b =>
@@ -480,21 +463,6 @@ namespace Dystopia.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("GameEntityUserEntity", b =>
-                {
-                    b.HasOne("Dystopia.Database.Game.GameEntity", null)
-                        .WithMany()
-                        .HasForeignKey("FavoriteGamesId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("Dystopia.Database.User.UserEntity", null)
-                        .WithMany()
-                        .HasForeignKey("UserEntityId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-                });
-
             modelBuilder.Entity("Dystopia.Database.Game.GameEntity", b =>
                 {
                     b.Navigation("Participators");
@@ -502,9 +470,6 @@ namespace Dystopia.Migrations
 
             modelBuilder.Entity("Dystopia.Database.Lobby.LobbyEntity", b =>
                 {
-                    b.Navigation("Game")
-                        .IsRequired();
-
                     b.Navigation("Participators");
                 });
 

@@ -13,82 +13,57 @@ public static class PolydystopiaMatchmakingManager
     {
         var fittingLobbies = await _matchmakingRepository.GetAllFittingLobbies(playerId, model.Version, model.MapSize, model.MapPreset, model.GameMode, model.ScoreLimit, model.TimeLimit, model.Platform, model.AllowCrossPlay);
 
-        var selectedLobby = fittingLobbies
+        var selectedMatchmaking = fittingLobbies
             .OrderByDescending(lobby => lobby.PlayerIds.Count)
             .FirstOrDefault();
 
         var ownUser = await _userRepository.GetByIdAsync(playerId);
         if(ownUser == null) return null;
 
-        if (selectedLobby == null)
+        if (selectedMatchmaking == null)
         {
-            var lobbyGameViewModel = PolydystopiaLobbyManager.CreateLobby(model, ownUser);
-            var participator = new ParticipatorViewModel()
-            {
-                UserId = ownUser.PolytopiaId,
-                Name = ownUser.GetUniqueNameInternal(),
-                NumberOfFriends = ownUser.NumFriends ?? 0,
-                NumberOfMultiplayerGames = ownUser.NumMultiplayergames ?? 0,
-                GameVersion = ownUser.GameVersions,
-                MultiplayerRating = ownUser.MultiplayerRating ?? 0,
-                SelectedTribe = 0, //?
-                SelectedTribeSkin = 0, //?
-                AvatarStateData = ownUser.AvatarStateData,
-                InvitationState = PlayerInvitationState.Invited
-            };
+            var lobbyEntity = PolydystopiaLobbyManager.CreateLobby(model, ownUser);
 
-            lobbyGameViewModel.Participators.Add(participator);
-
-            var maxPlayers = model.OpponentCount != 0 ? model.OpponentCount+1 : (short)Random.Shared.Next(2, 9);
-
-            selectedLobby = new MatchmakingEntity(lobbyGameViewModel, model.Version, lobbyGameViewModel.MapSize, lobbyGameViewModel.MapPreset, lobbyGameViewModel.GameMode, lobbyGameViewModel.ScoreLimit, lobbyGameViewModel.TimeLimit, model.Platform, model.AllowCrossPlay, maxPlayers);
-            await _lobbyRepository.CreateAsync(lobbyGameViewModel);
-            await _matchmakingRepository.CreateAsync(selectedLobby);
+            selectedMatchmaking = new MatchmakingEntity(lobbyEntity, model.Version, lobbyEntity.MapSize, lobbyEntity.MapPreset, lobbyEntity.GameMode, lobbyEntity.ScoreLimit, lobbyEntity.TimeLimit, model.Platform, model.AllowCrossPlay, lobbyEntity.MaxPlayers);
+            await _lobbyRepository.CreateAsync(lobbyEntity);
+            await _matchmakingRepository.CreateAsync(selectedMatchmaking);
         }
         else
         {
-            selectedLobby.PlayerIds.Add(playerId);
+            selectedMatchmaking.PlayerIds.Add(playerId);
 
-            var participator = new ParticipatorViewModel()
+            var participator = new LobbyParticipatorUserEntity()
             {
-                UserId = ownUser.PolytopiaId,
-                Name = ownUser.GetUniqueNameInternal(),
-                NumberOfFriends = ownUser.NumFriends ?? 0,
-                NumberOfMultiplayerGames = ownUser.NumMultiplayergames ?? 0,
-                GameVersion = ownUser.GameVersions,
-                MultiplayerRating = ownUser.MultiplayerRating ?? 0,
-                SelectedTribe = 0, //?
-                SelectedTribeSkin = 0, //?
-                AvatarStateData = ownUser.AvatarStateData,
-                InvitationState = PlayerInvitationState.Invited
+                UserId = ownUser.Id,
+                InvitationState = PlayerInvitationState.Invited,
             };
 
-            selectedLobby.LobbyGameViewModel.Participators.Add(participator);
+            selectedMatchmaking.LobbyEntity.Participators.Add(participator);
 
-            await _lobbyRepository.UpdateAsync(selectedLobby.LobbyGameViewModel, LobbyUpdatedReason.PlayersInvited);
-            await _matchmakingRepository.UpdateAsync(selectedLobby);
+            await _lobbyRepository.UpdateAsync(selectedMatchmaking.LobbyEntity);
+            await _matchmakingRepository.UpdateAsync(selectedMatchmaking);
         }
 
-        await ownProxy.SendAsync("OnLobbyInvitation", selectedLobby.LobbyGameViewModel);
+        await ownProxy.SendAsync("OnLobbyInvitation", selectedMatchmaking.LobbyEntity.ToViewModel());
 
         var submission = new MatchmakingSubmissionViewModel();
-        submission.GameName = selectedLobby.LobbyGameViewModel.Name;
-        submission.IsWaitingForOpponents = selectedLobby.MaxPlayers - selectedLobby.PlayerIds.Count > 0;
+        submission.GameName = selectedMatchmaking.LobbyEntity.Name;
+        submission.IsWaitingForOpponents = selectedMatchmaking.MaxPlayers - selectedMatchmaking.PlayerIds.Count > 0;
 
         var summary = new MatchmakingGameSummaryViewModel();
-        summary.Id = (long)selectedLobby.LobbyGameViewModel.MatchmakingGameId;
-        summary.DateCreated = selectedLobby.LobbyGameViewModel.DateCreated;
-        summary.DateModified = selectedLobby.LobbyGameViewModel.DateModified;
-        summary.Name = selectedLobby.LobbyGameViewModel.Name;
-        summary.MapPreset = selectedLobby.MapPreset;
-        summary.MapSize = selectedLobby.MapSize;
-        summary.OpponentCount = (short)(selectedLobby.MaxPlayers - 1);
-        summary.GameMode = selectedLobby.GameMode;
+        summary.Id = (long)selectedMatchmaking.LobbyEntity.MatchmakingGameId;
+        summary.DateCreated = selectedMatchmaking.LobbyEntity.DateCreated;
+        summary.DateModified = selectedMatchmaking.LobbyEntity.DateModified;
+        summary.Name = selectedMatchmaking.LobbyEntity.Name;
+        summary.MapPreset = selectedMatchmaking.MapPreset;
+        summary.MapSize = selectedMatchmaking.MapSize;
+        summary.OpponentCount = (short)(selectedMatchmaking.MaxPlayers - 1);
+        summary.GameMode = selectedMatchmaking.GameMode;
         summary.WithPickedTribe = model.SelectedTribe != 0; //?
-        summary.LobbyId = selectedLobby.LobbyGameViewModel.Id;
+        summary.LobbyId = selectedMatchmaking.LobbyEntity.Id;
 
         summary.Participators = new List<ParticipatorViewModel>();
-        foreach (var participatorViewModel in selectedLobby.LobbyGameViewModel.Participators)
+        foreach (var participatorViewModel in selectedMatchmaking.LobbyEntity.Participators.ToViewModels())
         {
             summary.Participators.Add(participatorViewModel);
         }

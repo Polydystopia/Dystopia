@@ -1,4 +1,5 @@
-﻿using PolytopiaBackendBase;
+﻿using Dystopia.Database.Game;
+using PolytopiaBackendBase;
 using PolytopiaBackendBase.Game;
 using PolytopiaBackendBase.Game.BindingModels;
 
@@ -12,12 +13,19 @@ public partial class PolytopiaHub
         response.gameSummaries = new List<GameSummaryViewModel>();
         response.matchmakingGameSummaries = new List<MatchmakingGameSummaryViewModel>(); //TODO
 
-        var myGames = await _gameRepository.GetAllGamesByPlayer(_userGuid);
+        var user = await _userRepository.GetByIdAsync(_userGuid);
+        if (user == null)
+        {
+            _logger.LogWarning("User {userId} not found.", _userGuid);
+            return new ServerResponse<GameListingViewModel>(ErrorCode.UserNotFound, "User not found.");
+        }
+
+        var myGames = await _gameRepository.GetAllGamesByPlayer(user);
         foreach (var game in myGames)
         {
             if (game.State != GameSessionState.Started) continue;
 
-            response.gameSummaries.Add(_gameManager.GetGameSummaryViewModelByGameViewModel(game));
+            response.gameSummaries.Add(_gameManager.GetGameSummaryViewModelByGameViewModel(game.ToViewModel()));
         }
 
         return new ServerResponse<GameListingViewModel>(response);

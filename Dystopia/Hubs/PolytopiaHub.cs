@@ -112,7 +112,7 @@ public partial class PolytopiaHub : Hub
 
         if(game == null) return new ServerResponse<GameSummaryViewModel>(ErrorCode.GameNotFound, "Game not found");
 
-        var summary = _gameManager.GetGameSummaryViewModelByGameViewModel(game);
+        var summary = _gameManager.GetGameSummaryViewModelByGameViewModel(game.ToViewModel());
 
         return new ServerResponse<GameSummaryViewModel>(summary);
     }

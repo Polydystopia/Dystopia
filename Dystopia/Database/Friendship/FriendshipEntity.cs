@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using Dystopia.Database.User;
 using Microsoft.EntityFrameworkCore;
 using PolytopiaBackendBase.Auth;
 using PolytopiaBackendBase.Game;
@@ -15,6 +16,23 @@ public class FriendshipEntity
     public DateTime CreatedAt { get; set; }
     public DateTime UpdatedAt { get; set; }
 
-    public virtual PolytopiaUserViewModel User1 { get; set; }
-    public virtual PolytopiaUserViewModel User2 { get; set; }
+    public virtual UserEntity User1 { get; set; }
+    public virtual UserEntity User2 { get; set; }
+}
+
+public static class FriendMappingExtensions
+{
+    public static List<PolytopiaFriendViewModel> ToFriendViewModels(
+        this IEnumerable<(UserEntity User, FriendshipStatus Status)> source)
+    {
+        if (source == null) return new List<PolytopiaFriendViewModel>();
+
+        return source
+            .Select(tuple => new PolytopiaFriendViewModel
+            {
+                User             = tuple.User.ToViewModel(),
+                FriendshipStatus = tuple.Status
+            })
+            .ToList();
+    }
 }

@@ -102,14 +102,14 @@ public class PolytopiaController : ControllerBase
     [Route("api/game/join_game")]
     public async Task<ServerResponse<GameViewModel>> JoinGame([FromBody] JoinGameBindingModel model)
     {
-        var gameViewModel = await _gameRepository.GetByIdAsync(model.GameId);
+        var gameEntity = await _gameRepository.GetByIdAsync(model.GameId);
 
-        if (gameViewModel == null)
+        if (gameEntity == null)
         {
             return new ServerResponse<GameViewModel>() { Success = false };
         }
 
-        return new ServerResponse<GameViewModel>(gameViewModel);
+        return new ServerResponse<GameViewModel>(gameEntity.ToViewModel());
     }
 
     [Route("api/cm/list_matchmaking ")]
@@ -124,13 +124,13 @@ public class PolytopiaController : ControllerBase
     [Route("api/game/spectate_game")]
     public async Task<ServerResponse<GameViewModel>> SpectateGame([FromBody] SpectateGameBindingModel model)
     {
-        var gameViewModel = await _gameRepository.GetByIdAsync(model.GameId);
+        var gameEntity = await _gameRepository.GetByIdAsync(model.GameId);
 
-        if (gameViewModel == null)
+        if (gameEntity == null)
         {
             return new ServerResponse<GameViewModel>() { Success = false, ErrorCode = ErrorCode.GameNotFound, ErrorMessage = "Game not found."};
         }
 
-        return new ServerResponse<GameViewModel>(gameViewModel);
+        return new ServerResponse<GameViewModel>(gameEntity.ToViewModel());
     }
 }

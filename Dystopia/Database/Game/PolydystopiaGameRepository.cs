@@ -1,11 +1,8 @@
-using Dystopia.Bridge;
-using Dystopia.Database.Replay;
-using Dystopia.Patches;
+using Dystopia.Database.User;
 using Dystopia.Services.Cache;
 using Dystopia.Settings;
 using Microsoft.EntityFrameworkCore;
 using DystopiaShared;
-using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Options;
 using PolytopiaBackendBase.Game;
 
@@ -14,25 +11,25 @@ namespace Dystopia.Database.Game;
 public class PolydystopiaGameRepository : IPolydystopiaGameRepository
 {
     private readonly PolydystopiaDbContext _dbContext;
-    private readonly ICacheService<GameViewModel> _cacheService;
+    private readonly ICacheService<GameEntity> _cacheService;
     private readonly IDystopiaCastle _bridge;
     private readonly TimeSpan _maxAccessIntervalForCache;
 
     public PolydystopiaGameRepository(PolydystopiaDbContext dbContext,
-        ICacheService<GameViewModel> cacheService,
+        ICacheService<GameEntity> cacheService,
         IOptions<CacheSettings> settings,
         IDystopiaCastle bridge)
     {
         _dbContext = dbContext;
         _cacheService = cacheService;
-        _maxAccessIntervalForCache = settings.Value.GameViewModel.CacheTime;
+        _maxAccessIntervalForCache = settings.Value.GameEntity.CacheTime;
         _bridge = bridge;
-        _maxAccessIntervalForCache = settings.Value.GameViewModel.CacheTime;
+        _maxAccessIntervalForCache = settings.Value.GameEntity.CacheTime;
     }
 
-    public async Task<GameViewModel?> GetByIdAsync(Guid id)
+    public async Task<GameEntity?> GetByIdAsync(Guid id)
     {
-        if (_cacheService.TryGet(id, out GameViewModel? model))
+        if (_cacheService.TryGet(id, out GameEntity? model))
         {
             return model;
         }
@@ -42,7 +39,7 @@ public class PolydystopiaGameRepository : IPolydystopiaGameRepository
         return model;
     }
 
-    private bool ShouldCache(GameViewModel game)
+    private bool ShouldCache(GameEntity game)
     {
         if (game.TimerSettings.UseTimebanks)
         {
@@ -57,52 +54,40 @@ public class PolydystopiaGameRepository : IPolydystopiaGameRepository
         return false;
     }
 
-    public async Task<GameViewModel> CreateAsync(GameViewModel gameViewModel)
+    public async Task<GameEntity> CreateAsync(GameEntity GameEntity)
     {
-        await _dbContext.Games.AddAsync(gameViewModel);
+        await _dbContext.Games.AddAsync(GameEntity);
         await _dbContext.SaveChangesAsync();
-        return gameViewModel;
+        return GameEntity;
     }
 
-    public async Task<GameViewModel> UpdateAsync(GameViewModel gameViewModel)
+    public async Task<GameEntity> UpdateAsync(GameEntity GameEntity)
     {
-        if (ShouldCache(gameViewModel))
+        if (ShouldCache(GameEntity))
         {
-            _cacheService.Set(gameViewModel.Id, gameViewModel, context => context.Games.Update(gameViewModel));
-            return gameViewModel; // update is automatic as it is a reference type
-            // _dbContext.Games.Update(gameViewModel);
+            _cacheService.Set(GameEntity.Id, GameEntity, context => context.Games.Update(GameEntity));
+            return GameEntity; // update is automatic as it is a reference type
+            // _dbContext.Games.Update(GameEntity);
             // await _dbContext.SaveChangesAsync();
             // Add this if it is catastrophic when live games or last few moves of games are deleted on server crash.
         }
 
-        _dbContext.Games.Update(gameViewModel);
+        _dbContext.Games.Update(GameEntity);
         await _dbContext.SaveChangesAsync();
 
-        return gameViewModel;
+        return GameEntity;
     }
 
-    public async Task<List<GameViewModel>> GetAllGamesByPlayer(Guid playerId)
+    public async Task<List<GameEntity>> GetAllGamesByPlayer(UserEntity user)
     {
-        var playerIdStr = playerId.ToString();
-
-        _cacheService.TryGetAll(
-            game => _bridge.IsPlayerInGame(playerIdStr, game.CurrentGameStateData),
-            out var cachedPlayerGames);
-
-        var activeCachedGames = cachedPlayerGames
-            .Where(g => g.State != GameSessionState.Ended)
+        var activeParticipations = user.GameParticipations
+            .Where(g => g.ActualGame.State != GameSessionState.Ended).Select(g => g.ActualGame)
             .ToList();
 
-        var allDbGames = await _dbContext.Games.ToListAsync();
-        var dbPlayerGames = allDbGames.Where(game =>
-            game.State != GameSessionState.Ended &&
-            _bridge.IsPlayerInGame(playerIdStr, game.CurrentGameStateData) &&
-            cachedPlayerGames.All(c => c.Id != game.Id));
-
-        return activeCachedGames.Concat(dbPlayerGames).ToList();
+        return activeParticipations;
     }
 
-    public async Task<List<GameViewModel>> GetLastEndedGamesByPlayer(Guid playerId, int limit)
+    public async Task<List<GameEntity>> GetLastEndedGamesByPlayer(Guid playerId, int limit)
     {
         _cacheService.TryGetAll(
             game =>
@@ -124,16 +109,14 @@ public class PolydystopiaGameRepository : IPolydystopiaGameRepository
             .ToList();
     }
 
-    public async Task<List<GameViewModel>> GetFavoriteGamesByPlayer(Guid playerId)
+
+    public async Task<List<GameEntity>> GetFavoriteGamesByPlayer(UserEntity user)
     {
-        var favGameIds = await _dbContext.UserFavoriteGames
-            .Where(uf => uf.UserId == playerId)
-            .Select(uf => uf.GameId)
-            .ToListAsync();
+        var favGameIds = user.FavoriteGames.Select(g => g.Id).ToList();
 
         if (!favGameIds.Any())
         {
-            return new List<GameViewModel>();
+            return new List<GameEntity>();
         }
 
         var cachedGames = favGameIds
@@ -151,30 +134,5 @@ public class PolydystopiaGameRepository : IPolydystopiaGameRepository
             .Concat(dbGames)
             .OrderByDescending(g => g.DateLastCommand)
             .ToList();
-    }
-
-
-    public async Task AddFavoriteAsync(Guid userId, Guid gameId)
-    {
-        var fav = new UserFavoriteGame
-        {
-            UserId = userId,
-            GameId = gameId
-        };
-
-        _dbContext.UserFavoriteGames.Add(fav);
-        await _dbContext.SaveChangesAsync();
-    }
-
-    public async Task RemoveFavoriteAsync(Guid userId, Guid gameId)
-    {
-        var favorite = await _dbContext.UserFavoriteGames
-            .FirstOrDefaultAsync(f => f.UserId == userId && f.GameId == gameId);
-
-        if (favorite != null)
-        {
-            _dbContext.UserFavoriteGames.Remove(favorite);
-            await _dbContext.SaveChangesAsync();
-        }
     }
 }

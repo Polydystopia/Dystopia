@@ -48,7 +48,14 @@ public partial class PolytopiaHub
     {
         var gameSummariesSubList = GameSummariesSubscribers;
 
-        var allPlayerGames = await _gameRepository.GetAllGamesByPlayer(_userGuid);
+        var user = await _userRepository.GetByIdAsync(_userGuid);
+        if (user == null)
+        {
+            _logger.LogWarning("User {userId} not found.", _userGuid);
+            return new ServerResponse<ResponseViewModel>(ErrorCode.UserNotFound, "User not found.");
+        }
+
+        var allPlayerGames = await _gameRepository.GetAllGamesByPlayer(user);
 
         foreach (var playerGame in allPlayerGames)
         {

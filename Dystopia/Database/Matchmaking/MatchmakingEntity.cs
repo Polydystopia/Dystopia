@@ -1,4 +1,5 @@
-﻿using PolytopiaBackendBase.Common;
+﻿using Dystopia.Database.Lobby;
+using PolytopiaBackendBase.Common;
 using PolytopiaBackendBase.Game;
 
 namespace Dystopia.Database.Matchmaking;
@@ -10,11 +11,11 @@ public class MatchmakingEntity
 
     }
 
-    public MatchmakingEntity(LobbyGameViewModel lobbyGameViewModel, int version, int mapSize, MapPreset mapPreset, GameMode gameMode, int scoreLimit, int timeLimit, Platform platform, bool allowCrossPlay, int maxPlayers)
+    public MatchmakingEntity(LobbyEntity lobbyEntity, int version, int mapSize, MapPreset mapPreset, GameMode gameMode, int scoreLimit, int timeLimit, Platform platform, bool allowCrossPlay, int maxPlayers)
     {
         Id = Guid.NewGuid();
-        LobbyGameViewModel = lobbyGameViewModel;
-        LobbyGameViewModelId = lobbyGameViewModel.Id;
+        LobbyEntity = lobbyEntity;
+        LobbyEntityId = lobbyEntity.Id;
         Version = version;
         MapSize = mapSize;
         MapPreset = mapPreset;
@@ -24,13 +25,13 @@ public class MatchmakingEntity
         Platform = platform;
         AllowCrossPlay = allowCrossPlay;
         MaxPlayers = maxPlayers;
-        PlayerIds = lobbyGameViewModel.Participators.Select(p => p.UserId).ToList();
+        PlayerIds = lobbyEntity.Participators.Select(p => p.UserId).ToList();
     }
 
     public Guid Id { get; set; }
 
-    public Guid? LobbyGameViewModelId { get; set; }
-    public LobbyGameViewModel? LobbyGameViewModel { get; set; }
+    public Guid? LobbyEntityId { get; set; }
+    public virtual LobbyEntity? LobbyEntity { get; set; }
 
     public int Version { get; set; }
     public int MapSize { get; set; }

@@ -1,13 +1,17 @@
-﻿using PolytopiaBackendBase.Auth;
+﻿using Dystopia.Database.Game;
+using PolytopiaBackendBase.Auth;
 using SteamKit2;
 
 namespace Dystopia.Database.User;
 
 public interface IPolydystopiaUserRepository
 {
-    Task<PolytopiaUserViewModel> GetBySteamIdAsync(SteamID steamId, string username);
-    Task<PolytopiaUserViewModel?> GetByIdAsync(Guid polytopiaId);
-    Task<bool> UpdateAsync(PolytopiaUserViewModel userViewModel);
-    Task<PolytopiaUserViewModel> CreateAsync(SteamID steamId, string username);
-    Task<List<PolytopiaUserViewModel>> GetAllByNameStartsWith(string name);
+    Task<UserEntity> GetBySteamIdAsync(SteamID steamId, string username);
+    Task<UserEntity?> GetByIdAsync(Guid polytopiaId);
+    Task<bool> UpdateAsync(UserEntity userEntity);
+    Task<UserEntity> CreateAsync(SteamID steamId, string username);
+    Task<List<UserEntity>> GetAllByNameStartsWith(string name);
+
+    Task AddFavoriteAsync(UserEntity user, GameEntity game);
+    Task RemoveFavoriteAsync(UserEntity user, GameEntity game);
 }

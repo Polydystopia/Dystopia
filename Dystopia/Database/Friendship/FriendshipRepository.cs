@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using Dystopia.Database.User;
 using PolytopiaBackendBase.Auth;
 using PolytopiaBackendBase.Game;
@@ -30,6 +30,11 @@ public class FriendshipRepository : IFriendshipRepository
 
     public async Task<bool> SetFriendshipStatusAsync(Guid user1Id, Guid user2Id, FriendshipStatus status)
     {
+        if (user1Id == Guid.Empty || user2Id == Guid.Empty)
+        {
+            return false;
+        }
+
         var friendship = await _dbContext.Friends
             .FirstOrDefaultAsync(f =>
                 (f.UserId1 == user1Id && f.UserId2 == user2Id) || (f.UserId1 == user2Id && f.UserId2 == user1Id));
@@ -59,35 +64,24 @@ public class FriendshipRepository : IFriendshipRepository
         return await _dbContext.SaveChangesAsync() > 0;
     }
 
-    public async Task<List<PolytopiaFriendViewModel>> GetFriendsForUserAsync(Guid userId)
+    public async Task<List<(UserEntity User, FriendshipStatus Status)>> GetFriendsForUserAsync(Guid userId)
     {
-        var friendships1 = await _dbContext.Friends
-            .Where(f => f.UserId1 == userId)
-            .Select(f => f.UserId2)
-            .ToListAsync();
-
-        var friendships2 = await _dbContext.Friends
-            .Where(f => f.UserId2 == userId)
-            .Select(f => f.UserId1)
-            .ToListAsync();
-
-        var friendIds = friendships1.Concat(friendships2).ToList();
-
         var friendUsers = await _dbContext.Users
-            .Where(u => friendIds.Contains(u.PolytopiaId))
+            .Where(u => _dbContext.Friends
+                .Any(f =>
+                    (f.UserId1 == userId && f.UserId2 == u.Id) ||
+                    (f.UserId2 == userId && f.UserId1 == u.Id)
+                )
+            )
             .ToListAsync();
 
-        var friendViewModels = new List<PolytopiaFriendViewModel>();
-        foreach (var user in friendUsers)
+        var friends = new List<(UserEntity User, FriendshipStatus Status)>();
+        foreach (var friend in friendUsers)
         {
-            var friend = new PolytopiaFriendViewModel();
-            friend.User = user;
-            friend.FriendshipStatus = await GetFriendshipStatusAsync(userId, user.PolytopiaId);
-
-            friendViewModels.Add(friend);
+            friends.Add((friend, await GetFriendshipStatusAsync(userId, friend.Id)));
         }
 
-        return friendViewModels;
+        return friends;
     }
 
     public async Task<bool> DeleteFriendshipAsync(Guid user1Id, Guid user2Id)
