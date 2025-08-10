@@ -1,6 +1,7 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using Dystopia.Database.Game;
+using Dystopia.Database.Shared;
 using Dystopia.Database.User;
 using PolytopiaBackendBase.Game;
 using PolytopiaBackendBase.Game.ViewModels;
@@ -11,7 +12,7 @@ public class LobbyEntity
 {
     [Key] public Guid Id { get; init; }
 
-    protected virtual GameEntity Game { get; set; } = null!;
+    protected virtual GameEntity? Game { get; set; } = null!;
 
     public DateTime DateCreated { get; init; }
     public DateTime? DateModified { get; set; }
@@ -26,6 +27,7 @@ public class LobbyEntity
     public virtual UserEntity Owner { get; init; } = null!;
 
     public GameSessionState State { get; set; }
+    public RoundType Type { get; set; }
 
     public List<int>? DisabledTribes { get; set; }
 
@@ -57,10 +59,12 @@ public class LobbyEntity
     }
 
     [NotMapped]
-    public GameEntity ActualGame
+    public GameEntity? ActualGame
     {
         get
         {
+            if (Game == null) return null;
+
             if (GameCache.Cache != null && GameCache.Cache.TryGet(Game.Id, out var cachedGame) && cachedGame != null)
             {
                 return cachedGame;

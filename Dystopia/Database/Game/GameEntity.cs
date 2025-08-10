@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using Dystopia.Database.Lobby;
+using Dystopia.Database.Shared;
 using Dystopia.Database.User;
 using PolytopiaBackendBase.Game;
 using PolytopiaBackendBase.Game.ViewModels;
@@ -21,6 +22,8 @@ public class GameEntity
     public DateTime? DateLastCommand { get; set; }
 
     public GameSessionState State { get; set; }
+    public RoundType Type { get; set; }
+
     public string GameSettings { get; init; } = null!; // TODO make it ownsone in builder TODO make custom entity
 
     public byte[]? InitialGameStateData { get; init; }
