@@ -205,7 +205,7 @@ public partial class PolytopiaHub
         }
 
         _logger.LogInformation("Starting game {lobbyId}", lobby.Id);
-        var gameCreated = await _gameManager.CreateGame(lobby.ToViewModel());
+        var gameCreated = await _gameManager.CreateGame(lobby);
 
         lobby.StartTime = DateTime.Now;
         lobby.State = GameSessionState.Started;

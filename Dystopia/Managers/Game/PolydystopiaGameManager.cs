@@ -1,5 +1,7 @@
 ﻿using Dystopia.Bridge;
 using Dystopia.Database.Game;
+using Dystopia.Database.Lobby;
+using Dystopia.Database.Shared;
 using Dystopia.Database.User;
 using Dystopia.Hubs;
 using Dystopia.Patches;
@@ -27,10 +29,10 @@ public class PolydystopiaGameManager : IPolydystopiaGameManager
         PolytopiaDataManager.provider = new MyProvider();
     }
 
-    public async Task<bool> CreateGame(LobbyGameViewModel lobby)
+    public async Task<bool> CreateGame(LobbyEntity lobby)
     {
         var bridge = new DystopiaBridge();
-        var (serializedGameState, gameSettingsJson) = bridge.CreateGame(lobby.Map());
+        var (serializedGameState, gameSettingsJson) = bridge.CreateGame(lobby.ToViewModel().Map());
 
         serializedGameState = bridge.Update(serializedGameState);
 
@@ -42,6 +44,7 @@ public class PolydystopiaGameManager : IPolydystopiaGameManager
             DateCreated = DateTime.Now,
             DateLastCommand = DateTime.Now,
             State = GameSessionState.Started,
+            Type = lobby.Type,
             GameSettings = gameSettingsJson,
             InitialGameStateData = serializedGameState,
             CurrentGameStateData = serializedGameState,
@@ -221,6 +224,25 @@ public class PolydystopiaGameManager : IPolydystopiaGameManager
 
         summary.GameSummaryData = serializedSummary;
         summary.GameContext = new GameContext(); //?
+
+        return summary;
+    }
+
+    public MatchmakingGameSummaryViewModel GetMatchmakingGameSummaryViewModel(GameEntity game)
+    {
+        var summary = new MatchmakingGameSummaryViewModel();
+        summary.Id = game.Lobby.MatchmakingGameId.Value;
+        summary.DateCreated = game.DateCreated;
+        summary.DateModified = game.Lobby.DateModified;
+        summary.Name = game.Lobby.Name;
+        summary.MapPreset = game.Lobby.MapPreset;
+        summary.MapSize = game.Lobby.MapSize;
+        summary.OpponentCount = (short)(game.Lobby.MaxPlayers - 1);
+        summary.GameMode = game.Lobby.GameMode;
+        summary.WithPickedTribe = true;
+        summary.LobbyId = game.LobbyId;
+
+        summary.Participators = game.Participators.ToViewModels();
 
         return summary;
     }

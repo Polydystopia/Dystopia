@@ -1,4 +1,5 @@
 ﻿using Dystopia.Database.Lobby;
+using Dystopia.Database.Shared;
 using Dystopia.Database.User;
 using Dystopia.Managers.Names;
 using PolytopiaBackendBase.Auth;
@@ -29,6 +30,7 @@ public static class PolydystopiaLobbyManager
             ScoreLimit = model.ScoreLimit,
             InviteLink = "https://polydystopia.xyz/todo",
             State = GameSessionState.Lobby,
+            Type = RoundType.Friendly,
             Participators = new List<LobbyParticipatorUserEntity>()
             {
                 new()
@@ -87,6 +89,7 @@ public static class PolydystopiaLobbyManager
                 }
             },
             State = GameSessionState.Lobby,
+            Type = RoundType.Matchmaking,
             ExternalMatchId = gameId, //TODO ?
             ExternalTournamentId = gameId, //TODO ?
             Bots = new List<int>()

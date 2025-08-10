@@ -87,52 +87,18 @@ public class PolydystopiaGameRepository : IPolydystopiaGameRepository
         return activeParticipations;
     }
 
-    public async Task<List<GameEntity>> GetLastEndedGamesByPlayer(Guid playerId, int limit)
+    public async Task<List<GameEntity>> GetLastEndedGamesByPlayer(UserEntity user, int limit)
     {
-        _cacheService.TryGetAll(
-            game =>
-                game.State == GameSessionState.Ended &&
-                _bridge.IsPlayerInGame(playerId.ToString(), game.CurrentGameStateData),
-            out var cachedPlayerGames);
-
-        var allDbGames = await _dbContext.Games.ToListAsync();
-        var dbPlayerGames =
-            allDbGames.Where(game =>
-                game.State == GameSessionState.Ended &&
-                _bridge.IsPlayerInGame(playerId.ToString(), game.CurrentGameStateData) &&
-                cachedPlayerGames.All(c => c.Id != game.Id));
-
-        return cachedPlayerGames
-            .Concat(dbPlayerGames)
+        var endedParticipations = user.GameParticipations
+            .Where(g => g.ActualGame.State == GameSessionState.Ended).Select(g => g.ActualGame)
             .OrderByDescending(game => game.DateLastCommand)
-            .Take(limit)
-            .ToList();
-    }
+            .Take(limit);
 
+        return endedParticipations.ToList();
+    }
 
     public async Task<List<GameEntity>> GetFavoriteGamesByPlayer(UserEntity user)
     {
-        var favGameIds = user.FavoriteGames.Select(g => g.Id).ToList();
-
-        if (!favGameIds.Any())
-        {
-            return new List<GameEntity>();
-        }
-
-        var cachedGames = favGameIds
-            .Select(id => _cacheService.TryGet(id, out var g) ? g : null)
-            .Where(g => g is { State: GameSessionState.Ended })
-            .ToList()!;
-
-        var cachedIds = cachedGames.Select(g => g.Id).ToHashSet();
-
-        var dbGames = await _dbContext.Games
-            .Where(g => favGameIds.Contains(g.Id) && !cachedIds.Contains(g.Id) && g.State == GameSessionState.Ended)
-            .ToListAsync();
-
-        return cachedGames
-            .Concat(dbGames)
-            .OrderByDescending(g => g.DateLastCommand)
-            .ToList();
+        return user.ActualFavoriteGames.OrderByDescending(g => g.DateLastCommand).ToList();
     }
 }

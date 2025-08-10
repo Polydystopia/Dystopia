@@ -10,10 +10,18 @@ public partial class PolytopiaHub
     public async Task<ServerResponseList<GameSummaryViewModel>> GetRecentGames(
         RecentGamesBindingModel model)
     {
+        var user = await _userRepository.GetByIdAsync(_userGuid);
+
+        if (user == null)
+        {
+            _logger.LogWarning("Get recent games failed: User not found. UserId={userId}", _userGuid);
+
+            return new ServerResponseList<GameSummaryViewModel>(ErrorCode.UserNotFound, "User not found.");
+        }
+
+        var games = await _gameRepository.GetLastEndedGamesByPlayer(user, model.Limit);
+
         var summaries = new List<GameSummaryViewModel>();
-
-        var games = await _gameRepository.GetLastEndedGamesByPlayer(_userGuid, model.Limit);
-
         foreach (var gameViewModel in games)
         {
             var summary = _gameManager.GetGameSummaryViewModelByGameViewModel(gameViewModel.ToViewModel());

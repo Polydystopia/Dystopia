@@ -312,4 +312,307 @@ public class GameRepositoryTests
 
         return participation;
     }
+
+    [Fact]
+    public async Task GetLastEndedGamesByPlayer_ReturnsEmptyList_WhenNoEndedGames()
+    {
+        // Arrange
+        var user = new UserEntity()
+        {
+            GameParticipations = new List<GameParticipatorUserUser>()
+            {
+                CreateGameParticipation(Guid.NewGuid(), new GameEntity { State = GameSessionState.Started }),
+                CreateGameParticipation(Guid.NewGuid(), new GameEntity { State = GameSessionState.Lobby }),
+            }
+        };
+
+        // Act
+        var result = await CreateRepository().GetLastEndedGamesByPlayer(user, 10);
+
+        // Assert
+        Assert.Empty(result);
+    }
+
+    [Fact]
+    public async Task GetLastEndedGamesByPlayer_ReturnsEndedGames_OrderedByDateLastCommand()
+    {
+        // Arrange
+        var oldDate = DateTime.UtcNow.AddDays(-5);
+        var middleDate = DateTime.UtcNow.AddDays(-2);
+        var recentDate = DateTime.UtcNow.AddHours(-1);
+
+        var user = new UserEntity()
+        {
+            GameParticipations = new List<GameParticipatorUserUser>()
+            {
+                CreateGameParticipation(Guid.NewGuid(), new GameEntity 
+                { 
+                    State = GameSessionState.Ended, 
+                    DateLastCommand = oldDate 
+                }),
+                CreateGameParticipation(Guid.NewGuid(), new GameEntity 
+                { 
+                    State = GameSessionState.Started,
+                    DateLastCommand = recentDate 
+                }),
+                CreateGameParticipation(Guid.NewGuid(), new GameEntity 
+                { 
+                    State = GameSessionState.Ended, 
+                    DateLastCommand = recentDate 
+                }),
+                CreateGameParticipation(Guid.NewGuid(), new GameEntity 
+                { 
+                    State = GameSessionState.Ended, 
+                    DateLastCommand = middleDate 
+                }),
+            }
+        };
+
+        // Act
+        var result = await CreateRepository().GetLastEndedGamesByPlayer(user, 10);
+
+        // Assert
+        Assert.Equal(3, result.Count);
+        Assert.True(result[0].DateLastCommand >= result[1].DateLastCommand);
+        Assert.True(result[1].DateLastCommand >= result[2].DateLastCommand);
+        Assert.Equal(recentDate, result[0].DateLastCommand);
+        Assert.Equal(middleDate, result[1].DateLastCommand);
+        Assert.Equal(oldDate, result[2].DateLastCommand);
+    }
+
+    [Fact]
+    public async Task GetLastEndedGamesByPlayer_RespectsLimit()
+    {
+        // Arrange
+        var user = new UserEntity()
+        {
+            GameParticipations = new List<GameParticipatorUserUser>()
+            {
+                CreateGameParticipation(Guid.NewGuid(), new GameEntity 
+                { 
+                    State = GameSessionState.Ended, 
+                    DateLastCommand = DateTime.UtcNow.AddDays(-1) 
+                }),
+                CreateGameParticipation(Guid.NewGuid(), new GameEntity 
+                { 
+                    State = GameSessionState.Ended, 
+                    DateLastCommand = DateTime.UtcNow.AddDays(-2) 
+                }),
+                CreateGameParticipation(Guid.NewGuid(), new GameEntity 
+                { 
+                    State = GameSessionState.Ended, 
+                    DateLastCommand = DateTime.UtcNow.AddDays(-3) 
+                }),
+                CreateGameParticipation(Guid.NewGuid(), new GameEntity 
+                { 
+                    State = GameSessionState.Ended, 
+                    DateLastCommand = DateTime.UtcNow.AddDays(-4) 
+                }),
+            }
+        };
+
+        // Act
+        var result = await CreateRepository().GetLastEndedGamesByPlayer(user, 2);
+
+        // Assert
+        Assert.Equal(2, result.Count);
+    }
+
+    [Fact]
+    public async Task GetLastEndedGamesByPlayer_ReturnsAllEndedGames_WhenLimitExceedsAvailable()
+    {
+        // Arrange
+        var user = new UserEntity()
+        {
+            GameParticipations = new List<GameParticipatorUserUser>()
+            {
+                CreateGameParticipation(Guid.NewGuid(), new GameEntity 
+                { 
+                    State = GameSessionState.Ended, 
+                    DateLastCommand = DateTime.UtcNow.AddDays(-1) 
+                }),
+                CreateGameParticipation(Guid.NewGuid(), new GameEntity 
+                { 
+                    State = GameSessionState.Ended, 
+                    DateLastCommand = DateTime.UtcNow.AddDays(-2) 
+                }),
+            }
+        };
+
+        // Act
+        var result = await CreateRepository().GetLastEndedGamesByPlayer(user, 10);
+
+        // Assert
+        Assert.Equal(2, result.Count);
+    }
+
+    [Fact]
+    public async Task GetLastEndedGamesByPlayer_HandlesZeroLimit()
+    {
+        // Arrange
+        var user = new UserEntity()
+        {
+            GameParticipations = new List<GameParticipatorUserUser>()
+            {
+                CreateGameParticipation(Guid.NewGuid(), new GameEntity 
+                { 
+                    State = GameSessionState.Ended, 
+                    DateLastCommand = DateTime.UtcNow.AddDays(-1) 
+                }),
+            }
+        };
+
+        // Act
+        var result = await CreateRepository().GetLastEndedGamesByPlayer(user, 0);
+
+        // Assert
+        Assert.Empty(result);
+    }
+
+    [Fact]
+    public async Task GetLastEndedGamesByPlayer_HandlesNullGameParticipations()
+    {
+        // Arrange
+        var user = new UserEntity()
+        {
+            GameParticipations = null
+        };
+
+        // Act & Assert
+        await Assert.ThrowsAsync<ArgumentNullException>(() => 
+            CreateRepository().GetLastEndedGamesByPlayer(user, 10));
+    }
+
+    [Fact]
+    public async Task GetFavoriteGamesByPlayer_ReturnsEmptyList_WhenNoFavoriteGames()
+    {
+        // Arrange
+        var user = new UserEntity()
+        {
+            FavoriteGames = new List<GameEntity>()
+        };
+
+        // Act
+        var result = await CreateRepository().GetFavoriteGamesByPlayer(user);
+
+        // Assert
+        Assert.Empty(result);
+    }
+
+    [Fact]
+    public async Task GetFavoriteGamesByPlayer_ReturnsFavoriteGames_OrderedByDateLastCommand()
+    {
+        // Arrange
+        var oldDate = DateTime.UtcNow.AddDays(-5);
+        var middleDate = DateTime.UtcNow.AddDays(-2);
+        var recentDate = DateTime.UtcNow.AddHours(-1);
+
+        var user = new UserEntity()
+        {
+            FavoriteGames = new List<GameEntity>()
+            {
+                new GameEntity { Id = Guid.NewGuid(), DateLastCommand = oldDate },
+                new GameEntity { Id = Guid.NewGuid(), DateLastCommand = recentDate },
+                new GameEntity { Id = Guid.NewGuid(), DateLastCommand = middleDate },
+            }
+        };
+
+        // Act
+        var result = await CreateRepository().GetFavoriteGamesByPlayer(user);
+
+        // Assert
+        Assert.Equal(3, result.Count);
+        Assert.True(result[0].DateLastCommand >= result[1].DateLastCommand);
+        Assert.True(result[1].DateLastCommand >= result[2].DateLastCommand);
+        Assert.Equal(recentDate, result[0].DateLastCommand);
+        Assert.Equal(middleDate, result[1].DateLastCommand);
+        Assert.Equal(oldDate, result[2].DateLastCommand);
+    }
+
+    [Fact]
+    public async Task GetFavoriteGamesByPlayer_UsesCachedVersions_WhenAvailable()
+    {
+        // Arrange
+        var gameId1 = Guid.NewGuid();
+        var gameId2 = Guid.NewGuid();
+        var gameId3 = Guid.NewGuid();
+
+        var user = new UserEntity()
+        {
+            FavoriteGames = new List<GameEntity>()
+            {
+                new GameEntity { Id = gameId1, DateLastCommand = DateTime.UtcNow.AddDays(-1), CurrentGameStateData = new byte[] { 1 } },
+                new GameEntity { Id = gameId2, DateLastCommand = DateTime.UtcNow.AddDays(-2), CurrentGameStateData = new byte[] { 2 } },
+                new GameEntity { Id = gameId3, DateLastCommand = DateTime.UtcNow.AddDays(-3), CurrentGameStateData = new byte[] { 3 } },
+            }
+        };
+
+        // Setup cache to return updated versions for some games
+        _cacheServiceMock
+            .Setup(c => c.TryGet(gameId1, out It.Ref<GameEntity>.IsAny))
+            .Returns((Guid id, out GameEntity game) =>
+            {
+                game = new GameEntity { Id = gameId1, DateLastCommand = DateTime.UtcNow.AddHours(-1), CurrentGameStateData = new byte[] { 10 } };
+                return true;
+            });
+
+        _cacheServiceMock
+            .Setup(c => c.TryGet(gameId2, out It.Ref<GameEntity>.IsAny))
+            .Returns(false);
+
+        _cacheServiceMock
+            .Setup(c => c.TryGet(gameId3, out It.Ref<GameEntity>.IsAny))
+            .Returns((Guid id, out GameEntity game) =>
+            {
+                game = new GameEntity { Id = gameId3, DateLastCommand = DateTime.UtcNow.AddHours(-2), CurrentGameStateData = new byte[] { 30 } };
+                return true;
+            });
+
+        // Act
+        var result = await CreateRepository().GetFavoriteGamesByPlayer(user);
+
+        // Assert
+        Assert.Equal(3, result.Count);
+        
+        // Verify cached versions are used where available
+        var game1 = result.First(g => g.Id == gameId1);
+        var game2 = result.First(g => g.Id == gameId2);
+        var game3 = result.First(g => g.Id == gameId3);
+        
+        Assert.Equal(10, game1.CurrentGameStateData[0]); // Cached version
+        Assert.Equal(2, game2.CurrentGameStateData[0]);  // Original version (not cached)
+        Assert.Equal(30, game3.CurrentGameStateData[0]); // Cached version
+    }
+
+    [Fact]
+    public async Task GetFavoriteGamesByPlayer_UsesOriginalGames_WhenCacheIsNull()
+    {
+        // Arrange
+        var originalCache = GameCache.Cache;
+        GameCache.InitializeCache(null); // Set cache to null
+
+        var user = new UserEntity()
+        {
+            FavoriteGames = new List<GameEntity>()
+            {
+                new GameEntity { Id = Guid.NewGuid(), DateLastCommand = DateTime.UtcNow.AddDays(-1) },
+                new GameEntity { Id = Guid.NewGuid(), DateLastCommand = DateTime.UtcNow.AddDays(-2) },
+            }
+        };
+
+        try
+        {
+            // Act
+            var result = await CreateRepository().GetFavoriteGamesByPlayer(user);
+
+            // Assert
+            Assert.Equal(2, result.Count);
+            Assert.Same(user.FavoriteGames.First(), result[0]); // Should be same reference as original
+        }
+        finally
+        {
+            // Restore original cache
+            GameCache.InitializeCache(originalCache);
+        }
+    }
 }
