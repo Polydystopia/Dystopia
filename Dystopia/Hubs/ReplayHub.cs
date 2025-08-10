@@ -14,7 +14,7 @@ public partial class PolytopiaHub
 
         if (user == null)
         {
-            _logger.LogWarning("Save as favorite failed: User not found. UserId={userId}", _userGuid);
+            _logger.LogWarning("Get recent games failed: User not found. UserId={userId}", _userGuid);
 
             return new ServerResponseList<GameSummaryViewModel>(ErrorCode.UserNotFound, "User not found.");
         }
