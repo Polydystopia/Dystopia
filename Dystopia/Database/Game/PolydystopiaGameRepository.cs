@@ -99,27 +99,6 @@ public class PolydystopiaGameRepository : IPolydystopiaGameRepository
 
     public async Task<List<GameEntity>> GetFavoriteGamesByPlayer(UserEntity user)
     {
-        var favGameIds = user.FavoriteGames.Select(g => g.Id).ToList();
-
-        if (!favGameIds.Any())
-        {
-            return new List<GameEntity>();
-        }
-
-        var cachedGames = favGameIds
-            .Select(id => _cacheService.TryGet(id, out var g) ? g : null)
-            .Where(g => g is { State: GameSessionState.Ended })
-            .ToList()!;
-
-        var cachedIds = cachedGames.Select(g => g.Id).ToHashSet();
-
-        var dbGames = await _dbContext.Games
-            .Where(g => favGameIds.Contains(g.Id) && !cachedIds.Contains(g.Id) && g.State == GameSessionState.Ended)
-            .ToListAsync();
-
-        return cachedGames
-            .Concat(dbGames)
-            .OrderByDescending(g => g.DateLastCommand)
-            .ToList();
+        return user.ActualFavoriteGames.OrderByDescending(g => g.DateLastCommand).ToList();
     }
 }

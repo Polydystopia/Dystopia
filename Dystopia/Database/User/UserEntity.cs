@@ -31,6 +31,30 @@ public class UserEntity
 
     public virtual ICollection<GameEntity> FavoriteGames { get; set; } = new List<GameEntity>();
 
+    [NotMapped]
+    public virtual ICollection<GameEntity> ActualFavoriteGames
+    {
+        get
+        {
+            if (GameCache.Cache == null) return FavoriteGames;
+
+            var result = new List<GameEntity>();
+            foreach (var game in FavoriteGames)
+            {
+                if (GameCache.Cache.TryGet(game.Id, out var cachedGame) && cachedGame != null)
+                {
+                    result.Add(cachedGame);
+                }
+                else
+                {
+                    result.Add(game);
+                }
+            }
+
+            return result;
+        }
+    }
+
     public int Elo { get; set; }
 
     public byte[] AvatarStateData { get; set; }
