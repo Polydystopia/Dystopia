@@ -10,7 +10,7 @@ public interface IPolydystopiaGameRepository
     Task<GameEntity> UpdateAsync(GameEntity gameEntity);
 
     Task<List<GameEntity>> GetAllGamesByPlayer(UserEntity user);
-    Task<List<GameEntity>> GetLastEndedGamesByPlayer(Guid playerId, int limit);
+    Task<List<GameEntity>> GetLastEndedGamesByPlayer(UserEntity user, int limit);
 
     Task<List<GameEntity>> GetFavoriteGamesByPlayer(UserEntity user);
 }
