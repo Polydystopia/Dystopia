@@ -185,13 +185,13 @@ Legend:
 Legend:
 🟢 (Supported), 🟡 (Supported, untested), 🔴 (unsupported), 🌉 (IL2CPP interop)
 
-| Version | Status |
-|--------|-------|
-| 113 (beta) | 🔴 | 
-| 105-112 | 🟡🌉 | 
-| 104    | 🟢    |
-| 51-103 | 🟡    |
-| <51    | 🔴    |
+| Version    | Status |
+|------------|-------|
+| 114 (beta) | 🟡🌉 | 
+| 105-113    | 🟢🌉 | 
+| 104        | 🟢    |
+| 51-103     | 🟡    |
+| <51        | 🔴    |
 
 ## Login
 Legend:

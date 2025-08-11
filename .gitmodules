@@ -1,3 +1,4 @@
 [submodule "lib"]
 	path = lib
 	url = git@github.com:Polydystopia/DystopiaLibs.git
+	branch = 114_beta

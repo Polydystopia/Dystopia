@@ -61,15 +61,7 @@ public class PolydystopiaUserRepository : IPolydystopiaUserRepository
             Elo = 1000,
             AvatarStateData = SerializationHelpers.ToByteArray(
                 AvatarExtensions.CreateRandomState(VersionManager.AvatarDataVersion), VersionManager.GameVersion),
-            GameVersions = new List<ClientGameVersionViewModel>() //TODO: Get real game versions
-            {
-                new()
-                {
-                    Platform = Platform.Steam,
-                    DeviceId = "4c24759ff9d1d0c6e8bb28c7afc178b4752eca0d",
-                    GameVersion = 112
-                }
-            },
+            GameVersions = new List<ClientGameVersionViewModel>(),
             LastLoginDate = DateTime.Now,
         };
 

@@ -32,7 +32,9 @@ public class PolydystopiaGameManager : IPolydystopiaGameManager
     public async Task<bool> CreateGame(LobbyEntity lobby)
     {
         var bridge = new DystopiaBridge();
-        var (serializedGameState, gameSettingsJson) = bridge.CreateGame(lobby.ToViewModel().Map());
+
+        var highestPossibleVersion = lobby.Participators.Select(p => p.User.GameVersions.Min(p => p.GameVersion)).Min(p => p);
+        var (serializedGameState, gameSettingsJson) = bridge.CreateGame(lobby.ToViewModel().Map(), highestPossibleVersion);
 
         serializedGameState = bridge.Update(serializedGameState);
 

@@ -23,7 +23,8 @@ public class AuthController : ControllerBase
 
     private readonly ILogger<AuthController> _logger;
 
-    public AuthController(IPolydystopiaUserRepository userRepository, ISteamService steamService, ILogger<AuthController> logger)
+    public AuthController(IPolydystopiaUserRepository userRepository, ISteamService steamService,
+        ILogger<AuthController> logger)
     {
         _userRepository = userRepository;
         _steamService = steamService;
@@ -68,6 +69,23 @@ public class AuthController : ControllerBase
         return token;
     }
 
+    private async Task UpdateClientVersions(LoginBaseBindingModel model, Platform platform, UserEntity userFromDb)
+    {
+        if(model.GameVersion == null) return;
+
+        if (!userFromDb.GameVersions.Any(g => g.DeviceId == model.DeviceId && g.GameVersion == model.GameVersion))
+        {
+            userFromDb.GameVersions.Add(new ClientGameVersionViewModel()
+            {
+                DeviceId = model.DeviceId,
+                GameVersion = (int)model.GameVersion,
+                Platform = platform
+            });
+
+            await _userRepository.UpdateAsync(userFromDb);
+        }
+    }
+
     [Route("login_steam")]
     public async Task<ActionResult<ServerResponse<PolytopiaToken>>> LoginSteam([FromBody] SteamLoginBindingModel? model)
     {
@@ -87,18 +105,23 @@ public class AuthController : ControllerBase
         }
 
         var env = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT"); //TODO: Hack use DI later
-        
+
         var isDevEnv = string.Equals(env, Environments.Development, StringComparison.OrdinalIgnoreCase);
 
-        var username = !isDevEnv ? await _steamService.GetSteamUsernameAsync(parsedSteamTicket.SteamID) : PolyUsernameGenerator.GetGeneratedUsername(model.DeviceId);
+        var username = !isDevEnv
+            ? await _steamService.GetSteamUsernameAsync(parsedSteamTicket.SteamID)
+            : PolyUsernameGenerator.GetGeneratedUsername(model.DeviceId);
         if (string.IsNullOrEmpty(username))
         {
-            _logger.LogWarning("Could not get steam username for steamId {steamId}", parsedSteamTicket.SteamID);;
+            _logger.LogWarning("Could not get steam username for steamId {steamId}", parsedSteamTicket.SteamID);
+            ;
             return BadRequest("Username parse error.");
             // shouldn't we generate a random username in this case?
         }
 
         var userFromDb = await _userRepository.GetBySteamIdAsync(parsedSteamTicket.SteamID, username);
+
+        await UpdateClientVersions(model, Platform.Steam, userFromDb);
 
         var token = CreateToken(userFromDb);
 
@@ -107,14 +130,18 @@ public class AuthController : ControllerBase
         return Content(json, "application/json");
     }
 
+
     [Route("login_google_play")]
     public async Task<ActionResult<ServerResponse<PolytopiaToken>>> LoginGooglePlay(
         LoginGooglePlayBindingModel model)
     {
         //TODO we need to find a way to properly handle model.AuthCode. Maybe it will not be possible to use the original one and we have to patch the game app. For now we will use the deviceId as username.
-        var fakeGooglePlaySteamAppTicket = _steamService.ParseTicket(new []{Byte.MaxValue, }, model.DeviceId);
+        var fakeGooglePlaySteamAppTicket = _steamService.ParseTicket(new[] { Byte.MaxValue, }, model.DeviceId);
 
-        var userFromDb = await _userRepository.GetBySteamIdAsync(fakeGooglePlaySteamAppTicket.SteamID, PolyUsernameGenerator.GetGeneratedUsername(model.DeviceId));
+        var userFromDb = await _userRepository.GetBySteamIdAsync(fakeGooglePlaySteamAppTicket.SteamID,
+            PolyUsernameGenerator.GetGeneratedUsername(model.DeviceId));
+
+        await UpdateClientVersions(model, Platform.Steam, userFromDb);
 
         var token = CreateToken(userFromDb);
 

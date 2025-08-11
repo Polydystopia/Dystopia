@@ -6,7 +6,7 @@ public interface IDystopiaCastle
 {
     string GetVersion();
 
-    (byte[] serializedGamestate, string gameSettingsJson) CreateGame(SharedLobbyGameViewModel lobby);
+    (byte[] serializedGamestate, string gameSettingsJson) CreateGame(SharedLobbyGameViewModel lobby, int gameVersion);
 
     byte[] Update(byte[] serializedGameState);
 
