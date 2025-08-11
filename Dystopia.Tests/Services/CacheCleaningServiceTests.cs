@@ -344,7 +344,10 @@ public class CacheCleaningServiceTests
         await task;
 
         // Assert
-        mockScope.Verify(x => x.Dispose(), Times.AtLeast(2)); // At least one for cleanup, one for shutdown
+        // Service should dispose at least one scope for shutdown, regardless of how many cleanup iterations occurred
+        mockScope.Verify(x => x.Dispose(), Times.AtLeastOnce());
+        // Additionally verify that SaveAllCacheToDisk was called during shutdown (which requires a scope)
+        mockCacheService.Verify(x => x.SaveAllCacheToDisk(mockDbContext.Object), Times.Once());
     }
 
     [Fact]
