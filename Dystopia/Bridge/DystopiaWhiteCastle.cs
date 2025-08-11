@@ -15,7 +15,7 @@ public class DystopiaWhiteCastle : IDystopiaCastle
         return VersionManager.GameVersion.ToString();
     }
 
-    public (byte[] serializedGamestate, string gameSettingsJson) CreateGame(SharedLobbyGameViewModel lobby)
+    public (byte[] serializedGamestate, string gameSettingsJson) CreateGame(SharedLobbyGameViewModel lobby, int gameVersion)
     {
         var managedLobby = lobby.Map();
 
@@ -69,7 +69,7 @@ public class DystopiaWhiteCastle : IDystopiaCastle
 
         GameState gameState = new GameState()
         {
-            Version = VersionManager.GameVersion,
+            Version = gameVersion,
             Settings = settings,
             PlayerStates = new List<PlayerState>()
         };

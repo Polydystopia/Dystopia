@@ -42,7 +42,7 @@ public class DystopiaBlackCastle : IDystopiaCastle
         return VersionManager.GameVersion.ToString();
     }
 
-    public (byte[] serializedGamestate, string gameSettingsJson) CreateGame(SharedLobbyGameViewModel lobby)
+    public (byte[] serializedGamestate, string gameSettingsJson) CreateGame(SharedLobbyGameViewModel lobby, int gameVersion)
     {
         return Run(() =>
         {
@@ -100,7 +100,7 @@ public class DystopiaBlackCastle : IDystopiaCastle
 
             GameState gameState = new GameState()
             {
-                Version = 112, //TODO
+                Version = gameVersion,
                 Settings = settings,
                 PlayerStates = new Il2CppSystem.Collections.Generic.List<PlayerState>()
             };

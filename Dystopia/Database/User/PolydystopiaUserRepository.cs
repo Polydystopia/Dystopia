@@ -67,7 +67,7 @@ public class PolydystopiaUserRepository : IPolydystopiaUserRepository
                 {
                     Platform = Platform.Steam,
                     DeviceId = "4c24759ff9d1d0c6e8bb28c7afc178b4752eca0d",
-                    GameVersion = 112
+                    GameVersion = 114
                 }
             },
             LastLoginDate = DateTime.Now,
