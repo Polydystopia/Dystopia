@@ -10,26 +10,26 @@ namespace Dystopia.Database.Lobby;
 
 public class LobbyEntity
 {
-    [Key] public Guid Id { get; init; }
+    [Key] public required Guid Id { get; init; }
 
     protected virtual GameEntity? Game { get; set; } = null!;
 
-    public DateTime DateCreated { get; init; }
+    public required DateTime DateCreated { get; init; }
     public DateTime? DateModified { get; set; }
 
-    [MaxLength(32)] public string Name { get; init; }
+    [MaxLength(32)] public required string Name { get; init; }
 
-    public MapPreset MapPreset { get; init; }
-    public int MapSize { get; init; }
-    public GameMode GameMode { get; init; }
+    public required MapPreset MapPreset { get; init; }
+    public required int MapSize { get; init; }
+    public required GameMode GameMode { get; init; }
 
     public Guid OwnerId { get; set; }
     public virtual UserEntity Owner { get; init; } = null!;
 
-    public GameSessionState State { get; set; }
-    public RoundType Type { get; set; }
+    public required GameSessionState State { get; set; }
+    public required RoundType Type { get; set; }
 
-    public List<int>? DisabledTribes { get; set; }
+    public required List<int>? DisabledTribes { get; set; }
 
     public int TimeLimit { get; init; }
     public int ScoreLimit { get; init; }
@@ -49,7 +49,7 @@ public class LobbyEntity
     public virtual ICollection<LobbyParticipatorUserEntity> Participators { get; set; }
         = new List<LobbyParticipatorUserEntity>();
 
-    public List<int> Bots { get; set; }
+    public required List<int> Bots { get; set; }
 
     public PlayerInvitationState GetInvitationStateForPlayer(Guid userId)
     {

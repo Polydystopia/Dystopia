@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore.Query;
 using PolytopiaBackendBase.Common;
 using PolytopiaBackendBase.Game;
 using Dystopia.Database.Lobby;
+using Dystopia.Database.Shared;
 using Dystopia.Database.User;
 
 namespace Dystopia.Tests.Database;
@@ -588,7 +589,14 @@ public class MatchmakingRepositoryTests
             Name = "Test",
             InviteLink = "",
             Bots = new List<int>(),
-            Participators = null! // This will cause NullReferenceException
+            Participators = null!,
+            DateCreated = default,
+            MapPreset = MapPreset.None,
+            MapSize = 0,
+            GameMode = GameMode.None,
+            State = GameSessionState.Unknown,
+            Type = RoundType.Friendly,
+            DisabledTribes = null // This will cause NullReferenceException
         };
 
         // Act & Assert - This should fail because constructor accesses Participators without null check
@@ -608,8 +616,19 @@ public class MatchmakingRepositoryTests
             Bots = new List<int>(),
             Participators = new List<LobbyParticipatorUserEntity>
             {
-                new() { UserId = Guid.NewGuid(), InvitationState = PlayerInvitationState.Accepted }
-            }
+                new()
+                {
+                    UserId = Guid.NewGuid(),
+                    InvitationState = PlayerInvitationState.Accepted
+                }
+            },
+            DateCreated = default,
+            MapPreset = MapPreset.None,
+            MapSize = 0,
+            GameMode = GameMode.None,
+            State = GameSessionState.Unknown,
+            Type = RoundType.Friendly,
+            DisabledTribes = null
         };
 
         var nonExistentPlayerId = Guid.NewGuid();

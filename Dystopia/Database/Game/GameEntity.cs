@@ -10,9 +10,9 @@ namespace Dystopia.Database.Game;
 
 public class GameEntity
 {
-    [Key] public Guid Id { get; init; }
+    [Key] public required Guid Id { get; init; }
 
-    public Guid LobbyId { get; init; }
+    public required Guid LobbyId { get; init; }
     public virtual LobbyEntity Lobby { get; init; } = null!; //TODO
 
     public Guid? OwnerId { get; init; }
@@ -21,14 +21,14 @@ public class GameEntity
     public DateTime? DateCreated { get; init; }
     public DateTime? DateLastCommand { get; set; }
 
-    public GameSessionState State { get; set; }
-    public RoundType Type { get; set; }
+    public required GameSessionState State { get; set; }
+    public required RoundType Type { get; set; }
 
     public string GameSettings { get; init; } = null!; // TODO make it ownsone in builder TODO make custom entity
 
-    public byte[]? InitialGameStateData { get; init; }
+    public required byte[]? InitialGameStateData { get; init; }
 
-    public byte[]? CurrentGameStateData { get; set; }
+    public required byte[]? CurrentGameStateData { get; set; }
 
     public TimerSettings TimerSettings { get; init; } = null!;
 
