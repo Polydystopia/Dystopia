@@ -1,5 +1,6 @@
 using System.Reflection;
 using Dystopia.Database;
+using Dystopia.Database.Shared;
 using Dystopia.Database.User;
 using DystopiaShared;
 using MockQueryable.Moq;
@@ -48,12 +49,32 @@ public class GameRepositoryTests
         _bridgeMock.Object
     );
 
+    private GameEntity CreateGameEntity(
+        Guid? id = null,
+        GameSessionState state = GameSessionState.Unknown,
+        DateTime? dateLastCommand = null,
+        TimerSettings timerSettings = null,
+        byte[] currentGameStateData = null)
+    {
+        return new GameEntity
+        {
+            Id = id ?? Guid.Empty,
+            LobbyId = default,
+            State = state,
+            DateLastCommand = dateLastCommand ?? default,
+            Type = RoundType.Friendly,
+            TimerSettings = timerSettings,
+            InitialGameStateData = new byte[] { },
+            CurrentGameStateData = currentGameStateData ?? new byte[] { }
+        };
+    }
+
     [Fact]
     public async Task GetByIdAsync_ReturnsCachedItem_WithoutDbAccess()
     {
         // Arrange
         var testId = Guid.NewGuid();
-        var expectedGame = new GameEntity { Id = testId };
+        var expectedGame = CreateGameEntity(testId);
         _cacheServiceMock.Setup(c => c.TryGet(testId, out expectedGame)).Returns(true);
 
         // Act
@@ -69,7 +90,7 @@ public class GameRepositoryTests
     {
         // Arrange
         var testId = Guid.NewGuid();
-        var expectedGame = new GameEntity() { Id = testId };
+        var expectedGame = CreateGameEntity(testId);
         _cacheServiceMock.Setup(c => c.TryGet(testId, out expectedGame)).Returns(false);
         _dbContextMock.Setup(db => db.Games.FindAsync(testId)).ReturnsAsync(expectedGame);
 
@@ -85,7 +106,7 @@ public class GameRepositoryTests
     public async Task CreateAsync_AddsToDatabase()
     {
         // Arrange
-        var testGame = new GameEntity();
+        var testGame = CreateGameEntity(null);
         var mockDbSet = new Mock<DbSet<GameEntity>>();
         _dbContextMock.Setup(db => db.Games).Returns(mockDbSet.Object);
 
@@ -102,12 +123,10 @@ public class GameRepositoryTests
     public async Task UpdateAsync_UsesCache_WhenShouldCache()
     {
         // Arrange
-        var testGame = new GameEntity
-        {
-            Id = Guid.NewGuid(),
-            TimerSettings = new TimerSettings { UseTimebanks = true },
-            DateLastCommand = DateTime.UtcNow
-        };
+        var testGame = CreateGameEntity(
+            id: Guid.NewGuid(),
+            dateLastCommand: DateTime.UtcNow,
+            timerSettings: new TimerSettings { UseTimebanks = true });
 
         // Act
         var result = await CreateRepository().UpdateAsync(testGame);
@@ -125,12 +144,10 @@ public class GameRepositoryTests
     public async Task UpdateAsync_SavesDirectly_WhenNotCaching()
     {
         // Arrange
-        var testGame = new GameEntity
-        {
-            Id = Guid.NewGuid(),
-            TimerSettings = new TimerSettings { UseTimebanks = false },
-            DateLastCommand = DateTime.UtcNow.AddHours(-10)
-        };
+        var testGame = CreateGameEntity(
+            id: Guid.NewGuid(),
+            dateLastCommand: DateTime.UtcNow.AddHours(-10),
+            timerSettings: new TimerSettings { UseTimebanks = false });
         _dbContextMock.Setup(db => db.Games).Returns(new Mock<DbSet<GameEntity>>().Object);
         // Act
         var result = await CreateRepository().UpdateAsync(testGame);
@@ -150,9 +167,9 @@ public class GameRepositoryTests
         {
             GameParticipations = new List<GameParticipatorUserUser>()
             {
-                CreateGameParticipation(Guid.NewGuid(), new GameEntity()),
-                CreateGameParticipation(Guid.NewGuid(), new GameEntity()),
-                CreateGameParticipation(Guid.NewGuid(), new GameEntity()),
+                CreateGameParticipation(Guid.NewGuid(), CreateGameEntity()),
+                CreateGameParticipation(Guid.NewGuid(), CreateGameEntity()),
+                CreateGameParticipation(Guid.NewGuid(), CreateGameEntity()),
             }
         };
 
@@ -185,9 +202,9 @@ public class GameRepositoryTests
         {
             GameParticipations = new List<GameParticipatorUserUser>()
             {
-                CreateGameParticipation(overlapGuidA, new GameEntity()),
-                CreateGameParticipation(overlapGuidB, new GameEntity()),
-                CreateGameParticipation(overlapGuidC, new GameEntity()),
+                CreateGameParticipation(overlapGuidA, CreateGameEntity()),
+                CreateGameParticipation(overlapGuidB, CreateGameEntity()),
+                CreateGameParticipation(overlapGuidC, CreateGameEntity()),
             }
         };
 
@@ -198,9 +215,9 @@ public class GameRepositoryTests
             .Callback((Func<GameEntity, bool> predicate, out IList<GameEntity> values) =>
             {
                 values = new List<GameEntity>();
-                values.Add(new() { Id = overlapGuidA, CurrentGameStateData = new byte[] { 4 } });
-                values.Add(new() { Id = overlapGuidB, CurrentGameStateData = new byte[] { 5 } });
-                values.Add(new() { Id = overlapGuidC, CurrentGameStateData = new byte[] { 6 } });
+                values.Add(CreateGameEntity(overlapGuidA));
+                values.Add(CreateGameEntity(overlapGuidB));
+                values.Add(CreateGameEntity(overlapGuidC));
             });
 
         // Act
@@ -223,13 +240,13 @@ public class GameRepositoryTests
         {
             GameParticipations = new List<GameParticipatorUserUser>()
             {
-                CreateGameParticipation(Guid.NewGuid(), new GameEntity()),
-                CreateGameParticipation(Guid.NewGuid(), new GameEntity()),
-                CreateGameParticipation(Guid.NewGuid(), new GameEntity()),
+                CreateGameParticipation(Guid.NewGuid(), CreateGameEntity()),
+                CreateGameParticipation(Guid.NewGuid(), CreateGameEntity()),
+                CreateGameParticipation(Guid.NewGuid(), CreateGameEntity()),
 
-                CreateGameParticipation(overlapGuidA, new GameEntity()),
-                CreateGameParticipation(overlapGuidB, new GameEntity()),
-                CreateGameParticipation(overlapGuidC, new GameEntity()),
+                CreateGameParticipation(overlapGuidA, CreateGameEntity()),
+                CreateGameParticipation(overlapGuidB, CreateGameEntity()),
+                CreateGameParticipation(overlapGuidC, CreateGameEntity()),
             }
         };
 
@@ -240,9 +257,9 @@ public class GameRepositoryTests
             .Callback((Func<GameEntity, bool> predicate, out IList<GameEntity> values) =>
             {
                 values = new List<GameEntity>();
-                values.Add(new() { Id = overlapGuidA, CurrentGameStateData = new byte[] { 4 } });
-                values.Add(new() { Id = overlapGuidB, CurrentGameStateData = new byte[] { 5 } });
-                values.Add(new() { Id = overlapGuidC, CurrentGameStateData = new byte[] { 6 } });
+                values.Add(CreateGameEntity(overlapGuidA));
+                values.Add(CreateGameEntity(overlapGuidB));
+                values.Add(CreateGameEntity(overlapGuidC));
             });
 
         // Act
@@ -268,12 +285,12 @@ public class GameRepositoryTests
         {
             GameParticipations = new List<GameParticipatorUserUser>()
             {
-                CreateGameParticipation(overlapGuidA, new GameEntity()),
-                CreateGameParticipation(overlapGuidB, new GameEntity()),
-                CreateGameParticipation(overlapGuidC, new GameEntity()),
+                CreateGameParticipation(overlapGuidA, CreateGameEntity()),
+                CreateGameParticipation(overlapGuidB, CreateGameEntity()),
+                CreateGameParticipation(overlapGuidC, CreateGameEntity()),
 
-                CreateGameParticipation(overlapGuidD, new GameEntity()),
-                CreateGameParticipation(overlapGuidE, new GameEntity()),
+                CreateGameParticipation(overlapGuidD, CreateGameEntity()),
+                CreateGameParticipation(overlapGuidE, CreateGameEntity()),
             }
         };
 
@@ -284,10 +301,10 @@ public class GameRepositoryTests
             .Callback((Func<GameEntity, bool> predicate, out IList<GameEntity> values) =>
             {
                 values = new List<GameEntity>();
-                values.Add(new() { Id = overlapGuidA, CurrentGameStateData = new byte[] { 6 } });
+                values.Add(CreateGameEntity(overlapGuidA));
 
-                values.Add(new() { Id = overlapGuidD, CurrentGameStateData = new byte[] { 4 } });
-                values.Add(new() { Id = overlapGuidE, CurrentGameStateData = new byte[] { 5 } });
+                values.Add(CreateGameEntity(overlapGuidD));
+                values.Add(CreateGameEntity(overlapGuidE));
             });
 
         // Act
@@ -321,8 +338,10 @@ public class GameRepositoryTests
         {
             GameParticipations = new List<GameParticipatorUserUser>()
             {
-                CreateGameParticipation(Guid.NewGuid(), new GameEntity { State = GameSessionState.Started }),
-                CreateGameParticipation(Guid.NewGuid(), new GameEntity { State = GameSessionState.Lobby }),
+                CreateGameParticipation(Guid.NewGuid(), CreateGameEntity(
+                    state: GameSessionState.Started)),
+                CreateGameParticipation(Guid.NewGuid(), CreateGameEntity(
+                    state: GameSessionState.Lobby)),
             }
         };
 
@@ -345,26 +364,18 @@ public class GameRepositoryTests
         {
             GameParticipations = new List<GameParticipatorUserUser>()
             {
-                CreateGameParticipation(Guid.NewGuid(), new GameEntity 
-                { 
-                    State = GameSessionState.Ended, 
-                    DateLastCommand = oldDate 
-                }),
-                CreateGameParticipation(Guid.NewGuid(), new GameEntity 
-                { 
-                    State = GameSessionState.Started,
-                    DateLastCommand = recentDate 
-                }),
-                CreateGameParticipation(Guid.NewGuid(), new GameEntity 
-                { 
-                    State = GameSessionState.Ended, 
-                    DateLastCommand = recentDate 
-                }),
-                CreateGameParticipation(Guid.NewGuid(), new GameEntity 
-                { 
-                    State = GameSessionState.Ended, 
-                    DateLastCommand = middleDate 
-                }),
+                CreateGameParticipation(Guid.NewGuid(), CreateGameEntity(
+                    state: GameSessionState.Ended,
+                    dateLastCommand: oldDate)),
+                CreateGameParticipation(Guid.NewGuid(), CreateGameEntity(
+                    state: GameSessionState.Started,
+                    dateLastCommand: recentDate)),
+                CreateGameParticipation(Guid.NewGuid(), CreateGameEntity(
+                    state: GameSessionState.Ended,
+                    dateLastCommand: recentDate)),
+                CreateGameParticipation(Guid.NewGuid(), CreateGameEntity(
+                    state: GameSessionState.Ended,
+                    dateLastCommand: middleDate)),
             }
         };
 
@@ -388,26 +399,18 @@ public class GameRepositoryTests
         {
             GameParticipations = new List<GameParticipatorUserUser>()
             {
-                CreateGameParticipation(Guid.NewGuid(), new GameEntity 
-                { 
-                    State = GameSessionState.Ended, 
-                    DateLastCommand = DateTime.UtcNow.AddDays(-1) 
-                }),
-                CreateGameParticipation(Guid.NewGuid(), new GameEntity 
-                { 
-                    State = GameSessionState.Ended, 
-                    DateLastCommand = DateTime.UtcNow.AddDays(-2) 
-                }),
-                CreateGameParticipation(Guid.NewGuid(), new GameEntity 
-                { 
-                    State = GameSessionState.Ended, 
-                    DateLastCommand = DateTime.UtcNow.AddDays(-3) 
-                }),
-                CreateGameParticipation(Guid.NewGuid(), new GameEntity 
-                { 
-                    State = GameSessionState.Ended, 
-                    DateLastCommand = DateTime.UtcNow.AddDays(-4) 
-                }),
+                CreateGameParticipation(Guid.NewGuid(), CreateGameEntity(
+                    state: GameSessionState.Ended,
+                    dateLastCommand: DateTime.UtcNow.AddDays(-1))),
+                CreateGameParticipation(Guid.NewGuid(), CreateGameEntity(
+                    state: GameSessionState.Ended,
+                    dateLastCommand: DateTime.UtcNow.AddDays(-2))),
+                CreateGameParticipation(Guid.NewGuid(), CreateGameEntity(
+                    state: GameSessionState.Ended,
+                    dateLastCommand: DateTime.UtcNow.AddDays(-3))),
+                CreateGameParticipation(Guid.NewGuid(), CreateGameEntity(
+                    state: GameSessionState.Ended,
+                    dateLastCommand: DateTime.UtcNow.AddDays(-4))),
             }
         };
 
@@ -426,16 +429,12 @@ public class GameRepositoryTests
         {
             GameParticipations = new List<GameParticipatorUserUser>()
             {
-                CreateGameParticipation(Guid.NewGuid(), new GameEntity 
-                { 
-                    State = GameSessionState.Ended, 
-                    DateLastCommand = DateTime.UtcNow.AddDays(-1) 
-                }),
-                CreateGameParticipation(Guid.NewGuid(), new GameEntity 
-                { 
-                    State = GameSessionState.Ended, 
-                    DateLastCommand = DateTime.UtcNow.AddDays(-2) 
-                }),
+                CreateGameParticipation(Guid.NewGuid(), CreateGameEntity(
+                    state: GameSessionState.Ended,
+                    dateLastCommand: DateTime.UtcNow.AddDays(-1))),
+                CreateGameParticipation(Guid.NewGuid(), CreateGameEntity(
+                    state: GameSessionState.Ended,
+                    dateLastCommand: DateTime.UtcNow.AddDays(-2))),
             }
         };
 
@@ -454,11 +453,9 @@ public class GameRepositoryTests
         {
             GameParticipations = new List<GameParticipatorUserUser>()
             {
-                CreateGameParticipation(Guid.NewGuid(), new GameEntity 
-                { 
-                    State = GameSessionState.Ended, 
-                    DateLastCommand = DateTime.UtcNow.AddDays(-1) 
-                }),
+                CreateGameParticipation(Guid.NewGuid(), CreateGameEntity(
+                    state: GameSessionState.Ended,
+                    dateLastCommand: DateTime.UtcNow.AddDays(-1))),
             }
         };
 
@@ -479,7 +476,7 @@ public class GameRepositoryTests
         };
 
         // Act & Assert
-        await Assert.ThrowsAsync<ArgumentNullException>(() => 
+        await Assert.ThrowsAsync<ArgumentNullException>(() =>
             CreateRepository().GetLastEndedGamesByPlayer(user, 10));
     }
 
@@ -511,9 +508,15 @@ public class GameRepositoryTests
         {
             FavoriteGames = new List<GameEntity>()
             {
-                new GameEntity { Id = Guid.NewGuid(), DateLastCommand = oldDate },
-                new GameEntity { Id = Guid.NewGuid(), DateLastCommand = recentDate },
-                new GameEntity { Id = Guid.NewGuid(), DateLastCommand = middleDate },
+                CreateGameEntity(
+                    id: Guid.NewGuid(),
+                    dateLastCommand: oldDate),
+                CreateGameEntity(
+                    id: Guid.NewGuid(),
+                    dateLastCommand: recentDate),
+                CreateGameEntity(
+                    id: Guid.NewGuid(),
+                    dateLastCommand: middleDate),
             }
         };
 
@@ -541,9 +544,18 @@ public class GameRepositoryTests
         {
             FavoriteGames = new List<GameEntity>()
             {
-                new GameEntity { Id = gameId1, DateLastCommand = DateTime.UtcNow.AddDays(-1), CurrentGameStateData = new byte[] { 1 } },
-                new GameEntity { Id = gameId2, DateLastCommand = DateTime.UtcNow.AddDays(-2), CurrentGameStateData = new byte[] { 2 } },
-                new GameEntity { Id = gameId3, DateLastCommand = DateTime.UtcNow.AddDays(-3), CurrentGameStateData = new byte[] { 3 } },
+                CreateGameEntity(
+                    id: gameId1,
+                    dateLastCommand: DateTime.UtcNow.AddDays(-1),
+                    currentGameStateData: new byte[] { 1 }),
+                CreateGameEntity(
+                    id: gameId2,
+                    dateLastCommand: DateTime.UtcNow.AddDays(-2),
+                    currentGameStateData: new byte[] { 2 }),
+                CreateGameEntity(
+                    id: gameId3,
+                    dateLastCommand: DateTime.UtcNow.AddDays(-3),
+                    currentGameStateData: new byte[] { 3 }),
             }
         };
 
@@ -552,7 +564,10 @@ public class GameRepositoryTests
             .Setup(c => c.TryGet(gameId1, out It.Ref<GameEntity>.IsAny))
             .Returns((Guid id, out GameEntity game) =>
             {
-                game = new GameEntity { Id = gameId1, DateLastCommand = DateTime.UtcNow.AddHours(-1), CurrentGameStateData = new byte[] { 10 } };
+                game = CreateGameEntity(
+                    id: gameId1,
+                    dateLastCommand: DateTime.UtcNow.AddHours(-1),
+                    currentGameStateData: new byte[] { 10 });
                 return true;
             });
 
@@ -564,7 +579,10 @@ public class GameRepositoryTests
             .Setup(c => c.TryGet(gameId3, out It.Ref<GameEntity>.IsAny))
             .Returns((Guid id, out GameEntity game) =>
             {
-                game = new GameEntity { Id = gameId3, DateLastCommand = DateTime.UtcNow.AddHours(-2), CurrentGameStateData = new byte[] { 30 } };
+                game = CreateGameEntity(
+                    id: gameId3,
+                    dateLastCommand: DateTime.UtcNow.AddHours(-2),
+                    currentGameStateData: new byte[] { 30 });
                 return true;
             });
 
@@ -573,14 +591,14 @@ public class GameRepositoryTests
 
         // Assert
         Assert.Equal(3, result.Count);
-        
+
         // Verify cached versions are used where available
         var game1 = result.First(g => g.Id == gameId1);
         var game2 = result.First(g => g.Id == gameId2);
         var game3 = result.First(g => g.Id == gameId3);
-        
+
         Assert.Equal(10, game1.CurrentGameStateData[0]); // Cached version
-        Assert.Equal(2, game2.CurrentGameStateData[0]);  // Original version (not cached)
+        Assert.Equal(2, game2.CurrentGameStateData[0]); // Original version (not cached)
         Assert.Equal(30, game3.CurrentGameStateData[0]); // Cached version
     }
 
@@ -595,8 +613,12 @@ public class GameRepositoryTests
         {
             FavoriteGames = new List<GameEntity>()
             {
-                new GameEntity { Id = Guid.NewGuid(), DateLastCommand = DateTime.UtcNow.AddDays(-1) },
-                new GameEntity { Id = Guid.NewGuid(), DateLastCommand = DateTime.UtcNow.AddDays(-2) },
+                CreateGameEntity(
+                    id: Guid.NewGuid(),
+                    dateLastCommand: DateTime.UtcNow.AddDays(-1)),
+                CreateGameEntity(
+                    id: Guid.NewGuid(),
+                    dateLastCommand: DateTime.UtcNow.AddDays(-2)),
             }
         };
 

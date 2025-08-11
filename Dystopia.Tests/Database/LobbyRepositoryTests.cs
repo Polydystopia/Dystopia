@@ -9,6 +9,7 @@ using MockQueryable.Moq;
 using Moq;
 using Xunit;
 using Dystopia.Database.Lobby;
+using Dystopia.Database.Shared;
 using Dystopia.Database.User;
 using PolytopiaBackendBase.Game;
 
@@ -31,14 +32,34 @@ public class LobbyRepositoryTests
         _repository = new PolydystopiaLobbyRepository(_mockContext.Object);
     }
 
+    private LobbyEntity CreateLobbyEntity(
+        Guid? id = null,
+        List<LobbyParticipatorUserEntity> participators = null)
+    {
+        return new LobbyEntity
+        {
+            Id = id ?? Guid.NewGuid(),
+            DateCreated = default,
+            Name = null,
+            MapPreset = MapPreset.None,
+            MapSize = 0,
+            GameMode = GameMode.None,
+            State = GameSessionState.Unknown,
+            Type = RoundType.Friendly,
+            DisabledTribes = null,
+            Bots = null,
+            Participators = participators
+        };
+    }
+
     [Fact]
     public async Task GetByIdAsync_ReturnsLobby_WhenLobbyExists()
     {
         var lobbyId = Guid.NewGuid();
-        var lobbyEntity = new LobbyEntity { Id = lobbyId };
-        
+        var lobbyEntity = CreateLobbyEntity(id: lobbyId);
+
         _mockLobbiesSet.Setup(x => x.FindAsync(lobbyId))
-                      .ReturnsAsync(lobbyEntity);
+            .ReturnsAsync(lobbyEntity);
 
         var result = await _repository.GetByIdAsync(lobbyId);
 
@@ -50,9 +71,9 @@ public class LobbyRepositoryTests
     public async Task GetByIdAsync_ReturnsNull_WhenLobbyDoesNotExist()
     {
         var lobbyId = Guid.NewGuid();
-        
+
         _mockLobbiesSet.Setup(x => x.FindAsync(lobbyId))
-                      .ReturnsAsync((LobbyEntity?)null);
+            .ReturnsAsync((LobbyEntity?)null);
 
         var result = await _repository.GetByIdAsync(lobbyId);
 
@@ -62,12 +83,12 @@ public class LobbyRepositoryTests
     [Fact]
     public async Task CreateAsync_AddsLobbyToContext_AndSavesChanges()
     {
-        var lobbyEntity = new LobbyEntity { Id = Guid.NewGuid() };
+        var lobbyEntity = CreateLobbyEntity();
 
         _mockLobbiesSet.Setup(x => x.AddAsync(lobbyEntity, default))
-                      .Returns(new ValueTask<EntityEntry<LobbyEntity>>());
+            .Returns(new ValueTask<EntityEntry<LobbyEntity>>());
         _mockContext.Setup(x => x.SaveChangesAsync(default))
-                   .ReturnsAsync(1);
+            .ReturnsAsync(1);
 
         var result = await _repository.CreateAsync(lobbyEntity);
 
@@ -79,12 +100,12 @@ public class LobbyRepositoryTests
     [Fact]
     public async Task UpdateAsync_UpdatesLobbyInContext_AndSetsDateModified()
     {
-        var lobbyEntity = new LobbyEntity { Id = Guid.NewGuid() };
+        var lobbyEntity = CreateLobbyEntity();
         var originalDateModified = lobbyEntity.DateModified;
 
         _mockLobbiesSet.Setup(x => x.Update(lobbyEntity));
         _mockContext.Setup(x => x.SaveChangesAsync(default))
-                   .ReturnsAsync(1);
+            .ReturnsAsync(1);
 
         var result = await _repository.UpdateAsync(lobbyEntity);
 
@@ -99,9 +120,9 @@ public class LobbyRepositoryTests
     public async Task DeleteAsync_ReturnsFalse_WhenLobbyDoesNotExist()
     {
         var lobbyId = Guid.NewGuid();
-        
+
         _mockLobbiesSet.Setup(x => x.FindAsync(lobbyId))
-                      .ReturnsAsync((LobbyEntity?)null);
+            .ReturnsAsync((LobbyEntity?)null);
 
         var result = await _repository.DeleteAsync(lobbyId);
 
@@ -114,13 +135,13 @@ public class LobbyRepositoryTests
     public async Task DeleteAsync_ReturnsTrue_WhenLobbyExists()
     {
         var lobbyId = Guid.NewGuid();
-        var lobbyEntity = new LobbyEntity { Id = lobbyId };
-        
+        var lobbyEntity = CreateLobbyEntity(id: lobbyId);
+
         _mockLobbiesSet.Setup(x => x.FindAsync(lobbyId))
-                      .ReturnsAsync(lobbyEntity);
+            .ReturnsAsync(lobbyEntity);
         _mockLobbiesSet.Setup(x => x.Remove(lobbyEntity));
         _mockContext.Setup(x => x.SaveChangesAsync(default))
-                   .ReturnsAsync(1);
+            .ReturnsAsync(1);
 
         var result = await _repository.DeleteAsync(lobbyId);
 
@@ -134,31 +155,22 @@ public class LobbyRepositoryTests
     {
         var playerId = Guid.NewGuid();
         var otherPlayerId = Guid.NewGuid();
-        
+
         var playerParticipator = new LobbyParticipatorUserEntity { UserId = playerId };
         var otherParticipator = new LobbyParticipatorUserEntity { UserId = otherPlayerId };
-        
-        var playerLobby = new LobbyEntity 
-        { 
-            Id = Guid.NewGuid(),
-            Participators = new List<LobbyParticipatorUserEntity> { playerParticipator }
-        };
-        
-        var otherLobby = new LobbyEntity 
-        { 
-            Id = Guid.NewGuid(),
-            Participators = new List<LobbyParticipatorUserEntity> { otherParticipator }
-        };
-        
-        var mixedLobby = new LobbyEntity 
-        { 
-            Id = Guid.NewGuid(),
-            Participators = new List<LobbyParticipatorUserEntity> { playerParticipator, otherParticipator }
-        };
+
+        var playerLobby = CreateLobbyEntity(
+            participators: new List<LobbyParticipatorUserEntity> { playerParticipator });
+
+        var otherLobby = CreateLobbyEntity(
+            participators: new List<LobbyParticipatorUserEntity> { otherParticipator });
+
+        var mixedLobby = CreateLobbyEntity(
+            participators: new List<LobbyParticipatorUserEntity> { playerParticipator, otherParticipator });
 
         var lobbies = new List<LobbyEntity> { playerLobby, otherLobby, mixedLobby };
         var mockLobbiesQueryable = lobbies.AsQueryable().BuildMockDbSet();
-        
+
         _mockContext.Setup(x => x.Lobbies).Returns(mockLobbiesQueryable.Object);
 
         var result = await _repository.GetAllLobbiesByPlayer(playerId);
@@ -175,17 +187,14 @@ public class LobbyRepositoryTests
     {
         var playerId = Guid.NewGuid();
         var otherPlayerId = Guid.NewGuid();
-        
+
         var otherParticipator = new LobbyParticipatorUserEntity { UserId = otherPlayerId };
-        var otherLobby = new LobbyEntity 
-        { 
-            Id = Guid.NewGuid(),
-            Participators = new List<LobbyParticipatorUserEntity> { otherParticipator }
-        };
+        var otherLobby = CreateLobbyEntity(
+            participators: new List<LobbyParticipatorUserEntity> { otherParticipator });
 
         var lobbies = new List<LobbyEntity> { otherLobby };
         var mockLobbiesQueryable = lobbies.AsQueryable().BuildMockDbSet();
-        
+
         _mockContext.Setup(x => x.Lobbies).Returns(mockLobbiesQueryable.Object);
 
         var result = await _repository.GetAllLobbiesByPlayer(playerId);
