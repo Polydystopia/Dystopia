@@ -7,7 +7,7 @@ using PolytopiaBackendBase.Game;
 
 namespace Dystopia.Hubs;
 
-public partial class PolytopiaHub
+public partial class DystopiaHub
 {
     public async Task<ServerResponse<MatchmakingSubmissionViewModel>> SubmitMatchmakingRequest(
         SubmitMatchmakingBindingModel model)

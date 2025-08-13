@@ -5,7 +5,7 @@ using PolytopiaBackendBase.Game;
 
 namespace Dystopia.Hubs;
 
-public partial class PolytopiaHub //TODO tournaments are not implemented yet. only a placeholder
+public partial class DystopiaHub //TODO tournaments are not implemented yet. only a placeholder
 {
     public async Task<ServerResponse<ChallengermodeConnectionStatus>> GetChallengermodeConnectionStatus()
     {

@@ -152,7 +152,7 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
-app.MapHub<PolytopiaHub>("/gamehub");
+app.MapHub<DystopiaHub>("/gamehub");
 
 Log.AddLogger(new MyLogger());
 

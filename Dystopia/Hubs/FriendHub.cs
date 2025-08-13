@@ -8,7 +8,7 @@ using PolytopiaBackendBase.Game;
 
 namespace Dystopia.Hubs;
 
-public partial class PolytopiaHub
+public partial class DystopiaHub
 {
     public async Task<ServerResponse<PlayersStatusesResponse>> GetFriendsStatuses()
     {
@@ -72,14 +72,14 @@ public partial class PolytopiaHub
         var isRequestSenderOnline = FriendSubscribers.TryGetValue(model.FriendUserId, out var friendProxy);
         if (isRequestSenderOnline)
         {
-            await friendProxy?.SendAsync("OnFriendRequestAccepted", Guid.Parse(_userId))!;
+            await friendProxy?.OnFriendRequestAccepted(Guid.Parse(_userId))!;
 
             var friendFriends = await _friendRepository.GetFriendsForUserAsync(model.FriendUserId);
-            await friendProxy?.SendAsync("OnFriendsUpdated", friendFriends.ToFriendViewModels())!;
+            await friendProxy?.OnFriendsUpdated(friendFriends.ToFriendViewModels())!;
         }
 
         var myFriends = await _friendRepository.GetFriendsForUserAsync(Guid.Parse(_userId));
-        await Clients.Caller.SendAsync("OnFriendsUpdated", myFriends.ToFriendViewModels())!;
+        await Clients.Caller.OnFriendsUpdated(myFriends.ToFriendViewModels());
 
         return new ServerResponse<ResponseViewModel>(new ResponseViewModel());
     }
@@ -98,14 +98,14 @@ public partial class PolytopiaHub
         var isRequestReceiverOnline = FriendSubscribers.TryGetValue(model.FriendUserId, out var friendProxy);
         if (isRequestReceiverOnline)
         {
-            await friendProxy?.SendAsync("OnFriendRequestReceived", Guid.Parse(_userId))!;
+            await friendProxy?.OnFriendRequestReceived(Guid.Parse(_userId))!;
 
             var friendFriends = await _friendRepository.GetFriendsForUserAsync(model.FriendUserId);
-            await friendProxy?.SendAsync("OnFriendsUpdated", friendFriends.ToFriendViewModels())!;
+            await friendProxy?.OnFriendsUpdated(friendFriends.ToFriendViewModels())!;
         }
 
         var myFriends = await _friendRepository.GetFriendsForUserAsync(Guid.Parse(_userId));
-        await Clients.Caller.SendAsync("OnFriendsUpdated", myFriends.ToFriendViewModels())!;
+        await Clients.Caller.OnFriendsUpdated(myFriends.ToFriendViewModels())!;
 
         return new ServerResponse<ResponseViewModel>(new ResponseViewModel());
     }
@@ -127,11 +127,11 @@ public partial class PolytopiaHub
         if (isRequestReceiverOnline)
         {
             var friendFriends = await _friendRepository.GetFriendsForUserAsync(model.FriendUserId);
-            await friendProxy?.SendAsync("OnFriendsUpdated", friendFriends.ToFriendViewModels())!;
+            await friendProxy?.OnFriendsUpdated(friendFriends.ToFriendViewModels())!;
         }
 
         var myFriends = await _friendRepository.GetFriendsForUserAsync(Guid.Parse(_userId));
-        await Clients.Caller.SendAsync("OnFriendsUpdated", myFriends.ToFriendViewModels())!;
+        await Clients.Caller.OnFriendsUpdated(myFriends.ToFriendViewModels())!;
 
         return new ServerResponse<ResponseViewModel>(new ResponseViewModel());
     }

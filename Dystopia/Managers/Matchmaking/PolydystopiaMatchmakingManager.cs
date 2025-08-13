@@ -1,6 +1,7 @@
 ﻿using Dystopia.Database.Lobby;
 using Dystopia.Database.Matchmaking;
 using Dystopia.Database.User;
+using Dystopia.Hubs;
 using Dystopia.Managers.Lobby;
 using Microsoft.AspNetCore.SignalR;
 using PolytopiaBackendBase.Game;
@@ -9,7 +10,7 @@ namespace Dystopia.Managers.Matchmaking;
 
 public static class PolydystopiaMatchmakingManager
 {
-    public static async Task<MatchmakingSubmissionViewModel?> QueuePlayer(Guid playerId, SubmitMatchmakingBindingModel model, IClientProxy ownProxy, IPolydystopiaMatchmakingRepository _matchmakingRepository, IPolydystopiaUserRepository _userRepository, IPolydystopiaLobbyRepository _lobbyRepository)
+    public static async Task<MatchmakingSubmissionViewModel?> QueuePlayer(Guid playerId, SubmitMatchmakingBindingModel model, IDystopiaHubClient ownProxy, IPolydystopiaMatchmakingRepository _matchmakingRepository, IPolydystopiaUserRepository _userRepository, IPolydystopiaLobbyRepository _lobbyRepository)
     {
         var fittingLobbies = await _matchmakingRepository.GetAllFittingLobbies(playerId, model.Version, model.MapSize, model.MapPreset, model.GameMode, model.ScoreLimit, model.TimeLimit, model.Platform, model.AllowCrossPlay);
 
@@ -44,7 +45,7 @@ public static class PolydystopiaMatchmakingManager
             await _matchmakingRepository.UpdateAsync(selectedMatchmaking);
         }
 
-        await ownProxy.SendAsync("OnLobbyInvitation", selectedMatchmaking.LobbyEntity.ToViewModel());
+        await ownProxy.OnLobbyInvitation(selectedMatchmaking.LobbyEntity.ToViewModel());
 
         var submission = new MatchmakingSubmissionViewModel();
         submission.GameName = selectedMatchmaking.LobbyEntity.Name;

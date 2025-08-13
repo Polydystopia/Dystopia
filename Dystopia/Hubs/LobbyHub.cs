@@ -13,7 +13,7 @@ using PolytopiaBackendBase.Game.ViewModels;
 
 namespace Dystopia.Hubs;
 
-public partial class PolytopiaHub
+public partial class DystopiaHub
 {
     public async Task<ServerResponse<GetLobbyInvitationsViewModel>> GetLobbiesInvitations()
     {
@@ -86,7 +86,7 @@ public partial class PolytopiaHub
 
                 if (OnlinePlayers.TryGetValue(invitedPlayerGuid, out var onlineFriendProxy))
                 {
-                    await onlineFriendProxy.SendAsync("OnLobbyInvitation", lobby.ToViewModel());
+                    await onlineFriendProxy.OnLobbyInvitation(lobby.ToViewModel());
                 }
             }
         }
@@ -95,7 +95,7 @@ public partial class PolytopiaHub
 
         foreach (var lobbySubscribers in LobbySubscribers[lobby.Id])
         {
-            await lobbySubscribers.proxy.SendAsync("OnLobbyUpdated", lobby.ToViewModel());
+            await lobbySubscribers.proxy.OnLobbyUpdated(lobby.ToViewModel());
         }
 
         return new ServerResponse<BoolResponseViewModel>(new BoolResponseViewModel() { Result = true });
@@ -121,7 +121,7 @@ public partial class PolytopiaHub
                 lobby.Participators.Clear();
                 foreach (var lobbySubscribers in LobbySubscribers[lobby.Id])
                 {
-                    await lobbySubscribers.proxy.SendAsync("OnLobbyUpdated", lobby.ToViewModel());
+                    await lobbySubscribers.proxy.OnLobbyUpdated(lobby.ToViewModel());
                 }
 
                 return new ServerResponse<BoolResponseViewModel>(new BoolResponseViewModel() { Result = true });
@@ -138,7 +138,7 @@ public partial class PolytopiaHub
 
             foreach (var lobbySubscribers in LobbySubscribers[lobby.Id])
             {
-                await lobbySubscribers.proxy.SendAsync("OnLobbyUpdated", lobby.ToViewModel());
+                await lobbySubscribers.proxy.OnLobbyUpdated(lobby.ToViewModel());
             }
 
             return new ServerResponse<BoolResponseViewModel>(new BoolResponseViewModel() { Result = true });
@@ -188,7 +188,7 @@ public partial class PolytopiaHub
 
         foreach (var lobbySubscribers in LobbySubscribers[lobby.Id])
         {
-            await lobbySubscribers.proxy.SendAsync("OnLobbyUpdated", lobby.ToViewModel());
+            await lobbySubscribers.proxy.OnLobbyUpdated(lobby.ToViewModel());
         }
 
         return new ServerResponse<LobbyGameViewModel>(lobby.ToViewModel());
@@ -224,10 +224,9 @@ public partial class PolytopiaHub
             var game = await _gameRepository.GetByIdAsync(lobby.Id);
             foreach (var lobbySubscriber in LobbySubscribers[lobby.Id])
             {
-                await lobbySubscriber.proxy.SendAsync("OnLobbyUpdated", lobby.ToViewModel());
+                await lobbySubscriber.proxy.OnLobbyUpdated(lobby.ToViewModel());
 
-                await lobbySubscriber.proxy.SendAsync("OnGameSummaryUpdated",
-                    _gameManager.GetGameSummaryViewModelByGameViewModel(game.ToViewModel()),
+                await lobbySubscriber.proxy.OnGameSummaryUpdated(_gameManager.GetGameSummaryViewModelByGameViewModel(game.ToViewModel()),
                     StateUpdateReason.ValidStartGame);
 
                 Subscribe(GameSummariesSubscribers, game.Id, lobbySubscriber.id, lobbySubscriber.proxy);

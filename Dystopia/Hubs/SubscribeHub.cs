@@ -7,20 +7,20 @@ using PolytopiaBackendBase.Game.BindingModels;
 
 namespace Dystopia.Hubs;
 
-public partial class PolytopiaHub
+public partial class DystopiaHub
 {
-    public static readonly ConcurrentDictionary<Guid, IClientProxy> OnlinePlayers = new();
+    public static readonly ConcurrentDictionary<Guid, IDystopiaHubClient> OnlinePlayers = new();
 
-    public static readonly ConcurrentDictionary<Guid, List<(Guid id, IClientProxy proxy)>> GameSubscribers = new();
+    public static readonly ConcurrentDictionary<Guid, List<(Guid id, IDystopiaHubClient proxy)>> GameSubscribers = new();
 
-    public static readonly ConcurrentDictionary<Guid, List<(Guid id, IClientProxy proxy)>> GameSummariesSubscribers =
+    public static readonly ConcurrentDictionary<Guid, List<(Guid id, IDystopiaHubClient proxy)>> GameSummariesSubscribers =
         new();
 
-    public static readonly ConcurrentDictionary<Guid, List<(Guid id, IClientProxy proxy)>> LobbySubscribers = new();
+    public static readonly ConcurrentDictionary<Guid, List<(Guid id, IDystopiaHubClient proxy)>> LobbySubscribers = new();
 
-    public static readonly ConcurrentDictionary<Guid, IClientProxy> FriendSubscribers = new();
+    public static readonly ConcurrentDictionary<Guid, IDystopiaHubClient> FriendSubscribers = new();
 
-    private void Subscribe(ConcurrentDictionary<Guid, List<(Guid id, IClientProxy proxy)>> subList, Guid gameId)
+    private void Subscribe(ConcurrentDictionary<Guid, List<(Guid id, IDystopiaHubClient proxy)>> subList, Guid gameId)
     {
         var myId = _userGuid;
         var myProxy = Clients.Caller;
@@ -28,9 +28,9 @@ public partial class PolytopiaHub
         Subscribe(subList, gameId, myId, myProxy);
     }
 
-    private void Subscribe(ConcurrentDictionary<Guid, List<(Guid id, IClientProxy proxy)>> subList, Guid gameId, Guid userId, IClientProxy userProxy)
+    private void Subscribe(ConcurrentDictionary<Guid, List<(Guid id, IDystopiaHubClient proxy)>> subList, Guid gameId, Guid userId, IDystopiaHubClient userProxy)
     {
-        var el = subList.GetOrAdd(gameId, _ => new List<(Guid id, IClientProxy proxy)>());
+        var el = subList.GetOrAdd(gameId, _ => new List<(Guid id, IDystopiaHubClient proxy)>());
 
         lock (el)
         {
