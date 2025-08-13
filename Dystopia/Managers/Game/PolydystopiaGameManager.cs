@@ -19,9 +19,9 @@ public class PolydystopiaGameManager : IPolydystopiaGameManager
 {
     private readonly IPolydystopiaGameRepository _gameRepository;
 
-    private readonly ILogger<PolytopiaHub> _logger;
+    private readonly ILogger<DystopiaHub> _logger;
 
-    public PolydystopiaGameManager(IPolydystopiaGameRepository gameRepository, ILogger<PolytopiaHub> logger)
+    public PolydystopiaGameManager(IPolydystopiaGameRepository gameRepository, ILogger<DystopiaHub> logger)
     {
         _gameRepository = gameRepository;
         _logger = logger;
@@ -130,7 +130,7 @@ public class PolydystopiaGameManager : IPolydystopiaGameManager
 
         await _gameRepository.UpdateAsync(game);
 
-        if (PolytopiaHub.GameSummariesSubscribers.TryGetValue(game.Id, out var gameSummarySubscribersList))
+        if (DystopiaHub.GameSummariesSubscribers.TryGetValue(game.Id, out var gameSummarySubscribersList))
         {
             var gameSummaryModel = GetGameSummaryViewModelByGameViewModel(game.ToViewModel());
             var pushReason = StateUpdateReason.ValidCommand;
@@ -141,7 +141,7 @@ public class PolydystopiaGameManager : IPolydystopiaGameManager
             {
                 try
                 {
-                    await gameSummarySubscriber.SendAsync("OnGameSummaryUpdated", gameSummaryModel, pushReason);
+                    await gameSummarySubscriber.OnGameSummaryUpdated(gameSummaryModel, pushReason);
                 }
                 catch (Exception e)
                 {
@@ -163,7 +163,7 @@ public class PolydystopiaGameManager : IPolydystopiaGameManager
             command
         };
 
-        if (PolytopiaHub.GameSubscribers.TryGetValue(gameId, out var gameSubscribersList))
+        if (DystopiaHub.GameSubscribers.TryGetValue(gameId, out var gameSubscribersList))
         {
             var gameSubscribers = gameSubscribersList.Where(u => senderId == null || u.id != senderId)
                 .Select(gs => gs.proxy).ToList();
@@ -171,7 +171,7 @@ public class PolydystopiaGameManager : IPolydystopiaGameManager
             {
                 try
                 {
-                    await gameSubscriber.SendAsync("OnCommand", commandArray);
+                    await gameSubscriber.OnCommand(commandArray);
                 }
                 catch (Exception e)
                 {

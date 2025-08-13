@@ -5,7 +5,7 @@ using PolytopiaBackendBase.Game.BindingModels;
 
 namespace Dystopia.Hubs;
 
-public partial class PolytopiaHub
+public partial class DystopiaHub
 {
     public async Task<ServerResponseList<GameSummaryViewModel>> GetRecentGames(
         RecentGamesBindingModel model)

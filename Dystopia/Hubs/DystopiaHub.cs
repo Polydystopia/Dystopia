@@ -11,7 +11,7 @@ using PolytopiaBackendBase.Game;
 
 namespace Dystopia.Hubs;
 
-public partial class PolytopiaHub : Hub
+public partial class DystopiaHub : Hub<IDystopiaHubClient>
 {
     private readonly IPolydystopiaUserRepository _userRepository;
     private readonly IFriendshipRepository _friendRepository;
@@ -27,11 +27,11 @@ public partial class PolytopiaHub : Hub
 
     private Guid _userGuid => Guid.Parse(_userId);
 
-    private readonly ILogger<PolytopiaHub> _logger;
+    private readonly ILogger<DystopiaHub> _logger;
 
-    public PolytopiaHub(IPolydystopiaUserRepository userRepository, IFriendshipRepository friendRepository,
+    public DystopiaHub(IPolydystopiaUserRepository userRepository, IFriendshipRepository friendRepository,
         IPolydystopiaLobbyRepository lobbyRepository, IPolydystopiaGameRepository gameRepository,
-        IPolydystopiaMatchmakingRepository matchmakingRepository, IPolydystopiaGameManager gameManager, ILogger<PolytopiaHub> logger)
+        IPolydystopiaMatchmakingRepository matchmakingRepository, IPolydystopiaGameManager gameManager, ILogger<DystopiaHub> logger)
     {
         _userRepository = userRepository;
         _friendRepository = friendRepository;
