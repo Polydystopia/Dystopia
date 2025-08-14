@@ -37,6 +37,8 @@ public class DystopiaHighscoreManager(IDystopiaHighscoreRepository highscoreRepo
                 FinalGameStateData = model.CurrentGameStateData,
             };
 
+            logger.LogDebug("Uploading highscore {tribe} - {score} for user {user}", tribe, score, user.UserName);
+
             highscoreRepository.SaveOrUpdateAsync(highscore);
 
             return true;
