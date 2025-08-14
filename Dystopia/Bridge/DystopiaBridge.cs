@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Runtime.Loader;
@@ -139,6 +140,13 @@ public class DystopiaBridge : IDystopiaCastle
         var castle = GetFittingCastle(serializedGameState);
 
         return castle.GetSummary(serializedGameState);
+    }
+
+    public bool ProcessHighscore(byte[] finalGameState, string username, out int tribe, out uint score)
+    {
+        var castle = GetFittingCastle(finalGameState);
+
+        return castle.ProcessHighscore(finalGameState, username, out tribe, out score);
     }
 }
 

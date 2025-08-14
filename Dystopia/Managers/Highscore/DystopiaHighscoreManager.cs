@@ -1,4 +1,5 @@
-﻿using Dystopia.Database.Highscore;
+﻿using Dystopia.Bridge;
+using Dystopia.Database.Highscore;
 using Dystopia.Database.User;
 using Polytopia.Data;
 using PolytopiaBackendBase.Game;
@@ -14,24 +15,16 @@ public class DystopiaHighscoreManager(IDystopiaHighscoreRepository highscoreRepo
 
         try
         {
-            var startGameStateValid = SerializationHelpers.FromByteArray(model.CurrentGameStateData, out GameState _);
-            var finalGameStateValid = SerializationHelpers.FromByteArray(model.CurrentGameStateData, out GameState finalGameState);
+            var bridge = new DystopiaBridge();
 
-            if (!finalGameStateValid) return false;
+            var success = bridge.ProcessHighscore(model.CurrentGameStateData, user.Alias, out var tribe, out var score);
 
-            var myPlayer = finalGameState.PlayerStates.FirstOrDefault(p => p.AccountId == user.Id);
-            if (myPlayer == null) return false;
-
-            var tribe = myPlayer.tribe;
-            var score = myPlayer.endScore;
-
-            if (tribe is TribeData.Type.None or TribeData.Type.Nature) return false;
-            if (score == 0) return false;
+            if (!success) return false;
 
             var highscore = new HighscoreEntity()
             {
                 UserId = user.Id,
-                Tribe = tribe,
+                Tribe = (TribeData.Type)tribe,
                 Score = score,
                 InitialGameStateData = model.InitialGameStateData,
                 FinalGameStateData = model.CurrentGameStateData,
