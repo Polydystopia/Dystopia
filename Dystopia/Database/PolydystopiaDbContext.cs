@@ -1,5 +1,6 @@
 using Dystopia.Database.Friendship;
 using Dystopia.Database.Game;
+using Dystopia.Database.Highscore;
 using Dystopia.Database.Lobby;
 using Dystopia.Database.Matchmaking;
 using Dystopia.Database.News;
@@ -18,6 +19,7 @@ public class PolydystopiaDbContext : DbContext
     public virtual DbSet<GameEntity> Games { get; set; }
     public virtual DbSet<MatchmakingEntity> Matchmaking { get; set; }
     public virtual DbSet<NewsEntity> News { get; set; }
+    public virtual DbSet<HighscoreEntity> Highscores { get; set; }
 
     public DbSet<LobbyParticipatorUserEntity> LobbyParticipators { get; set; }
     public DbSet<GameParticipatorUserUser> GameParticipators { get; set; }
@@ -167,6 +169,15 @@ public class PolydystopiaDbContext : DbContext
         matchmakingEntity.Property(e => e.PlayerIds).HasConversion(
             v => JsonConvert.SerializeObject(v, jsonSettings),
             v => JsonConvert.DeserializeObject<List<Guid>>(v, jsonSettings));
+
+        #endregion
+
+        #region Highscore
+
+        var highscoreEntity = modelBuilder.Entity<HighscoreEntity>();
+
+        highscoreEntity.HasKey(h => new { h.UserId, h.Tribe });
+        highscoreEntity.HasOne(h => h.User).WithMany(h => h.Highscores).HasForeignKey(h => h.UserId);
 
         #endregion
     }

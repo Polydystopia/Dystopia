@@ -2,6 +2,7 @@
 using System.ComponentModel.DataAnnotations.Schema;
 using Dystopia.Database.Friendship;
 using Dystopia.Database.Game;
+using Dystopia.Database.Highscore;
 using Dystopia.Database.Lobby;
 using Dystopia.Database.Matchmaking;
 using PolytopiaBackendBase.Auth;
@@ -64,6 +65,8 @@ public class UserEntity
     public DateTime LastLoginDate { get; init; }
 
     public virtual ICollection<FriendshipEntity> Friends { get; set; } = new List<FriendshipEntity>();
+
+    public virtual ICollection<HighscoreEntity> Highscores { get; set; } = new List<HighscoreEntity>();
 }
 
 public static class LobbyGameMappingExtensions

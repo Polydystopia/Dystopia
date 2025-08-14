@@ -1,4 +1,5 @@
-﻿using System.Reflection;
+﻿using System.Diagnostics.CodeAnalysis;
+using System.Reflection;
 using DystopiaShared;
 using DystopiaShared.SharedModels;
 using Newtonsoft.Json;
@@ -250,5 +251,26 @@ public class DystopiaWhiteCastle : IDystopiaCastle
             out GameStateSummary stateSummary, out var gameState);
 
         return SerializationHelpers.ToByteArray(stateSummary, gameState.Version);
+    }
+
+    public bool ProcessHighscore(byte[] finalGameState, string username, out int tribe, out uint score)
+    {
+        tribe = 0;
+        score = 0;
+
+        var finalGameStateValid = SerializationHelpers.FromByteArray(finalGameState, out GameState gameState);
+
+        if (!finalGameStateValid) return false;
+
+        var myPlayer = gameState.PlayerStates.FirstOrDefault(p => p.GetNameInternal() == username);
+        if (myPlayer == null) return false;
+
+        if (myPlayer.tribe is TribeData.Type.None or TribeData.Type.Nature) return false;
+        if (myPlayer.score == 0) return false;
+
+        tribe = (int)myPlayer.tribe;
+        score = myPlayer.score;
+
+        return true;
     }
 }

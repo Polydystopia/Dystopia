@@ -17,4 +17,6 @@ public interface IDystopiaCastle
     bool IsPlayerInGame(string playerId, byte[] serializedGameState);
 
     byte[] GetSummary(byte[] serializedGameState);
+
+    bool ProcessHighscore(byte[] finalGameState, string username, out int tribe, out uint score);
 }

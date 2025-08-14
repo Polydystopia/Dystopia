@@ -3,6 +3,7 @@ using System;
 using Dystopia.Database;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,9 +11,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Dystopia.Migrations
 {
     [DbContext(typeof(PolydystopiaDbContext))]
-    partial class PolydystopiaDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250814114449_Highscores")]
+    partial class Highscores
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -122,7 +125,7 @@ namespace Dystopia.Migrations
                     b.Property<byte[]>("InitialGameStateData")
                         .HasColumnType("BLOB");
 
-                    b.Property<uint>("Score")
+                    b.Property<int>("Score")
                         .HasColumnType("INTEGER");
 
                     b.HasKey("UserId", "Tribe");

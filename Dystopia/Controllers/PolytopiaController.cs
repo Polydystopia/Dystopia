@@ -61,18 +61,6 @@ public class PolytopiaController : ControllerBase
         return response;
     }
 
-    [Route("api/game/upload_numsingleplayergames")]
-    public ServerResponse<ResponseViewModel> UploadNumSingleplayerGames([FromBody] object model) //TODO
-    {
-        return new ServerResponse<ResponseViewModel>(new ResponseViewModel());
-    }
-
-    [Route("api/game/upload_triberating")]
-    public ServerResponse<ResponseViewModel> UploadTribeRating([FromBody] object model) //TODO
-    {
-        return new ServerResponse<ResponseViewModel>(new ResponseViewModel());
-    }
-
     [Route("api/start/get_start_viewmodel")]
     public ServerResponse<StartViewModel> GetStartViewModel([FromBody] object model) //TODO
     {
@@ -93,44 +81,11 @@ public class PolytopiaController : ControllerBase
         return new ServerResponse<NewsObject>(news);
     }
 
-    [Route("api/game/get_triberating")]
-    public ServerResponse<ResponseViewModel> GetTribeRating([FromBody] object model) //TODO
-    {
-        return new ServerResponse<ResponseViewModel>(new ResponseViewModel());
-    }
-
-    [Route("api/game/join_game")]
-    public async Task<ServerResponse<GameViewModel>> JoinGame([FromBody] JoinGameBindingModel model)
-    {
-        var gameEntity = await _gameRepository.GetByIdAsync(model.GameId);
-
-        if (gameEntity == null)
-        {
-            return new ServerResponse<GameViewModel>() { Success = false };
-        }
-
-        return new ServerResponse<GameViewModel>(gameEntity.ToViewModel());
-    }
-
     [Route("api/cm/list_matchmaking ")]
     public async Task<ServerResponseList<TournamentMatchmakingQueueViewModel>> ListMatchmakingQueues() //TODO
     {
         var tournamentMatchmakingQueues = new List<TournamentMatchmakingQueueViewModel>();
 
         return new ServerResponseList<TournamentMatchmakingQueueViewModel>(tournamentMatchmakingQueues);
-    }
-
-
-    [Route("api/game/spectate_game")]
-    public async Task<ServerResponse<GameViewModel>> SpectateGame([FromBody] SpectateGameBindingModel model)
-    {
-        var gameEntity = await _gameRepository.GetByIdAsync(model.GameId);
-
-        if (gameEntity == null)
-        {
-            return new ServerResponse<GameViewModel>() { Success = false, ErrorCode = ErrorCode.GameNotFound, ErrorMessage = "Game not found."};
-        }
-
-        return new ServerResponse<GameViewModel>(gameEntity.ToViewModel());
     }
 }

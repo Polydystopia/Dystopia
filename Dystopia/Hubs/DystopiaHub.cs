@@ -1,5 +1,6 @@
 ﻿using Dystopia.Database.Friendship;
 using Dystopia.Database.Game;
+using Dystopia.Database.Highscore;
 using Dystopia.Database.Lobby;
 using Dystopia.Database.Matchmaking;
 using Dystopia.Database.User;
@@ -18,6 +19,7 @@ public partial class DystopiaHub : Hub<IDystopiaHubClient>
     private readonly IPolydystopiaLobbyRepository _lobbyRepository;
     private readonly IPolydystopiaGameRepository _gameRepository;
     private readonly IPolydystopiaMatchmakingRepository _matchmakingRepository;
+    private readonly IDystopiaHighscoreRepository _highscoreRepository;
 
     private readonly IPolydystopiaGameManager _gameManager;
 
@@ -31,13 +33,14 @@ public partial class DystopiaHub : Hub<IDystopiaHubClient>
 
     public DystopiaHub(IPolydystopiaUserRepository userRepository, IFriendshipRepository friendRepository,
         IPolydystopiaLobbyRepository lobbyRepository, IPolydystopiaGameRepository gameRepository,
-        IPolydystopiaMatchmakingRepository matchmakingRepository, IPolydystopiaGameManager gameManager, ILogger<DystopiaHub> logger)
+        IPolydystopiaMatchmakingRepository matchmakingRepository, IDystopiaHighscoreRepository highscoreRepository, IPolydystopiaGameManager gameManager, ILogger<DystopiaHub> logger)
     {
         _userRepository = userRepository;
         _friendRepository = friendRepository;
         _lobbyRepository = lobbyRepository;
         _gameRepository = gameRepository;
         _matchmakingRepository = matchmakingRepository;
+        _highscoreRepository = highscoreRepository;
 
         _gameManager = gameManager;
 

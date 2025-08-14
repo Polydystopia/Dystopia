@@ -42,7 +42,8 @@ public class DystopiaBlackCastle : IDystopiaCastle
         return VersionManager.GameVersion.ToString();
     }
 
-    public (byte[] serializedGamestate, string gameSettingsJson) CreateGame(SharedLobbyGameViewModel lobby, int gameVersion)
+    public (byte[] serializedGamestate, string gameSettingsJson) CreateGame(SharedLobbyGameViewModel lobby,
+        int gameVersion)
     {
         return Run(() =>
         {
@@ -67,7 +68,8 @@ public class DystopiaBlackCastle : IDystopiaCastle
                 humanPlayer.defaultName = participatorViewModel.GetNameInternal();
                 humanPlayer.profile.id = new Guid(participatorViewModel.UserId.ToString());
                 humanPlayer.profile.SetName(participatorViewModel.GetNameInternal());
-                SerializationHelpers.FromByteArray<AvatarState>(participatorViewModel.AvatarStateData, out var avatarState);
+                SerializationHelpers.FromByteArray<AvatarState>(participatorViewModel.AvatarStateData,
+                    out var avatarState);
                 humanPlayer.profile.avatarState = avatarState;
 
                 settings.AddPlayer(humanPlayer);
@@ -160,7 +162,8 @@ public class DystopiaBlackCastle : IDystopiaCastle
 
             gameState.CommandStack.Add((CommandBase)new StartMatchCommand((byte)1));
 
-            return (SerializationHelpers.ToByteArray(gameState, gameState.Version), JsonConvert.SerializeObject(gameState.Settings.MapToShared()));
+            return (SerializationHelpers.ToByteArray(gameState, gameState.Version),
+                JsonConvert.SerializeObject(gameState.Settings.MapToShared()));
         });
     }
 
@@ -263,5 +266,49 @@ public class DystopiaBlackCastle : IDystopiaCastle
 
             return SerializationHelpers.ToByteArray(stateSummary, gameState.Version);
         });
+    }
+
+    public bool ProcessHighscore(byte[] finalGameState, string username, out int tribe, out uint score)
+    {
+        tribe = 0;
+        score = 0;
+
+        int tempTribe = 0;
+        uint tempScore = 0;
+
+        var result = Run(() =>
+        {
+            var finalGameStateValid = SerializationHelpers.FromByteArray(finalGameState, out GameState gameState);
+
+            if (!finalGameStateValid) return false;
+
+            PlayerState myPlayer = null;
+            foreach (var playerState in gameState.PlayerStates)
+            {
+                if (playerState.UserName == username)
+                {
+                    myPlayer = playerState;
+                    break;
+                }
+            }
+
+            if (myPlayer == null) return false;
+
+            if (myPlayer.tribe is TribeData.Type.None or TribeData.Type.Nature) return false;
+            if (myPlayer.score == 0) return false;
+
+            tempTribe = (int)myPlayer.tribe;
+            tempScore = myPlayer.score;
+
+            return true;
+        });
+
+        if (result)
+        {
+            tribe = tempTribe;
+            score = tempScore;
+        }
+
+        return result;
     }
 }
