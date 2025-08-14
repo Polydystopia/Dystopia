@@ -23,6 +23,7 @@ using Dystopia.Database.User;
 using Dystopia.Hubs;
 using Dystopia.Info;
 using Dystopia.Managers.Game;
+using Dystopia.Managers.Highscore;
 using Dystopia.Patches;
 using Dystopia.Services.Cache;
 using Dystopia.Services.News;
@@ -137,6 +138,7 @@ builder.Services.AddHostedService<CacheCleaningService>();
 
 #region manager
 builder.Services.AddScoped<IPolydystopiaGameManager, PolydystopiaGameManager>();
+builder.Services.AddScoped<IDystopiaHighscoreManager, DystopiaHighscoreManager>();
 #endregion
 
 builder.Services.AddScoped<IDystopiaCastle, DystopiaBridge>();

@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using Polytopia.Data;
 
 namespace Dystopia.Database.Highscore;
 
@@ -11,14 +12,14 @@ public class DystopiaHighscoreRepository : IDystopiaHighscoreRepository
         _dbContext = dbContext;
     }
 
-    public async Task<HighscoreEntity?> GetByUserAndTribeAsync(Guid userId, int tribe)
+    public async Task<HighscoreEntity?> GetByUserAndTribeAsync(Guid userId, TribeData.Type tribe)
     {
         return await _dbContext.Highscores
             .Include(h => h.User)
             .FirstOrDefaultAsync(h => h.UserId == userId && h.Tribe == tribe);
     }
 
-    public async Task<IEnumerable<HighscoreEntity>> GetByTribeAsync(int tribe, int limit = 100)
+    public async Task<IEnumerable<HighscoreEntity>> GetByTribeAsync(TribeData.Type tribe, int limit = 100)
     {
         return await _dbContext.Highscores
             .Include(h => h.User)
@@ -58,7 +59,7 @@ public class DystopiaHighscoreRepository : IDystopiaHighscoreRepository
         }
     }
 
-    public async Task DeleteAsync(Guid userId, int tribe)
+    public async Task DeleteAsync(Guid userId, TribeData.Type tribe)
     {
         var highscore = await _dbContext.Highscores
             .FirstOrDefaultAsync(h => h.UserId == userId && h.Tribe == tribe);

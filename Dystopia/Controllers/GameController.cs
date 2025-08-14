@@ -1,4 +1,6 @@
 ﻿using Dystopia.Database.Game;
+using Dystopia.Database.User;
+using Dystopia.Managers.Highscore;
 using Microsoft.AspNetCore.Mvc;
 using PolytopiaBackendBase;
 using PolytopiaBackendBase.Game;
@@ -7,9 +9,16 @@ namespace Dystopia.Controllers;
 
 [ApiController]
 [Route("api/game")]
-public class GameController(IPolydystopiaGameRepository gameRepository, ILogger<GameController> logger)
+public class GameController(
+    IPolydystopiaGameRepository gameRepository,
+    IPolydystopiaUserRepository userRepository,
+    IDystopiaHighscoreManager highscoreManager,
+    ILogger<GameController> logger)
     : ControllerBase
 {
+    private string _userId => HttpContext.User?.FindFirst("nameid")?.Value ?? string.Empty;
+    private Guid _userGuid => Guid.Parse(_userId);
+
     [Route("upload_numsingleplayergames")]
     public ServerResponse<ResponseViewModel> UploadNumSingleplayerGames([FromBody] object model) //TODO
     {
@@ -45,7 +54,20 @@ public class GameController(IPolydystopiaGameRepository gameRepository, ILogger<
     public async Task<ServerResponse<ResponseViewModel>> UploadHighscores(
         [FromBody] UploadHighscoresBindingModel model)
     {
-        return new ServerResponse<ResponseViewModel>(new ResponseViewModel());
+        var user = await userRepository.GetByIdAsync(_userGuid);
+
+        if (user == null) return new ServerResponse<ResponseViewModel>(ErrorCode.UserNotFound, "User not found.");
+
+        var success = highscoreManager.ProcessHighscore(model, user);
+
+        if (success)
+        {
+            return new ServerResponse<ResponseViewModel>(new ResponseViewModel());
+        }
+        else
+        {
+            return new ServerResponse<ResponseViewModel>(ErrorCode.InvalidUserCommand, "Invalid highscore.");
+        }
     }
 
     [Route("spectate_game")]
