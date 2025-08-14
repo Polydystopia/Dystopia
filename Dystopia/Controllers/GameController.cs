@@ -7,7 +7,7 @@ namespace Dystopia.Controllers;
 
 [ApiController]
 [Route("api/game")]
-public class GameController(IPolydystopiaGameRepository gameRepository, ILogger<AuthController> logger)
+public class GameController(IPolydystopiaGameRepository gameRepository, ILogger<GameController> logger)
     : ControllerBase
 {
     [Route("upload_numsingleplayergames")]
