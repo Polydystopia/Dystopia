@@ -23,4 +23,10 @@ public partial class DystopiaHub
 
         return new ServerResponseList<HighscoreViewModel>(highscores);
     }
+
+    public async Task<ServerResponse<ResponseViewModel>> UploadTribeRating(
+        UploadTribeRatingBindingModel model)
+    {
+        return new ServerResponse<ResponseViewModel>(new ResponseViewModel());
+    }
 }

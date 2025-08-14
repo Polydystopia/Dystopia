@@ -27,10 +27,4 @@ public partial class DystopiaHub
         var responseViewModel = new ResponseViewModel();
         return new ServerResponse<ResponseViewModel>(responseViewModel);
     }
-
-    public ServerResponse<ResponseViewModel> UploadTribeRating(UploadTribeRatingBindingModel model)
-    {
-        var responseViewModel = new ResponseViewModel();
-        return new ServerResponse<ResponseViewModel>(responseViewModel);
-    }
 }
