@@ -1,4 +1,5 @@
-﻿using PolytopiaBackendBase;
+﻿using Polytopia.Data;
+using PolytopiaBackendBase;
 using PolytopiaBackendBase.Auth;
 using PolytopiaBackendBase.Game;
 
@@ -11,15 +12,24 @@ public partial class DystopiaHub
     {
         var highscores = new List<HighscoreViewModel>();
 
-        var highscore = new HighscoreViewModel();
-        highscore.PolytopiaUserId = Guid.Empty;
-        highscore.Username = "Not implemented yet";
-        highscore.Score = 1;
-        highscore.TribeType = 1;
-        highscore.AvatarStateData = Convert.FromHexString("70000000280000000C000000000000000D00000000000000180000000000000023000000000000002900000000000000");
-        highscore.GameVersions = new List<ClientGameVersionViewModel>();
+        var highscoreEntities = model.TribeType != null
+            ? await _highscoreRepository.GetByTribeAsync((TribeData.Type)model.TribeType)
+            : await _highscoreRepository.GetAsync();
 
-        highscores.Add(highscore);
+        foreach (var highscoreEntity in highscoreEntities)
+        {
+            var highscoreViewModel = new HighscoreViewModel()
+            {
+                PolytopiaUserId = highscoreEntity.UserId,
+                Username = highscoreEntity.User.Alias,
+                Score = highscoreEntity.Score,
+                TribeType = (int)highscoreEntity.Tribe,
+                AvatarStateData = highscoreEntity.User.AvatarStateData,
+                GameVersions = highscoreEntity.User.GameVersions
+            };
+
+            highscores.Add(highscoreViewModel);
+        }
 
         return new ServerResponseList<HighscoreViewModel>(highscores);
     }

@@ -29,6 +29,15 @@ public class DystopiaHighscoreRepository : IDystopiaHighscoreRepository
             .ToListAsync();
     }
 
+    public async Task<IEnumerable<HighscoreEntity>> GetAsync(int limit = 100)
+    {
+        return await _dbContext.Highscores
+            .Include(h => h.User)
+            .OrderByDescending(h => h.Score)
+            .Take(limit)
+            .ToListAsync();
+    }
+
     public async Task<IEnumerable<HighscoreEntity>> GetByUserAsync(Guid userId)
     {
         return await _dbContext.Highscores
