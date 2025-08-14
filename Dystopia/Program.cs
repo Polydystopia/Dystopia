@@ -15,6 +15,7 @@ using Dystopia.Bridge;
 using Dystopia.Database;
 using Dystopia.Database.Friendship;
 using Dystopia.Database.Game;
+using Dystopia.Database.Highscore;
 using Dystopia.Database.Lobby;
 using Dystopia.Database.Matchmaking;
 using Dystopia.Database.News;
@@ -122,6 +123,7 @@ builder.Services.AddScoped<IPolydystopiaLobbyRepository, PolydystopiaLobbyReposi
 builder.Services.AddScoped<IPolydystopiaGameRepository, PolydystopiaGameRepository>();
 builder.Services.AddScoped<IPolydystopiaMatchmakingRepository, PolydystopiaMatchmakingRepository>();
 builder.Services.AddScoped<INewsRepository, NewsRepository>();
+builder.Services.AddScoped<IDystopiaHighscoreRepository, DystopiaHighscoreRepository>();
 #endregion
 
 builder.Services.AddSingleton<INewsService, NewsService>();
