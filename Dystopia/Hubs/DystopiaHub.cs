@@ -3,6 +3,7 @@ using Dystopia.Database.Game;
 using Dystopia.Database.Highscore;
 using Dystopia.Database.Lobby;
 using Dystopia.Database.Matchmaking;
+using Dystopia.Database.TribeRating;
 using Dystopia.Database.User;
 using Microsoft.AspNetCore.SignalR;
 using Dystopia.Managers.Game;
@@ -20,6 +21,7 @@ public partial class DystopiaHub : Hub<IDystopiaHubClient>
     private readonly IPolydystopiaGameRepository _gameRepository;
     private readonly IPolydystopiaMatchmakingRepository _matchmakingRepository;
     private readonly IDystopiaHighscoreRepository _highscoreRepository;
+    private readonly IDystopiaTribeRatingRepository _tribeRatingRepository;
 
     private readonly IPolydystopiaGameManager _gameManager;
 
@@ -33,7 +35,9 @@ public partial class DystopiaHub : Hub<IDystopiaHubClient>
 
     public DystopiaHub(IPolydystopiaUserRepository userRepository, IFriendshipRepository friendRepository,
         IPolydystopiaLobbyRepository lobbyRepository, IPolydystopiaGameRepository gameRepository,
-        IPolydystopiaMatchmakingRepository matchmakingRepository, IDystopiaHighscoreRepository highscoreRepository, IPolydystopiaGameManager gameManager, ILogger<DystopiaHub> logger)
+        IPolydystopiaMatchmakingRepository matchmakingRepository, IDystopiaHighscoreRepository highscoreRepository,
+        IDystopiaTribeRatingRepository tribeRatingRepository, IPolydystopiaGameManager gameManager,
+        ILogger<DystopiaHub> logger)
     {
         _userRepository = userRepository;
         _friendRepository = friendRepository;
@@ -41,6 +45,7 @@ public partial class DystopiaHub : Hub<IDystopiaHubClient>
         _gameRepository = gameRepository;
         _matchmakingRepository = matchmakingRepository;
         _highscoreRepository = highscoreRepository;
+        _tribeRatingRepository = tribeRatingRepository;
 
         _gameManager = gameManager;
 
@@ -101,19 +106,11 @@ public partial class DystopiaHub : Hub<IDystopiaHubClient>
         await base.OnDisconnectedAsync(exception);
     }
 
-    public ServerResponse<TribeRatingsViewModel> GetTribeRatings() //TODO
-    {
-        var response = new TribeRatingsViewModel();
-        response.PolytopiaUserId = Guid.Parse(_userId);
-        response.Ratings = new Dictionary<int, TribeRatingViewModel>();
-        return new ServerResponse<TribeRatingsViewModel>(response);
-    }
-
     public async Task<ServerResponse<GameSummaryViewModel>> GetGameSummaryViewModelByIdAsync(Guid gameId)
     {
         var game = await _gameRepository.GetByIdAsync(gameId);
 
-        if(game == null) return new ServerResponse<GameSummaryViewModel>(ErrorCode.GameNotFound, "Game not found");
+        if (game == null) return new ServerResponse<GameSummaryViewModel>(ErrorCode.GameNotFound, "Game not found");
 
         var summary = _gameManager.GetGameSummaryViewModelByGameViewModel(game.ToViewModel());
 

@@ -19,6 +19,7 @@ using Dystopia.Database.Highscore;
 using Dystopia.Database.Lobby;
 using Dystopia.Database.Matchmaking;
 using Dystopia.Database.News;
+using Dystopia.Database.TribeRating;
 using Dystopia.Database.User;
 using Dystopia.Hubs;
 using Dystopia.Info;
@@ -125,6 +126,7 @@ builder.Services.AddScoped<IPolydystopiaGameRepository, PolydystopiaGameReposito
 builder.Services.AddScoped<IPolydystopiaMatchmakingRepository, PolydystopiaMatchmakingRepository>();
 builder.Services.AddScoped<INewsRepository, NewsRepository>();
 builder.Services.AddScoped<IDystopiaHighscoreRepository, DystopiaHighscoreRepository>();
+builder.Services.AddScoped<IDystopiaTribeRatingRepository, DystopiaTribeRatingRepository>();
 #endregion
 
 builder.Services.AddSingleton<INewsService, NewsService>();
