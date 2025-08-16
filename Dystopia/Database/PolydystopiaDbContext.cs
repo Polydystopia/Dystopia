@@ -4,6 +4,7 @@ using Dystopia.Database.Highscore;
 using Dystopia.Database.Lobby;
 using Dystopia.Database.Matchmaking;
 using Dystopia.Database.News;
+using Dystopia.Database.TribeRating;
 using Dystopia.Database.User;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
@@ -20,6 +21,7 @@ public class PolydystopiaDbContext : DbContext
     public virtual DbSet<MatchmakingEntity> Matchmaking { get; set; }
     public virtual DbSet<NewsEntity> News { get; set; }
     public virtual DbSet<HighscoreEntity> Highscores { get; set; }
+    public virtual DbSet<TribeRatingEntity> TribeRatings { get; set; }
 
     public DbSet<LobbyParticipatorUserEntity> LobbyParticipators { get; set; }
     public DbSet<GameParticipatorUserUser> GameParticipators { get; set; }
@@ -178,6 +180,15 @@ public class PolydystopiaDbContext : DbContext
 
         highscoreEntity.HasKey(h => new { h.UserId, h.Tribe });
         highscoreEntity.HasOne(h => h.User).WithMany(h => h.Highscores).HasForeignKey(h => h.UserId);
+
+        #endregion
+
+        #region TribeRating
+
+        var tribeRatingEntity = modelBuilder.Entity<TribeRatingEntity>();
+
+        tribeRatingEntity.HasKey(tr => new { tr.UserId, tr.Tribe });
+        tribeRatingEntity.HasOne(tr => tr.User).WithMany(h => h.TribeRatings).HasForeignKey(tr => tr.UserId);
 
         #endregion
     }

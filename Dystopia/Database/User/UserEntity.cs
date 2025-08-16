@@ -5,6 +5,7 @@ using Dystopia.Database.Game;
 using Dystopia.Database.Highscore;
 using Dystopia.Database.Lobby;
 using Dystopia.Database.Matchmaking;
+using Dystopia.Database.TribeRating;
 using PolytopiaBackendBase.Auth;
 using PolytopiaBackendBase.Challengermode.Data;
 
@@ -67,6 +68,7 @@ public class UserEntity
     public virtual ICollection<FriendshipEntity> Friends { get; set; } = new List<FriendshipEntity>();
 
     public virtual ICollection<HighscoreEntity> Highscores { get; set; } = new List<HighscoreEntity>();
+    public virtual ICollection<TribeRatingEntity> TribeRatings { get; set; } = new List<TribeRatingEntity>();
 }
 
 public static class LobbyGameMappingExtensions
