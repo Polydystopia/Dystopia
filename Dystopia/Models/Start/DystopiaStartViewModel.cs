@@ -1,4 +1,4 @@
-﻿using Dystopia.Models.League;
+﻿using Dystopia.Models.WeeklyChallenge.League;
 
 namespace Dystopia.Models.Start;
 

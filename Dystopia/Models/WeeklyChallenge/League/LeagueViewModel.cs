@@ -1,4 +1,4 @@
-﻿namespace Dystopia.Models.League;
+﻿namespace Dystopia.Models.WeeklyChallenge.League;
 
 public class LeagueViewModel
 {

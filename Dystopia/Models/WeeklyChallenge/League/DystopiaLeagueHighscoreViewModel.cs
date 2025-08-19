@@ -1,4 +1,4 @@
-﻿namespace Dystopia.Models.WeeklyChallenge;
+﻿namespace Dystopia.Models.WeeklyChallenge.League;
 
 public class DystopiaLeagueHighscoreViewModel
 {

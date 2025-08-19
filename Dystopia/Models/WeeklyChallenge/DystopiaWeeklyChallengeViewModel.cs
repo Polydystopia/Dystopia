@@ -1,4 +1,5 @@
-﻿using PolytopiaBackendBase;
+﻿using Dystopia.Models.WeeklyChallenge.League;
+using PolytopiaBackendBase;
 using PolytopiaBackendBase.Game;
 
 namespace Dystopia.Models.WeeklyChallenge;
@@ -13,6 +14,6 @@ public class DystopiaWeeklyChallengeViewModel : IServerResponseData
     public Dictionary<int, List<DystopiaWeeklyChallengeHighscoreViewModel>> WeeklyChallengeHighscoreViewModels { get; set; }
     public List<DystopiaLeagueHighscoreViewModel> LeagueHighscoreViewModels { get; set; }
     public List<DystopiaWeeklyChallengeEntryViewModel> WeeklyChallengeEntryViewModels { get; set; }
-    public int Rank { get; set; }
+    public int Rank { get; set; } // -1 when no rank
     public DystopiaPromotionState PromotionState { get; set; }
 }
