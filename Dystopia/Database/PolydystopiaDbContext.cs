@@ -6,6 +6,8 @@ using Dystopia.Database.Matchmaking;
 using Dystopia.Database.News;
 using Dystopia.Database.TribeRating;
 using Dystopia.Database.User;
+using Dystopia.Database.WeeklyChallenge;
+using Dystopia.Database.WeeklyChallenge.League;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
 using PolytopiaBackendBase.Auth;
@@ -22,6 +24,9 @@ public class PolydystopiaDbContext : DbContext
     public virtual DbSet<NewsEntity> News { get; set; }
     public virtual DbSet<HighscoreEntity> Highscores { get; set; }
     public virtual DbSet<TribeRatingEntity> TribeRatings { get; set; }
+    public virtual DbSet<LeagueEntity> Leagues { get; set; }
+    public virtual DbSet<WeeklyChallengeEntity> WeeklyChallenges { get; set; }
+    public virtual DbSet<WeeklyChallengeEntryEntity> WeeklyChallengeEntries { get; set; }
 
     public DbSet<LobbyParticipatorUserEntity> LobbyParticipators { get; set; }
     public DbSet<GameParticipatorUserUser> GameParticipators { get; set; }
@@ -189,6 +194,62 @@ public class PolydystopiaDbContext : DbContext
 
         tribeRatingEntity.HasKey(tr => new { tr.UserId, tr.Tribe });
         tribeRatingEntity.HasOne(tr => tr.User).WithMany(h => h.TribeRatings).HasForeignKey(tr => tr.UserId);
+
+        #endregion
+
+        #region League
+
+        var leagueEntity = modelBuilder.Entity<LeagueEntity>();
+        leagueEntity.HasKey(l => l.Id);
+
+        #endregion
+
+        #region WeeklyChallenge
+
+        var weeklyChallengeEntity = modelBuilder.Entity<WeeklyChallengeEntity>();
+        weeklyChallengeEntity.HasKey(wc => wc.Id);
+
+        #endregion
+
+        #region WeeklyChallengeEntry
+
+        var weeklyChallengeEntryEntity = modelBuilder.Entity<WeeklyChallengeEntryEntity>();
+        
+        weeklyChallengeEntryEntity.HasKey(wce => wce.Id);
+        
+        weeklyChallengeEntryEntity
+            .HasOne(wce => wce.WeeklyChallenge)
+            .WithMany(wc => wc.Entries)
+            .HasForeignKey(wce => wce.WeeklyChallengeId)
+            .OnDelete(DeleteBehavior.Cascade);
+        
+        weeklyChallengeEntryEntity
+            .HasOne(wce => wce.League)
+            .WithMany()
+            .HasForeignKey(wce => wce.LeagueId)
+            .OnDelete(DeleteBehavior.Restrict);
+        
+        weeklyChallengeEntryEntity
+            .HasOne(wce => wce.User)
+            .WithMany(u => u.WeeklyChallengeEntries)
+            .HasForeignKey(wce => wce.UserId)
+            .OnDelete(DeleteBehavior.Cascade);
+        
+        weeklyChallengeEntryEntity
+            .HasOne(wce => wce.Game)
+            .WithOne(g => g.WeeklyChallengeEntry)
+            .HasForeignKey<WeeklyChallengeEntryEntity>(wce => wce.GameId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        #endregion
+
+        #region User-League Relationship
+
+        userEntity
+            .HasOne(u => u.CurrentLeague)
+            .WithMany(l => l.Users)
+            .HasForeignKey(u => u.CurrentLeagueId)
+            .OnDelete(DeleteBehavior.SetNull);
 
         #endregion
     }

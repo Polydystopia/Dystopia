@@ -18,4 +18,6 @@ public class WeeklyChallengeEntity
     public int GameVersion { get; set; }
 
     public string DiscordLink { get; set; }
+
+    public virtual ICollection<WeeklyChallengeEntryEntity> Entries { get; set; } = new List<WeeklyChallengeEntryEntity>();
 }

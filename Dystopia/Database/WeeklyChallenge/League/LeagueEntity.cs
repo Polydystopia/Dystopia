@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using Dystopia.Database.User;
 
 namespace Dystopia.Database.WeeklyChallenge.League;
 
@@ -21,4 +22,6 @@ public class LeagueEntity
     public bool IsFriendsLeague { get; set; }
 
     public bool IsEntry { get; set; }
+
+    public virtual ICollection<UserEntity> Users { get; set; } = new List<UserEntity>();
 }
