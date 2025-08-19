@@ -1,6 +1,7 @@
 ﻿using Dystopia.Database.Game;
 using Dystopia.Database.User;
 using Dystopia.Managers.Highscore;
+using Dystopia.Models.WeeklyChallenge;
 using Microsoft.AspNetCore.Mvc;
 using PolytopiaBackendBase;
 using PolytopiaBackendBase.Game;
@@ -82,5 +83,11 @@ public class GameController(
         }
 
         return new ServerResponse<GameViewModel>(gameEntity.ToViewModel());
+    }
+
+    [Route("get_weekly_challenge_data")]
+    public async Task<ServerResponse<DystopiaWeeklyChallengeViewModel>> GetWeeklyChallengeData([FromBody] DystopiaWeeklyChallengeBindingModel model)
+    {
+        return new ServerResponse<DystopiaWeeklyChallengeViewModel>(new DystopiaWeeklyChallengeViewModel());
     }
 }
