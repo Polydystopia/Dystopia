@@ -12,6 +12,9 @@ using Newtonsoft.Json;
 using Polytopia.Data;
 using Dystopia.Database;
 using Dystopia.Models;
+using Dystopia.Models.League;
+using Dystopia.Models.Start;
+using Dystopia.Models.Versioning;
 using Dystopia.Patches;
 using PolytopiaBackendBase;
 using PolytopiaBackendBase.Auth;
@@ -43,31 +46,66 @@ public class PolytopiaController : ControllerBase
     }
 
     [Route("api/start/get_versioning")]
-    public async Task<ServerResponse<VersioningViewModel>> GetVersioning([FromBody] VersioningBindingModel bindingModel)
+    public async Task<ServerResponse<DystopiaVersioningViewModel>> GetVersioning([FromBody] VersioningBindingModel bindingModel)
     {
-        var versioningViewModel = new VersioningViewModel();
+        var versioningViewModel = new DystopiaVersioningViewModel();
 
         versioningViewModel.SystemMessage = await _newsService.GetSystemMessage();
 
-        versioningViewModel.VersionEnabledStatuses = new List<VersionEnabledStatus>() //TODO Find out what these do
+        versioningViewModel.VersionEnabledStatuses = new List<DystopiaVersionEnabledStatus>()
         {
-            new() { Enabled = true, Message = null, Feature = VersionedFeature.App },
-            new() { Enabled = true, Message = null, Feature = VersionedFeature.Network },
-            new() { Enabled = true, Message = null, Feature = VersionedFeature.NewMultiplayer }
+            new() { Enabled = true, Message = null, Feature = DystopiaVersionedFeature.App },
+            new() { Enabled = true, Message = null, Feature = DystopiaVersionedFeature.Network },
+            new() { Enabled = true, Message = null, Feature = DystopiaVersionedFeature.NewMultiplayer },
+            new() { Enabled = true, Message = null, Feature = DystopiaVersionedFeature.NewMatchmaking },
+            new() { Enabled = true, Message = null, Feature = DystopiaVersionedFeature.Highscores },
+            new() { Enabled = true, Message = null, Feature = DystopiaVersionedFeature.WeeklyChallenge },
         };
 
-        var response = new ServerResponse<VersioningViewModel>(versioningViewModel);
+        var response = new ServerResponse<DystopiaVersioningViewModel>(versioningViewModel);
 
         return response;
     }
 
     [Route("api/start/get_start_viewmodel")]
-    public ServerResponse<StartViewModel> GetStartViewModel([FromBody] object model) //TODO
+    public ServerResponse<DystopiaStartViewModel> GetStartViewModel([FromBody] object model) //TODO
     {
-        return new ServerResponse<StartViewModel>(new StartViewModel()
+        return new ServerResponse<DystopiaStartViewModel>(new DystopiaStartViewModel()
         {
             ActionableGamesCount = 0,
-            UnseenNewsItemCount = 1
+            UnseenNewsItemCount = 1,
+            LeagueId = 1,
+            LeagueViewModels = new List<LeagueViewModel>()
+            {
+                new()
+                {
+                    Id = 1,
+                    Name = "Entry League",
+                    LocalizationKey = "league.name.entry",
+                    PrimaryColor = 46334,
+                    SecondaryColor = 10739966,
+                    TertiaryColor = 4832768,
+                    PromotionRate = 0.5f,
+                    DemotionRate = 0,
+                    IsEntry = true,
+                    IsFriendsLeague = false,
+                },
+                new()
+                {
+                    Id = 2,
+                    Name = "Friends",
+                    LocalizationKey = "league.name.friends",
+                    PrimaryColor = 6316128,
+                    SecondaryColor = 2302755,
+                    TertiaryColor = 15461355,
+                    PromotionRate = 0,
+                    DemotionRate = 0,
+                    IsEntry = false,
+                    IsFriendsLeague = true,
+                }
+            },
+            LastSeenWeeklyChallengeDate = DateTime.MinValue,
+            LastWeeklyChallengeEntryDate = DateTime.MinValue,
         });
     }
 
