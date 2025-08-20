@@ -27,6 +27,7 @@ using Dystopia.Managers.Game;
 using Dystopia.Managers.Highscore;
 using Dystopia.Patches;
 using Dystopia.Services.Cache;
+using Dystopia.Services.Database;
 using Dystopia.Services.News;
 using Dystopia.Services.Steam;
 using Dystopia.Settings;
@@ -130,6 +131,7 @@ builder.Services.AddScoped<IDystopiaTribeRatingRepository, DystopiaTribeRatingRe
 #endregion
 
 builder.Services.AddSingleton<INewsService, NewsService>();
+builder.Services.AddScoped<IDbSeederService, DbSeederService>();
 
 #region cache
 
@@ -165,8 +167,10 @@ Log.AddLogger(new MyLogger());
 using (var scope = app.Services.CreateScope())
 {
     var dbContext = scope.ServiceProvider.GetRequiredService<PolydystopiaDbContext>();
+    var seederService = scope.ServiceProvider.GetRequiredService<IDbSeederService>();
 
     dbContext.Database.Migrate();
+    await seederService.SeedAsync();
 }
 
 var il2CPPSettings = app.Services.GetRequiredService<IOptions<Il2cppSettings>>().Value;
