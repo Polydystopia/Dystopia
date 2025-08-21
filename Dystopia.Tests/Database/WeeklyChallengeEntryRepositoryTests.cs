@@ -32,6 +32,7 @@ public class WeeklyChallengeEntryRepositoryTests
         int? leagueId = null,
         Guid? userId = null,
         Guid? gameId = null,
+        int day = 1,
         int score = 1000,
         bool isValid = true,
         bool hasFinished = true,
@@ -44,6 +45,7 @@ public class WeeklyChallengeEntryRepositoryTests
             LeagueId = leagueId ?? 1,
             UserId = userId ?? Guid.NewGuid(),
             GameId = gameId ?? Guid.NewGuid(),
+            Day = day,
             DateCreated = DateTime.Now,
             Score = score,
             HasFinished = hasFinished,
@@ -105,13 +107,15 @@ public class WeeklyChallengeEntryRepositoryTests
     }
 
     [Fact]
-    public async Task GetByUserAndChallengeAsync_ReturnsEntry_WhenExists()
+    public async Task GetByUserAndChallengeAsync_ReturnsEntries_WhenExists()
     {
         // Arrange
         var userId = Guid.NewGuid();
         var challengeId = 1;
-        var expectedEntry = CreateWeeklyChallengeEntryEntity(userId: userId, weeklyChallengeId: challengeId);
-        var entries = new List<WeeklyChallengeEntryEntity> { expectedEntry };
+        var expectedEntry1 = CreateWeeklyChallengeEntryEntity(1, userId: userId, weeklyChallengeId: challengeId, day: 1);
+        var expectedEntry2 = CreateWeeklyChallengeEntryEntity(2, userId: userId, weeklyChallengeId: challengeId, day: 2);
+        var otherEntry = CreateWeeklyChallengeEntryEntity(3, userId: Guid.NewGuid(), weeklyChallengeId: challengeId, day: 1);
+        var entries = new List<WeeklyChallengeEntryEntity> { expectedEntry1, expectedEntry2, otherEntry };
         var mockDbSet = entries.AsQueryable().BuildMockDbSet();
 
         _dbContextMock.Setup(x => x.WeeklyChallengeEntries).Returns(mockDbSet.Object);
@@ -121,8 +125,9 @@ public class WeeklyChallengeEntryRepositoryTests
 
         // Assert
         Assert.NotNull(result);
-        Assert.Equal(userId, result.UserId);
-        Assert.Equal(challengeId, result.WeeklyChallengeId);
+        Assert.Equal(2, result.Count);
+        Assert.All(result, entry => Assert.Equal(userId, entry.UserId));
+        Assert.All(result, entry => Assert.Equal(challengeId, entry.WeeklyChallengeId));
     }
 
     [Fact]
@@ -201,6 +206,76 @@ public class WeeklyChallengeEntryRepositoryTests
         Assert.All(result, entry => Assert.Equal(leagueId, entry.LeagueId));
         Assert.Equal(1500, result[0].Score); // Higher score first
         Assert.Equal(1000, result[1].Score);
+    }
+
+    [Fact]
+    public async Task GetByChallengeAndDayAsync_ReturnsEntries_WhenExists()
+    {
+        // Arrange
+        var challengeId = 1;
+        var day = 2;
+        var expectedEntry1 = CreateWeeklyChallengeEntryEntity(1, weeklyChallengeId: challengeId, day: day, score: 1500);
+        var expectedEntry2 = CreateWeeklyChallengeEntryEntity(2, weeklyChallengeId: challengeId, day: day, score: 2000);
+        var otherDayEntry = CreateWeeklyChallengeEntryEntity(3, weeklyChallengeId: challengeId, day: 1, score: 1000);
+        var otherChallengeEntry = CreateWeeklyChallengeEntryEntity(4, weeklyChallengeId: 2, day: day, score: 3000);
+        var entries = new List<WeeklyChallengeEntryEntity> { expectedEntry1, expectedEntry2, otherDayEntry, otherChallengeEntry };
+        var mockDbSet = entries.AsQueryable().BuildMockDbSet();
+
+        _dbContextMock.Setup(x => x.WeeklyChallengeEntries).Returns(mockDbSet.Object);
+
+        // Act
+        var result = await CreateRepository().GetByChallengeAndDayAsync(challengeId, day);
+
+        // Assert
+        Assert.Equal(2, result.Count);
+        Assert.All(result, entry => Assert.Equal(challengeId, entry.WeeklyChallengeId));
+        Assert.All(result, entry => Assert.Equal(day, entry.Day));
+        Assert.Equal(2000, result[0].Score); // Higher score first
+        Assert.Equal(1500, result[1].Score);
+    }
+
+    [Fact]
+    public async Task GetByUserChallengeAndDayAsync_ReturnsEntry_WhenExists()
+    {
+        // Arrange
+        var userId = Guid.NewGuid();
+        var challengeId = 1;
+        var day = 2;
+        var expectedEntry = CreateWeeklyChallengeEntryEntity(1, userId: userId, weeklyChallengeId: challengeId, day: day);
+        var otherUserEntry = CreateWeeklyChallengeEntryEntity(2, userId: Guid.NewGuid(), weeklyChallengeId: challengeId, day: day);
+        var otherDayEntry = CreateWeeklyChallengeEntryEntity(3, userId: userId, weeklyChallengeId: challengeId, day: 1);
+        var entries = new List<WeeklyChallengeEntryEntity> { expectedEntry, otherUserEntry, otherDayEntry };
+        var mockDbSet = entries.AsQueryable().BuildMockDbSet();
+
+        _dbContextMock.Setup(x => x.WeeklyChallengeEntries).Returns(mockDbSet.Object);
+
+        // Act
+        var result = await CreateRepository().GetByUserChallengeAndDayAsync(userId, challengeId, day);
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.Equal(userId, result.UserId);
+        Assert.Equal(challengeId, result.WeeklyChallengeId);
+        Assert.Equal(day, result.Day);
+    }
+
+    [Fact]
+    public async Task GetByUserChallengeAndDayAsync_ReturnsNull_WhenNotExists()
+    {
+        // Arrange
+        var userId = Guid.NewGuid();
+        var challengeId = 1;
+        var day = 2;
+        var entries = new List<WeeklyChallengeEntryEntity>();
+        var mockDbSet = entries.AsQueryable().BuildMockDbSet();
+
+        _dbContextMock.Setup(x => x.WeeklyChallengeEntries).Returns(mockDbSet.Object);
+
+        // Act
+        var result = await CreateRepository().GetByUserChallengeAndDayAsync(userId, challengeId, day);
+
+        // Assert
+        Assert.Null(result);
     }
 
     [Fact]

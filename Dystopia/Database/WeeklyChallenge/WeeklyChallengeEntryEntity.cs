@@ -13,6 +13,8 @@ public class WeeklyChallengeEntryEntity
     public int WeeklyChallengeId { get; set; }
     public virtual WeeklyChallengeEntity WeeklyChallenge { get; init; } = null!;
 
+    public int Day { get; set; }
+
     public int LeagueId { get; set; }
     public virtual LeagueEntity League { get; init; } = null!;
 
