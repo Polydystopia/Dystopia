@@ -165,6 +165,7 @@ public class GameRepositoryTests
         // Arrange
         var user = new UserEntity()
         {
+            CurrentLeagueId = 1,
             GameParticipations = new List<GameParticipatorUserUser>()
             {
                 CreateGameParticipation(Guid.NewGuid(), CreateGameEntity()),
@@ -200,6 +201,7 @@ public class GameRepositoryTests
         // Arrange
         var user = new UserEntity()
         {
+            CurrentLeagueId = 1,
             GameParticipations = new List<GameParticipatorUserUser>()
             {
                 CreateGameParticipation(overlapGuidA, CreateGameEntity()),
@@ -238,6 +240,7 @@ public class GameRepositoryTests
         // Arrange
         var user = new UserEntity()
         {
+            CurrentLeagueId = 1,
             GameParticipations = new List<GameParticipatorUserUser>()
             {
                 CreateGameParticipation(Guid.NewGuid(), CreateGameEntity()),
@@ -283,6 +286,7 @@ public class GameRepositoryTests
         // Arrange
         var user = new UserEntity()
         {
+            CurrentLeagueId = 1,
             GameParticipations = new List<GameParticipatorUserUser>()
             {
                 CreateGameParticipation(overlapGuidA, CreateGameEntity()),
@@ -336,6 +340,7 @@ public class GameRepositoryTests
         // Arrange
         var user = new UserEntity()
         {
+            CurrentLeagueId = 1,
             GameParticipations = new List<GameParticipatorUserUser>()
             {
                 CreateGameParticipation(Guid.NewGuid(), CreateGameEntity(
@@ -362,6 +367,7 @@ public class GameRepositoryTests
 
         var user = new UserEntity()
         {
+            CurrentLeagueId = 1,
             GameParticipations = new List<GameParticipatorUserUser>()
             {
                 CreateGameParticipation(Guid.NewGuid(), CreateGameEntity(
@@ -397,6 +403,7 @@ public class GameRepositoryTests
         // Arrange
         var user = new UserEntity()
         {
+            CurrentLeagueId = 1,
             GameParticipations = new List<GameParticipatorUserUser>()
             {
                 CreateGameParticipation(Guid.NewGuid(), CreateGameEntity(
@@ -427,6 +434,7 @@ public class GameRepositoryTests
         // Arrange
         var user = new UserEntity()
         {
+            CurrentLeagueId = 1,
             GameParticipations = new List<GameParticipatorUserUser>()
             {
                 CreateGameParticipation(Guid.NewGuid(), CreateGameEntity(
@@ -451,6 +459,7 @@ public class GameRepositoryTests
         // Arrange
         var user = new UserEntity()
         {
+            CurrentLeagueId = 1,
             GameParticipations = new List<GameParticipatorUserUser>()
             {
                 CreateGameParticipation(Guid.NewGuid(), CreateGameEntity(
@@ -472,6 +481,7 @@ public class GameRepositoryTests
         // Arrange
         var user = new UserEntity()
         {
+            CurrentLeagueId = 1,
             GameParticipations = null
         };
 
@@ -486,6 +496,7 @@ public class GameRepositoryTests
         // Arrange
         var user = new UserEntity()
         {
+            CurrentLeagueId = 1,
             FavoriteGames = new List<GameEntity>()
         };
 
@@ -506,6 +517,7 @@ public class GameRepositoryTests
 
         var user = new UserEntity()
         {
+            CurrentLeagueId = 1,
             FavoriteGames = new List<GameEntity>()
             {
                 CreateGameEntity(
@@ -542,6 +554,7 @@ public class GameRepositoryTests
 
         var user = new UserEntity()
         {
+            CurrentLeagueId = 1,
             FavoriteGames = new List<GameEntity>()
             {
                 CreateGameEntity(
@@ -611,6 +624,7 @@ public class GameRepositoryTests
 
         var user = new UserEntity()
         {
+            CurrentLeagueId = 1,
             FavoriteGames = new List<GameEntity>()
             {
                 CreateGameEntity(

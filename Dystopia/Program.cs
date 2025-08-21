@@ -21,6 +21,8 @@ using Dystopia.Database.Matchmaking;
 using Dystopia.Database.News;
 using Dystopia.Database.TribeRating;
 using Dystopia.Database.User;
+using Dystopia.Database.WeeklyChallenge;
+using Dystopia.Database.WeeklyChallenge.League;
 using Dystopia.Hubs;
 using Dystopia.Info;
 using Dystopia.Managers.Game;
@@ -30,6 +32,7 @@ using Dystopia.Services.Cache;
 using Dystopia.Services.Database;
 using Dystopia.Services.News;
 using Dystopia.Services.Steam;
+using Dystopia.Services.WeeklyChallenge;
 using Dystopia.Settings;
 using DystopiaShared;
 using Microsoft.Extensions.Options;
@@ -122,16 +125,24 @@ builder.Services.Configure<Il2cppSettings>(builder.Configuration.GetSection("Il2
 #region repository
 builder.Services.AddScoped<IPolydystopiaUserRepository, PolydystopiaUserRepository>();
 builder.Services.AddScoped<IFriendshipRepository, FriendshipRepository>();
+
 builder.Services.AddScoped<IPolydystopiaLobbyRepository, PolydystopiaLobbyRepository>();
 builder.Services.AddScoped<IPolydystopiaGameRepository, PolydystopiaGameRepository>();
 builder.Services.AddScoped<IPolydystopiaMatchmakingRepository, PolydystopiaMatchmakingRepository>();
+
 builder.Services.AddScoped<INewsRepository, NewsRepository>();
+
 builder.Services.AddScoped<IDystopiaHighscoreRepository, DystopiaHighscoreRepository>();
 builder.Services.AddScoped<IDystopiaTribeRatingRepository, DystopiaTribeRatingRepository>();
+
+builder.Services.AddScoped<ILeagueRepository, LeagueRepository>();
+builder.Services.AddScoped<IWeeklyChallengeRepository, WeeklyChallengeRepository>();
+builder.Services.AddScoped<IWeeklyChallengeEntryRepository, WeeklyChallengeEntryRepository>();
 #endregion
 
 builder.Services.AddSingleton<INewsService, NewsService>();
 builder.Services.AddScoped<IDbSeederService, DbSeederService>();
+builder.Services.AddHostedService<WeeklyChallengeSchedulerService>();
 
 #region cache
 

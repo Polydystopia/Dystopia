@@ -11,6 +11,7 @@ using Microsoft.IdentityModel.Tokens;
 using Newtonsoft.Json;
 using Polytopia.Data;
 using Dystopia.Database;
+using Dystopia.Database.WeeklyChallenge.League;
 using Dystopia.Models;
 using Dystopia.Models.Start;
 using Dystopia.Models.Versioning;
@@ -32,25 +33,36 @@ namespace Dystopia.Controllers;
 public class PolytopiaController : ControllerBase
 {
     private readonly IPolydystopiaGameRepository _gameRepository;
+    private readonly ILeagueRepository _leagueRepository;
+    private readonly IPolydystopiaUserRepository _userRepository;
 
     private readonly INewsService _newsService;
 
     private readonly ILogger<PolytopiaController> _logger;
 
-    public PolytopiaController(IPolydystopiaGameRepository gameRepository,
+    private string _userId => HttpContext.User?.FindFirst("nameid")?.Value ?? string.Empty;
+    private Guid _userGuid => Guid.Parse(_userId);
+
+    public PolytopiaController(IPolydystopiaGameRepository gameRepository, ILeagueRepository leagueRepository,
+        IPolydystopiaUserRepository userRepository,
         INewsService newsService, ILogger<PolytopiaController> logger)
     {
         _gameRepository = gameRepository;
+        _userRepository = userRepository;
+        _leagueRepository = leagueRepository;
         _newsService = newsService;
         _logger = logger;
     }
 
     [Route("api/start/get_versioning")]
-    public async Task<ServerResponse<DystopiaVersioningViewModel>> GetVersioning([FromBody] VersioningBindingModel bindingModel)
+    public async Task<ServerResponse<DystopiaVersioningViewModel>> GetVersioning(
+        [FromBody] VersioningBindingModel bindingModel)
     {
         var versioningViewModel = new DystopiaVersioningViewModel();
 
-        versioningViewModel.SystemMessage = await _newsService.GetSystemMessage();
+        versioningViewModel.SystemMessage =
+            await _newsService.GetSystemMessage() +
+            $"\n\n{Guid.NewGuid()}"; // We need to add a random value to the end since the client caches the system message by value and does not show an already cached one
 
         versioningViewModel.VersionEnabledStatuses = new List<DystopiaVersionEnabledStatus>()
         {
@@ -68,44 +80,21 @@ public class PolytopiaController : ControllerBase
     }
 
     [Route("api/start/get_start_viewmodel")]
-    public ServerResponse<DystopiaStartViewModel> GetStartViewModel([FromBody] object model) //TODO
+    public async Task<ServerResponse<DystopiaStartViewModel>> GetStartViewModel([FromBody] object model) //TODO
     {
+        var leagues = await _leagueRepository.GetAllAsync();
+
+        var user = await _userRepository.GetByIdAsync(_userGuid);
+        if (user == null) return new ServerResponse<DystopiaStartViewModel>(ErrorCode.UserNotFound, "User not found.");
+
         return new ServerResponse<DystopiaStartViewModel>(new DystopiaStartViewModel()
         {
             ActionableGamesCount = 0,
             UnseenNewsItemCount = 1,
-            LeagueId = 1,
-            LeagueViewModels = new List<LeagueViewModel>()
-            {
-                new()
-                {
-                    Id = 1,
-                    Name = "Entry League",
-                    LocalizationKey = "league.name.entry",
-                    PrimaryColor = 46334,
-                    SecondaryColor = 10739966,
-                    TertiaryColor = 4832768,
-                    PromotionRate = 0.5f,
-                    DemotionRate = 0,
-                    IsEntry = true,
-                    IsFriendsLeague = false,
-                },
-                new()
-                {
-                    Id = 2,
-                    Name = "Friends",
-                    LocalizationKey = "league.name.friends",
-                    PrimaryColor = 6316128,
-                    SecondaryColor = 2302755,
-                    TertiaryColor = 15461355,
-                    PromotionRate = 0,
-                    DemotionRate = 0,
-                    IsEntry = false,
-                    IsFriendsLeague = true,
-                }
-            },
-            LastSeenWeeklyChallengeDate = DateTime.MinValue,
-            LastWeeklyChallengeEntryDate = DateTime.MinValue,
+            LeagueId = user.CurrentLeagueId,
+            LeagueViewModels = leagues.ToViewModels(),
+            LastSeenWeeklyChallengeDate = DateTime.MinValue, //TODO
+            LastWeeklyChallengeEntryDate = DateTime.MinValue, //TODO
         });
     }
 

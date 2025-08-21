@@ -108,12 +108,14 @@ public class FriendshipTests
         var friend1 = new UserEntity()
         {
             Id = Guid.NewGuid(), UserName = "Friend1", SteamId = "1", Discriminator = "1111",
-            AvatarStateData = new byte[0], GameVersions = new List<ClientGameVersionViewModel>()
+            AvatarStateData = new byte[0], GameVersions = new List<ClientGameVersionViewModel>(),
+            CurrentLeagueId = 1
         };
         var friend2 = new UserEntity
         {
             Id = Guid.NewGuid(), UserName = "Friend2", SteamId = "1", Discriminator = "1111",
-            AvatarStateData = new byte[0], GameVersions = new List<ClientGameVersionViewModel>()
+            AvatarStateData = new byte[0], GameVersions = new List<ClientGameVersionViewModel>(),
+            CurrentLeagueId = 1
         };
 
         var friends = new List<FriendshipEntity>
@@ -299,12 +301,14 @@ public class FriendshipTests
         var friend1 = new UserEntity()
         {
             Id = Guid.NewGuid(), UserName = "AcceptedFriend", SteamId = "1", Discriminator = "1111",
-            AvatarStateData = new byte[0], GameVersions = new List<ClientGameVersionViewModel>()
+            AvatarStateData = new byte[0], GameVersions = new List<ClientGameVersionViewModel>(),
+            CurrentLeagueId = 1
         };
         var friend2 = new UserEntity
         {
             Id = Guid.NewGuid(), UserName = "RequestSentUser", SteamId = "2", Discriminator = "2222",
-            AvatarStateData = new byte[0], GameVersions = new List<ClientGameVersionViewModel>()
+            AvatarStateData = new byte[0], GameVersions = new List<ClientGameVersionViewModel>(),
+            CurrentLeagueId = 1
         };
 
         var friendships = new List<FriendshipEntity>

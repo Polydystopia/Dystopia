@@ -59,7 +59,8 @@ public class WeeklyChallengeEntryRepositoryTests
             Id = id ?? Guid.NewGuid(),
             SteamId = "123456789",
             UserName = "TestUser",
-            Discriminator = "1234"
+            Discriminator = "1234",
+            CurrentLeagueId = 1
         };
     }
 

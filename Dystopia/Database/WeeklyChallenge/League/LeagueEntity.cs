@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using Dystopia.Database.User;
+using Dystopia.Models.WeeklyChallenge.League;
 
 namespace Dystopia.Database.WeeklyChallenge.League;
 
@@ -24,4 +25,30 @@ public class LeagueEntity
     public bool IsEntry { get; set; }
 
     public virtual ICollection<UserEntity> Users { get; set; } = new List<UserEntity>();
+}
+
+public static class LobbyGameMappingExtensions
+{
+    public static DystopiaLeagueViewModel ToViewModel(this LeagueEntity l)
+    {
+        return new DystopiaLeagueViewModel
+        {
+            Id = l.Id,
+            Name = l.Name,
+            LocalizationKey = l.LocalizationKey,
+            PrimaryColor = l.PrimaryColor,
+            SecondaryColor = l.SecondaryColor,
+            TertiaryColor = l.TertiaryColor,
+            PromotionRate = l.PromotionRate,
+            DemotionRate = l.DemotionRate,
+            IsFriendsLeague = l.IsFriendsLeague,
+            IsEntry = l.IsEntry
+        };
+    }
+}
+
+public static class LeagueCollectionMappingExtensions
+{
+    public static List<DystopiaLeagueViewModel> ToViewModels(this IEnumerable<LeagueEntity>? source) =>
+        source?.Select(e => e.ToViewModel()).ToList() ?? new List<DystopiaLeagueViewModel>();
 }

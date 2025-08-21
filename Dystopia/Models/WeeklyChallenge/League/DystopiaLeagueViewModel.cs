@@ -1,6 +1,6 @@
 ﻿namespace Dystopia.Models.WeeklyChallenge.League;
 
-public class LeagueViewModel
+public class DystopiaLeagueViewModel
 {
     public int Id { get; set; }
     public string Name { get; set; }

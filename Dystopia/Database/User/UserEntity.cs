@@ -74,8 +74,8 @@ public class UserEntity
 
     public virtual ICollection<WeeklyChallengeEntryEntity> WeeklyChallengeEntries { get; set; } = new List<WeeklyChallengeEntryEntity>();
     
-    public int? CurrentLeagueId { get; set; }
-    public virtual LeagueEntity? CurrentLeague { get; set; }
+    public required int CurrentLeagueId { get; set; }
+    public virtual LeagueEntity CurrentLeague { get; set; }
 }
 
 public static class LobbyGameMappingExtensions
