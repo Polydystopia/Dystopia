@@ -3,6 +3,7 @@ using System;
 using Dystopia.Database;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,9 +11,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Dystopia.Migrations
 {
     [DbContext(typeof(PolydystopiaDbContext))]
-    partial class PolydystopiaDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250819223923_WeeklyChallenges")]
+    partial class WeeklyChallenges
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -382,7 +385,7 @@ namespace Dystopia.Migrations
                         .IsRequired()
                         .HasColumnType("BLOB");
 
-                    b.Property<int>("CurrentLeagueId")
+                    b.Property<int?>("CurrentLeagueId")
                         .HasColumnType("INTEGER");
 
                     b.Property<string>("Discriminator")
@@ -496,9 +499,6 @@ namespace Dystopia.Migrations
                     b.Property<DateTime>("DateCreated")
                         .HasColumnType("TEXT");
 
-                    b.Property<int>("Day")
-                        .HasColumnType("INTEGER");
-
                     b.Property<Guid>("GameId")
                         .HasColumnType("TEXT");
 
@@ -528,15 +528,11 @@ namespace Dystopia.Migrations
                     b.HasIndex("GameId")
                         .IsUnique();
 
+                    b.HasIndex("LeagueId");
+
                     b.HasIndex("UserId");
 
                     b.HasIndex("WeeklyChallengeId");
-
-                    b.HasIndex("LeagueId", "WeeklyChallengeId", "Score")
-                        .HasDatabaseName("IX_WeeklyChallengeEntry_League_Challenge_Score");
-
-                    b.HasIndex("LeagueId", "WeeklyChallengeId", "Day", "Score")
-                        .HasDatabaseName("IX_WeeklyChallengeEntry_League_Challenge_Day_Score");
 
                     b.ToTable("WeeklyChallengeEntries");
                 });
@@ -684,8 +680,7 @@ namespace Dystopia.Migrations
                     b.HasOne("Dystopia.Database.WeeklyChallenge.League.LeagueEntity", "CurrentLeague")
                         .WithMany("Users")
                         .HasForeignKey("CurrentLeagueId")
-                        .OnDelete(DeleteBehavior.SetNull)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.SetNull);
 
                     b.Navigation("CurrentLeague");
                 });

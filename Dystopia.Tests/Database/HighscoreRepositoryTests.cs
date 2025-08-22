@@ -32,7 +32,8 @@ public class HighscoreRepositoryTests
             Id = id ?? Guid.NewGuid(),
             SteamId = "123456789",
             UserName = userName,
-            Discriminator = "1234"
+            Discriminator = "1234",
+            CurrentLeagueId = 1
         };
     }
 

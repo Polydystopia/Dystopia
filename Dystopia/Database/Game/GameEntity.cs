@@ -2,6 +2,7 @@
 using Dystopia.Database.Lobby;
 using Dystopia.Database.Shared;
 using Dystopia.Database.User;
+using Dystopia.Database.WeeklyChallenge;
 using PolytopiaBackendBase.Game;
 using PolytopiaBackendBase.Game.ViewModels;
 using PolytopiaBackendBase.Timers;
@@ -40,6 +41,8 @@ public class GameEntity
     public Guid? ExternalTournamentId { get; init; }
 
     public Guid? ExternalMatchId { get; init; }
+
+    public virtual WeeklyChallengeEntryEntity? WeeklyChallengeEntry { get; set; }
 }
 
 public static class GameMappingExtensions

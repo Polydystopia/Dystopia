@@ -11,7 +11,11 @@ using Microsoft.IdentityModel.Tokens;
 using Newtonsoft.Json;
 using Polytopia.Data;
 using Dystopia.Database;
+using Dystopia.Database.WeeklyChallenge.League;
 using Dystopia.Models;
+using Dystopia.Models.Start;
+using Dystopia.Models.Versioning;
+using Dystopia.Models.WeeklyChallenge.League;
 using Dystopia.Patches;
 using PolytopiaBackendBase;
 using PolytopiaBackendBase.Auth;
@@ -29,45 +33,68 @@ namespace Dystopia.Controllers;
 public class PolytopiaController : ControllerBase
 {
     private readonly IPolydystopiaGameRepository _gameRepository;
+    private readonly ILeagueRepository _leagueRepository;
+    private readonly IPolydystopiaUserRepository _userRepository;
 
     private readonly INewsService _newsService;
 
     private readonly ILogger<PolytopiaController> _logger;
 
-    public PolytopiaController(IPolydystopiaGameRepository gameRepository,
+    private string _userId => HttpContext.User?.FindFirst("nameid")?.Value ?? string.Empty;
+    private Guid _userGuid => Guid.Parse(_userId);
+
+    public PolytopiaController(IPolydystopiaGameRepository gameRepository, ILeagueRepository leagueRepository,
+        IPolydystopiaUserRepository userRepository,
         INewsService newsService, ILogger<PolytopiaController> logger)
     {
         _gameRepository = gameRepository;
+        _userRepository = userRepository;
+        _leagueRepository = leagueRepository;
         _newsService = newsService;
         _logger = logger;
     }
 
     [Route("api/start/get_versioning")]
-    public async Task<ServerResponse<VersioningViewModel>> GetVersioning([FromBody] VersioningBindingModel bindingModel)
+    public async Task<ServerResponse<DystopiaVersioningViewModel>> GetVersioning(
+        [FromBody] VersioningBindingModel bindingModel)
     {
-        var versioningViewModel = new VersioningViewModel();
+        var versioningViewModel = new DystopiaVersioningViewModel();
 
-        versioningViewModel.SystemMessage = await _newsService.GetSystemMessage();
+        versioningViewModel.SystemMessage =
+            await _newsService.GetSystemMessage() +
+            $"\n\n{Guid.NewGuid()}"; // We need to add a random value to the end since the client caches the system message by value and does not show an already cached one
 
-        versioningViewModel.VersionEnabledStatuses = new List<VersionEnabledStatus>() //TODO Find out what these do
+        versioningViewModel.VersionEnabledStatuses = new List<DystopiaVersionEnabledStatus>()
         {
-            new() { Enabled = true, Message = null, Feature = VersionedFeature.App },
-            new() { Enabled = true, Message = null, Feature = VersionedFeature.Network },
-            new() { Enabled = true, Message = null, Feature = VersionedFeature.NewMultiplayer }
+            new() { Enabled = true, Message = null, Feature = DystopiaVersionedFeature.App },
+            new() { Enabled = true, Message = null, Feature = DystopiaVersionedFeature.Network },
+            new() { Enabled = true, Message = null, Feature = DystopiaVersionedFeature.NewMultiplayer },
+            new() { Enabled = true, Message = null, Feature = DystopiaVersionedFeature.NewMatchmaking },
+            new() { Enabled = true, Message = null, Feature = DystopiaVersionedFeature.Highscores },
+            new() { Enabled = true, Message = null, Feature = DystopiaVersionedFeature.WeeklyChallenge },
         };
 
-        var response = new ServerResponse<VersioningViewModel>(versioningViewModel);
+        var response = new ServerResponse<DystopiaVersioningViewModel>(versioningViewModel);
 
         return response;
     }
 
     [Route("api/start/get_start_viewmodel")]
-    public ServerResponse<StartViewModel> GetStartViewModel([FromBody] object model) //TODO
+    public async Task<ServerResponse<DystopiaStartViewModel>> GetStartViewModel([FromBody] object model) //TODO
     {
-        return new ServerResponse<StartViewModel>(new StartViewModel()
+        var leagues = await _leagueRepository.GetAllAsync();
+
+        var user = await _userRepository.GetByIdAsync(_userGuid);
+        if (user == null) return new ServerResponse<DystopiaStartViewModel>(ErrorCode.UserNotFound, "User not found.");
+
+        return new ServerResponse<DystopiaStartViewModel>(new DystopiaStartViewModel()
         {
             ActionableGamesCount = 0,
-            UnseenNewsItemCount = 1
+            UnseenNewsItemCount = 1,
+            LeagueId = user.CurrentLeagueId,
+            LeagueViewModels = leagues.ToViewModels(),
+            LastSeenWeeklyChallengeDate = DateTime.MinValue, //TODO
+            LastWeeklyChallengeEntryDate = DateTime.MinValue, //TODO
         });
     }
 

@@ -6,6 +6,8 @@ using Dystopia.Database.Highscore;
 using Dystopia.Database.Lobby;
 using Dystopia.Database.Matchmaking;
 using Dystopia.Database.TribeRating;
+using Dystopia.Database.WeeklyChallenge;
+using Dystopia.Database.WeeklyChallenge.League;
 using PolytopiaBackendBase.Auth;
 using PolytopiaBackendBase.Challengermode.Data;
 
@@ -69,6 +71,11 @@ public class UserEntity
 
     public virtual ICollection<HighscoreEntity> Highscores { get; set; } = new List<HighscoreEntity>();
     public virtual ICollection<TribeRatingEntity> TribeRatings { get; set; } = new List<TribeRatingEntity>();
+
+    public virtual ICollection<WeeklyChallengeEntryEntity> WeeklyChallengeEntries { get; set; } = new List<WeeklyChallengeEntryEntity>();
+    
+    public required int CurrentLeagueId { get; set; }
+    public virtual LeagueEntity CurrentLeague { get; set; }
 }
 
 public static class LobbyGameMappingExtensions

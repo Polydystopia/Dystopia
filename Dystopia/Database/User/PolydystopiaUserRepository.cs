@@ -8,7 +8,6 @@ using SteamKit2;
 
 namespace Dystopia.Database.User;
 
-//TODO: UserName can not be set. We use SteamId instead. But we need to call AddMissingData() to set the correct values. This is a hack.
 public class PolydystopiaUserRepository : IPolydystopiaUserRepository
 {
     private readonly PolydystopiaDbContext _dbContext;
@@ -63,6 +62,7 @@ public class PolydystopiaUserRepository : IPolydystopiaUserRepository
                 AvatarExtensions.CreateRandomState(VersionManager.AvatarDataVersion), VersionManager.GameVersion),
             GameVersions = new List<ClientGameVersionViewModel>(),
             LastLoginDate = DateTime.Now,
+            CurrentLeagueId = 1 //TODO get entry league of db
         };
 
         await _dbContext.Users.AddAsync(user);

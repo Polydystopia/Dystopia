@@ -1,6 +1,13 @@
-﻿using Dystopia.Database.Game;
+﻿using System.Globalization;
+using Dystopia.Database.Game;
 using Dystopia.Database.User;
+using Dystopia.Database.WeeklyChallenge;
+using Dystopia.Database.WeeklyChallenge.League;
 using Dystopia.Managers.Highscore;
+using Dystopia.Models.Util;
+using Dystopia.Models.WeeklyChallenge;
+using Dystopia.Models.WeeklyChallenge.League;
+using Dystopia.Services.WeeklyChallenge;
 using Microsoft.AspNetCore.Mvc;
 using PolytopiaBackendBase;
 using PolytopiaBackendBase.Game;
@@ -13,6 +20,9 @@ public class GameController(
     IPolydystopiaGameRepository gameRepository,
     IPolydystopiaUserRepository userRepository,
     IDystopiaHighscoreManager highscoreManager,
+    IWeeklyChallengeRepository weeklyChallengeRepository,
+    IWeeklyChallengeEntryRepository weeklyChallengeEntryRepository,
+    ILeagueRepository leagueRepository,
     ILogger<GameController> logger)
     : ControllerBase
 {
@@ -82,5 +92,57 @@ public class GameController(
         }
 
         return new ServerResponse<GameViewModel>(gameEntity.ToViewModel());
+    }
+
+    [Route("get_weekly_challenge_data")]
+    public async Task<ServerResponse<DystopiaWeeklyChallengeViewModel>> GetWeeklyChallengeData(
+        [FromBody] DystopiaWeeklyChallengeBindingModel model)
+    {
+        var user = await userRepository.GetByIdAsync(_userGuid);
+        if (user == null) return new ServerResponse<DystopiaWeeklyChallengeViewModel>(ErrorCode.UserNotFound, "User not found.");
+
+        var currentChallenge = await weeklyChallengeRepository.GetByWeekAsync(WeeklyChallengeSchedulerService.GetCompositeWeekNumber(model.Date));
+        if(currentChallenge == null) return new ServerResponse<DystopiaWeeklyChallengeViewModel>(DystopiaErrorCode.GameNotFound.Map(), "WeeklyChallenge not found.");
+
+        var ownChallengeEntries = await weeklyChallengeEntryRepository.GetByUserAndChallengeAsync(user.Id, currentChallenge.Id);
+
+        var leagueHighscores = new List<DystopiaLeagueHighscoreViewModel>();
+        var leagueHighscoresDic = new Dictionary<int, List<DystopiaWeeklyChallengeHighscoreViewModel>>();
+        foreach (var league in await leagueRepository.GetAllAsync())
+        {
+            var entries = await weeklyChallengeEntryRepository.GetBestEntriesPerUserByLeagueAsync(currentChallenge.Id, league.Id);
+
+            leagueHighscores.Add(new DystopiaLeagueHighscoreViewModel()
+            {
+                LeagueId = league.Id,
+                ParticipantCount = entries.Count,
+                Highscores = entries.ToHighscoreViewModels(),
+            });
+
+            leagueHighscoresDic.Add(league.Id, entries.ToHighscoreViewModels());
+        }
+
+        var weeklyChallengeViewModel = new DystopiaWeeklyChallengeViewModel()
+        {
+            CurrentServerTime = DateTime.Now,
+            Week = ISOWeek.GetWeekOfYear(DateTime.Today),
+            WeeklyChallengeTemplateMetadataViewModel = new DystopiaWeeklyChallengeTemplateMetadataViewModel()
+            {
+                Name = currentChallenge.Name,
+                TribeType = (byte)currentChallenge.Tribe,
+                TribeSkin = (short)currentChallenge.SkinType,
+                GameVersion = currentChallenge.GameVersion,
+                DiscordLink = currentChallenge.DiscordLink,
+            },
+            HasPersonalData = true,
+            LeagueId = user.CurrentLeagueId,
+            WeeklyChallengeHighscoreViewModels = leagueHighscoresDic,
+            LeagueHighscoreViewModels = leagueHighscores,
+            WeeklyChallengeEntryViewModels = ownChallengeEntries.ToEntryViewModels(),
+            Rank = -1,
+            PromotionState = DystopiaPromotionState.None,
+        };
+
+        return new ServerResponse<DystopiaWeeklyChallengeViewModel>(weeklyChallengeViewModel);
     }
 }
