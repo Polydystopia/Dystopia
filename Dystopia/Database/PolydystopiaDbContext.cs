@@ -241,6 +241,15 @@ public class PolydystopiaDbContext : DbContext
             .HasForeignKey<WeeklyChallengeEntryEntity>(wce => wce.GameId)
             .OnDelete(DeleteBehavior.Restrict);
 
+        // Indexes for efficient weekly challenge leaderboard queries
+        weeklyChallengeEntryEntity
+            .HasIndex(wce => new { wce.LeagueId, wce.WeeklyChallengeId, wce.Score })
+            .HasDatabaseName("IX_WeeklyChallengeEntry_League_Challenge_Score");
+        
+        weeklyChallengeEntryEntity
+            .HasIndex(wce => new { wce.LeagueId, wce.WeeklyChallengeId, wce.Day, wce.Score })
+            .HasDatabaseName("IX_WeeklyChallengeEntry_League_Challenge_Day_Score");
+
         #endregion
 
         #region User-League Relationship

@@ -115,7 +115,7 @@ public class GameController(
                 GameVersion = currentChallenge.GameVersion,
                 DiscordLink = currentChallenge.DiscordLink,
             },
-            HasPersonalData = true,//ownChallengeEntry != null,
+            HasPersonalData = true,
             LeagueId = currentChallenge.Id,
             WeeklyChallengeHighscoreViewModels = new Dictionary<int, List<DystopiaWeeklyChallengeHighscoreViewModel>>()
             {
