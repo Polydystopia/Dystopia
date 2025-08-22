@@ -13,4 +13,6 @@ public interface IWeeklyChallengeEntryRepository
     Task<WeeklyChallengeEntryEntity> SaveOrUpdateAsync(WeeklyChallengeEntryEntity entry);
     Task<bool> DeleteAsync(int id);
     Task<int> GetUserRankAsync(Guid userId, int weeklyChallengeId, int leagueId);
+    Task<List<WeeklyChallengeEntryEntity>> GetBestEntriesPerUserByLeagueAsync(int weeklyChallengeId, int leagueId);
+    Task<List<WeeklyChallengeEntryEntity>> GetBestEntriesPerUserAsync(int weeklyChallengeId);
 }

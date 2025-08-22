@@ -2,6 +2,7 @@
 using Dystopia.Database.Game;
 using Dystopia.Database.User;
 using Dystopia.Database.WeeklyChallenge;
+using Dystopia.Database.WeeklyChallenge.League;
 using Dystopia.Managers.Highscore;
 using Dystopia.Models.Util;
 using Dystopia.Models.WeeklyChallenge;
@@ -20,6 +21,8 @@ public class GameController(
     IPolydystopiaUserRepository userRepository,
     IDystopiaHighscoreManager highscoreManager,
     IWeeklyChallengeRepository weeklyChallengeRepository,
+    IWeeklyChallengeEntryRepository weeklyChallengeEntryRepository,
+    ILeagueRepository leagueRepository,
     ILogger<GameController> logger)
     : ControllerBase
 {
@@ -101,7 +104,23 @@ public class GameController(
         var currentChallenge = await weeklyChallengeRepository.GetByWeekAsync(WeeklyChallengeSchedulerService.GetCompositeWeekNumber(model.Date));
         if(currentChallenge == null) return new ServerResponse<DystopiaWeeklyChallengeViewModel>(DystopiaErrorCode.GameNotFound.Map(), "WeeklyChallenge not found.");
 
-        var ownChallengeEntry = user.WeeklyChallengeEntries.FirstOrDefault(w => w.Id == currentChallenge.Id);
+        var ownChallengeEntries = await weeklyChallengeEntryRepository.GetByUserAndChallengeAsync(user.Id, currentChallenge.Id);
+
+        var leagueHighscores = new List<DystopiaLeagueHighscoreViewModel>();
+        var leagueHighscoresDic = new Dictionary<int, List<DystopiaWeeklyChallengeHighscoreViewModel>>();
+        foreach (var league in await leagueRepository.GetAllAsync())
+        {
+            var entries = await weeklyChallengeEntryRepository.GetBestEntriesPerUserByLeagueAsync(currentChallenge.Id, league.Id);
+
+            leagueHighscores.Add(new DystopiaLeagueHighscoreViewModel()
+            {
+                LeagueId = league.Id,
+                ParticipantCount = entries.Count,
+                Highscores = entries.ToHighscoreViewModels(),
+            });
+
+            leagueHighscoresDic.Add(league.Id, entries.ToHighscoreViewModels());
+        }
 
         var weeklyChallengeViewModel = new DystopiaWeeklyChallengeViewModel()
         {
@@ -116,19 +135,10 @@ public class GameController(
                 DiscordLink = currentChallenge.DiscordLink,
             },
             HasPersonalData = true,
-            LeagueId = currentChallenge.Id,
-            WeeklyChallengeHighscoreViewModels = new Dictionary<int, List<DystopiaWeeklyChallengeHighscoreViewModel>>()
-            {
-
-            },
-            LeagueHighscoreViewModels = new List<DystopiaLeagueHighscoreViewModel>()
-            {
-
-            },
-            WeeklyChallengeEntryViewModels = new List<DystopiaWeeklyChallengeEntryViewModel>()
-            {
-
-            },
+            LeagueId = user.CurrentLeagueId,
+            WeeklyChallengeHighscoreViewModels = leagueHighscoresDic,
+            LeagueHighscoreViewModels = leagueHighscores,
+            WeeklyChallengeEntryViewModels = ownChallengeEntries.ToEntryViewModels(),
             Rank = -1,
             PromotionState = DystopiaPromotionState.None,
         };

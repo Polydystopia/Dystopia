@@ -148,4 +148,37 @@ public class WeeklyChallengeEntryRepository : IWeeklyChallengeEntryRepository
 
         return rank + 1;
     }
+
+    public async Task<List<WeeklyChallengeEntryEntity>> GetBestEntriesPerUserByLeagueAsync(int weeklyChallengeId, int leagueId)
+    {
+        var bestEntryIds = await _dbContext.WeeklyChallengeEntries
+            .Where(e => e.WeeklyChallengeId == weeklyChallengeId && e.LeagueId == leagueId && e.IsValid)
+            .GroupBy(e => e.UserId)
+            .Select(g => g.OrderByDescending(e => e.Score).Select(e => e.Id).First())
+            .ToListAsync();
+
+        return await _dbContext.WeeklyChallengeEntries
+            .Include(e => e.User)
+            .Include(e => e.Game)
+            .Where(e => bestEntryIds.Contains(e.Id))
+            .OrderByDescending(e => e.Score)
+            .ToListAsync();
+    }
+
+    public async Task<List<WeeklyChallengeEntryEntity>> GetBestEntriesPerUserAsync(int weeklyChallengeId)
+    {
+        var bestEntryIds = await _dbContext.WeeklyChallengeEntries
+            .Where(e => e.WeeklyChallengeId == weeklyChallengeId && e.IsValid)
+            .GroupBy(e => e.UserId)
+            .Select(g => g.OrderByDescending(e => e.Score).Select(e => e.Id).First())
+            .ToListAsync();
+
+        return await _dbContext.WeeklyChallengeEntries
+            .Include(e => e.User)
+            .Include(e => e.League)
+            .Include(e => e.Game)
+            .Where(e => bestEntryIds.Contains(e.Id))
+            .OrderByDescending(e => e.Score)
+            .ToListAsync();
+    }
 }

@@ -35,7 +35,7 @@ public class WeeklyChallengeEntryEntity
 
 public static class WeeklyChallengeEntryMappingExtensions
 {
-    public static DystopiaWeeklyChallengeEntryViewModel ToViewModel(this WeeklyChallengeEntryEntity l)
+    public static DystopiaWeeklyChallengeEntryViewModel ToEntryViewModel(this WeeklyChallengeEntryEntity l)
     {
         return new DystopiaWeeklyChallengeEntryViewModel
         {
@@ -49,7 +49,24 @@ public static class WeeklyChallengeEntryMappingExtensions
         };
     }
 
-    public static List<DystopiaWeeklyChallengeEntryViewModel> ToViewModels(
+    public static List<DystopiaWeeklyChallengeEntryViewModel> ToEntryViewModels(
         this IEnumerable<WeeklyChallengeEntryEntity>? source) =>
-        source?.Select(e => e.ToViewModel()).ToList() ?? new List<DystopiaWeeklyChallengeEntryViewModel>();
+        source?.Select(e => e.ToEntryViewModel()).ToList() ?? new List<DystopiaWeeklyChallengeEntryViewModel>();
+
+    public static DystopiaWeeklyChallengeHighscoreViewModel ToHighscoreViewModel(this WeeklyChallengeEntryEntity l)
+    {
+        return new DystopiaWeeklyChallengeHighscoreViewModel
+        {
+            PolytopiaUserId = l.UserId,
+            Username = l.User.Alias,
+            ReplayGameId = l.GameId,
+            Score = (uint)l.Score,
+            AvatarStateData = l.User.AvatarStateData,
+            GameVersions = l.User.GameVersions,
+        };
+    }
+
+    public static List<DystopiaWeeklyChallengeHighscoreViewModel> ToHighscoreViewModels(
+        this IEnumerable<WeeklyChallengeEntryEntity>? source) =>
+        source?.Select(e => e.ToHighscoreViewModel()).ToList() ?? new List<DystopiaWeeklyChallengeHighscoreViewModel>();
 }
